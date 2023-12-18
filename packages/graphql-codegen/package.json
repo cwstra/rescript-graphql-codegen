@@ -1,0 +1,23 @@
+{
+  "name": "@re-graphql-codegen/graphql-codegen",
+  "version": "0.0.1",
+  "keywords": [
+    "rescript"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "res:build": "rescript",
+    "res:clean": "rescript clean",
+    "res:fmt": "rescript format",
+    "res:dev": "rescript build -w"
+  },
+  "dependencies": {
+    "@re-graphql-codegen/graphql": "workspace:*",
+    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
+    "rescript": "^11.0.0-rc.7"
+  },
+  "peerDependencies": {
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
+  }
+}

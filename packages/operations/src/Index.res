@@ -1,0 +1,2 @@
+
+let plugin: GraphqlCodegen.plugin = {}

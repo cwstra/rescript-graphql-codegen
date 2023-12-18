@@ -1,0 +1,16 @@
+{
+  "name": "re-graphql-codegen",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "graphql": "^16.0.0"
+  },
+  "dependencies": {
+    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
+    "rescript": "^11.0.0-rc.7"
+  },
+  "packageManager": "yarn@4.0.2"
+}

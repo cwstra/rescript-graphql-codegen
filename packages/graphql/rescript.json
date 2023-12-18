@@ -1,0 +1,15 @@
+{
+  "name": "@re-graphql-codegen/graphql",
+  "namespace": "graphql",
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  },
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "bsc-flags": ["-open RescriptCore"],
+  "bs-dependencies": ["@rescript/core"]
+}
