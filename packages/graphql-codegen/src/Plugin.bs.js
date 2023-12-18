@@ -2,22 +2,10 @@
 'use strict';
 
 
-var bleh_5 = {
-  kind: "SelectionSet",
-  selections: []
-};
-
-var bleh = {
-  kind: "OperationDefinition",
-  operation: "query",
-  selectionSet: bleh_5
-};
-
 var PluginOutput = {};
 
 var AddToSchemaResult = {};
 
-exports.bleh = bleh;
 exports.PluginOutput = PluginOutput;
 exports.AddToSchemaResult = AddToSchemaResult;
 /* No side effect */

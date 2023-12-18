@@ -5,12 +5,12 @@ type schemaType<'def, 'ext> = {
     extensionASTNodes: null<array<'ext>>
 }
 
-type scalarType = schemaType<AST.scalarTypeDefinitionNode, AST.scalarTypeExtensionNode>
-type objectType = schemaType<AST.objectTypeDefinitionNode, AST.objectTypeExtensionNode>
-type interfaceType = schemaType<AST.interfaceTypeDefinitionNode, AST.interfaceTypeExtensionNode>
-type unionType = schemaType<AST.unionTypeDefinitionNode, AST.unionTypeExtensionNode>
-type enumType = schemaType<AST.enumTypeDefinitionNode, AST.enumTypeExtensionNode>
-type inputObjectType = schemaType<AST.inputObjectTypeDefinitionNode, AST.inputObjectTypeExtensionNode>
+type scalarType = schemaType<AST.ScalarTypeDefinitionNode.t, AST.ScalarTypeExtensionNode.t>
+type objectType = schemaType<AST.ObjectTypeDefinitionNode.t, AST.ObjectTypeExtensionNode.t>
+type interfaceType = schemaType<AST.InterfaceTypeDefinitionNode.t, AST.InterfaceTypeExtensionNode.t>
+type unionType = schemaType<AST.UnionTypeDefinitionNode.t, AST.UnionTypeExtensionNode.t>
+type enumType = schemaType<AST.EnumTypeDefinitionNode.t, AST.EnumTypeExtensionNode.t>
+type inputObjectType = schemaType<AST.InputObjectTypeDefinitionNode.t, AST.InputObjectTypeExtensionNode.t>
 
 type listType<'t>
 type nonNullType<'t>
@@ -96,7 +96,7 @@ module Argument = {
     @as("type")
     type_: Input.t,
     defaultValue: unknown,
-    astNode: null<AST.inputValueDefinitionNode>
+    astNode: null<AST.InputValueDefinitionNode.t>
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -114,7 +114,7 @@ module Field = {
     args: array<Argument.t>,
     isDeprecated?: bool,
     deprecationReason: nullable<string>,
-    astNode: nullable<AST.fieldDefinitionNode>,
+    astNode: nullable<AST.FieldDefinitionNode.t>,
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -152,7 +152,7 @@ module Directive = {
     locations: array<location>,
     isRepeatable: bool,
     args: array<Argument.t>,
-    astNode: null<AST.directiveDefinitionNode>
+    astNode: null<AST.DirectiveDefinitionNode.t>
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -187,6 +187,7 @@ module Interface = {
   let astNode = t => Null.toOption(t.astNode)
   let extensionASTNodes = t => Null.toOption(t.extensionASTNodes)
   @send external getFields: t => Dict.t<Field.t> = "getFields"
+  external toAbstract: t => Abstract.t = "%identity"
 }
 
 module Union = {
@@ -196,6 +197,7 @@ module Union = {
   let astNode = t => Null.toOption(t.astNode)
   let extensionASTNodes = t => Null.toOption(t.extensionASTNodes)
   @send external getTypes: t => array<objectType> = "getTypes"
+  external toAbstract: t => Abstract.t = "%identity"
 }
 
 module EnumValue = {
@@ -205,7 +207,7 @@ module EnumValue = {
     value: unknown,
     isDeprecated?: bool,
     deprecationReason: null<string>,
-    astNode: nullable<AST.enumValueDefinitionNode>
+    astNode: nullable<AST.EnumValueDefinitionNode.t>
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -233,7 +235,7 @@ module InputField = {
     @as("type")
     type_: Input.t,
     defaultValue: unknown,
-    astNode: nullable<AST.inputValueDefinitionNode>
+    astNode: nullable<AST.InputValueDefinitionNode.t>
   }
   let name = t => t.name
   let description = t => Nullable.toOption(t.description)
@@ -252,8 +254,8 @@ module InputObject = {
 }
 
 type t = {
-  astNode: null<AST.schemaDefinitionNode>,
-  extensionASTNodes: null<array<AST.schemaExtensionNode>>
+  astNode: null<AST.SchemaDefinitionNode.t>,
+  extensionASTNodes: null<array<AST.SchemaExtensionNode.t>>
 }
 
 let astNode = t => Null.toOption(t.astNode)

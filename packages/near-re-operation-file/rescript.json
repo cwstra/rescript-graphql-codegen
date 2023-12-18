@@ -11,5 +11,10 @@
   },
   "suffix": ".bs.js",
   "bsc-flags": ["-open RescriptCore"],
-  "bs-dependencies": ["@rescript/core", "@re-graphql-codegen/graphql", "@re-graphql-codegen/graphql-codegen"]
+  "bs-dependencies": [
+    "@rescript/core",
+    "@re-graphql-codegen/graphql",
+    "@re-graphql-codegen/graphql-codegen",
+    "rescript-nodejs"
+  ]
 }

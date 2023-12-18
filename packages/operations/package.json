@@ -7,10 +7,10 @@
   "license": "MIT",
   "author": "cwstra",
   "scripts": {
-    "res:build": "rescript",
-    "res:clean": "rescript clean",
-    "res:fmt": "rescript format",
-    "res:dev": "rescript build -w"
+    "build": "rescript",
+    "clean": "rescript clean",
+    "fmt": "rescript format",
+    "dev": "rescript build -w"
   },
   "dependencies": {
     "@re-graphql-codegen/graphql": "workspace:*",

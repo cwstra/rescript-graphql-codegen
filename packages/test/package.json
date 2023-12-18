@@ -1,0 +1,21 @@
+{
+  "name": "@re-graphql-codegen/test",
+  "version": "0.0.1",
+  "keywords": [
+    "rescript",
+    "graphql"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "codegen": ""
+  },
+  "dependencies": {
+    "graphql": "^16.8.1"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@parcel/watcher": "^2.3.0",
+    "typescript": "^5.3.3"
+  }
+}

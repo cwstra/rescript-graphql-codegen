@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/graphql-codegen",
+  "name": "@re-graphql-codegen/near-re-operation-file",
   "version": "0.0.1",
   "keywords": [
     "rescript"
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@re-graphql-codegen/graphql": "workspace:*",
+    "@re-graphql-codegen/graphql-codegen": "workspace:*",
     "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
     "rescript": "^11.0.0-rc.7"
   },

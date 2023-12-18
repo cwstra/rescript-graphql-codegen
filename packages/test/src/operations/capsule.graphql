@@ -1,0 +1,16 @@
+query Capsule(
+  $id: ID!
+){
+  capsule(id: $id) {
+    id
+    landings
+    missions {
+      flight
+      name
+    }
+    original_launch
+    reuse_count
+    status
+    type
+  }
+}

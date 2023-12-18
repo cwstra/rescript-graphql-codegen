@@ -338,16 +338,25 @@ function Interface_getFields(prim) {
   return prim.getFields();
 }
 
+function Interface_toAbstract(prim) {
+  return prim;
+}
+
 var Interface = {
   name: name$5,
   description: description$5,
   astNode: astNode$5,
   extensionASTNodes: extensionASTNodes$2,
-  getFields: Interface_getFields
+  getFields: Interface_getFields,
+  toAbstract: Interface_toAbstract
 };
 
 function Union_getTypes(prim) {
   return prim.getTypes();
+}
+
+function Union_toAbstract(prim) {
+  return prim;
 }
 
 var Union = {
@@ -355,7 +364,8 @@ var Union = {
   description: description$6,
   astNode: astNode$6,
   extensionASTNodes: extensionASTNodes$3,
-  getTypes: Union_getTypes
+  getTypes: Union_getTypes,
+  toAbstract: Union_toAbstract
 };
 
 function Enum_getValues(prim) {

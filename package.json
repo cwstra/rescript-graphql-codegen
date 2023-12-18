@@ -10,7 +10,28 @@
   },
   "dependencies": {
     "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
-    "rescript": "^11.0.0-rc.7"
+    "rescript": "^11.0.0-rc.7",
+    "rescript-nodejs": "^15.0.0"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.0.2",
+  "scripts": {
+    "graphql:build": "cd packages/graphql; yarn build",
+    "graphql-codegen:build": "cd packages/graphql-codegen; yarn build",
+    "near-re-operation-file:build": "cd packages/near-re-operation-file; yarn build",
+    "operations:build": "cd packages/operations; yarn build",
+    "project:build": "yarn workspaces foreach -At run build",
+    "graphql:clean": "cd packages/graphql; yarn clean",
+    "graphql-codegen:clean": "cd packages/graphql-codegen; yarn clean",
+    "near-re-operation-file:clean": "cd packages/near-re-operation-file; yarn clean",
+    "operations:clean": "cd packages/operations; yarn clean",
+    "project:clean": "yarn workspaces foreach -At run fmt",
+    "graphql:fmt": "cd packages/graphql; yarn fmt",
+    "graphql-codegen:fmt": "cd packages/graphql-codegen; yarn fmt",
+    "near-re-operation-file:fmt": "cd packages/near-re-operation-file; yarn fmt",
+    "operations:fmt": "cd packages/operations; yarn fmt",
+    "graphql:dev": "cd packages/graphql; yarn dev",
+    "graphql-codegen:dev": "yarn graphql:build; cd packages/graphql-codegen; yarn dev",
+    "near-re-operation-file:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; cd packages/near-re-operation-file; yarn dev",
+    "operations:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; cd packages/operations; yarn dev"
+  }
 }

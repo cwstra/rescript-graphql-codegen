@@ -20,19 +20,19 @@ module UnionMembers: {
 module Named: {
   type t
   type parsed =
-    |...UnionMembers.scalar
-    |...UnionMembers.object
-    |...UnionMembers.interface
-    |...UnionMembers.union
-    |...UnionMembers.enum
+    | ...UnionMembers.scalar
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
+    | ...UnionMembers.enum
   let parse: t => parsed
 }
 
 module Abstract: {
   type t
   type parsed =
-    |...UnionMembers.interface
-    |...UnionMembers.union
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
 }
 
 module Input: {
@@ -81,7 +81,7 @@ module Argument: {
   let description: t => option<string>
   let type_: t => Input.t
   let defaultValue: t => unknown
-  let astNode: t => option<AST.inputValueDefinitionNode>
+  let astNode: t => option<AST.InputValueDefinitionNode.t>
 }
 
 module Field: {
@@ -92,7 +92,7 @@ module Field: {
   let args: t => array<Argument.t>
   let isDeprecated: t => option<bool>
   let deprecationReason: t => option<string>
-  let astNode: t => option<AST.fieldDefinitionNode>
+  let astNode: t => option<AST.FieldDefinitionNode.t>
 }
 
 module Directive: {
@@ -122,23 +122,23 @@ module Directive: {
   let locations: t => array<location>
   let isRepeatable: t => bool
   let args: t => array<Argument.t>
-  let astNode: t => option<AST.directiveDefinitionNode>
+  let astNode: t => option<AST.DirectiveDefinitionNode.t>
 }
 
 module Scalar: {
   type t = scalarType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.scalarTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.scalarTypeExtensionNode>>
+  let astNode: t => option<AST.ScalarTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.ScalarTypeExtensionNode.t>>
 }
 
 module Object: {
   type t = objectType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.objectTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.objectTypeExtensionNode>>
+  let astNode: t => option<AST.ObjectTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.ObjectTypeExtensionNode.t>>
   let getFields: t => Dict.t<Field.t>
   let getInterfaces: t => array<interfaceType>
 }
@@ -147,18 +147,20 @@ module Interface: {
   type t = interfaceType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.interfaceTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.interfaceTypeExtensionNode>>
+  let astNode: t => option<AST.InterfaceTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.InterfaceTypeExtensionNode.t>>
   let getFields: t => Dict.t<Field.t>
+  let toAbstract: t => Abstract.t
 }
 
 module Union: {
   type t = unionType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.unionTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.unionTypeExtensionNode>>
+  let astNode: t => option<AST.UnionTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.UnionTypeExtensionNode.t>>
   let getTypes: t => array<objectType>
+  let toAbstract: t => Abstract.t
 }
 
 module EnumValue: {
@@ -168,15 +170,15 @@ module EnumValue: {
   let value: t => unknown
   let isDeprecated: t => option<bool>
   let deprecationReason: t => option<string>
-  let astNode: t => option<AST.enumValueDefinitionNode>
+  let astNode: t => option<AST.EnumValueDefinitionNode.t>
 }
 
 module Enum: {
   type t = enumType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.enumTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.enumTypeExtensionNode>>
+  let astNode: t => option<AST.EnumTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.EnumTypeExtensionNode.t>>
   let getValues: t => array<EnumValue.t>
   let getValue: (t, string) => option<EnumValue.t>
 }
@@ -187,21 +189,21 @@ module InputField: {
   let description: t => option<string>
   let type_: t => Input.t
   let defaultValue: t => unknown
-  let astNode: t => option<AST.inputValueDefinitionNode>
+  let astNode: t => option<AST.InputValueDefinitionNode.t>
 }
 
 module InputObject: {
   type t = inputObjectType
   let name: t => string
   let description: t => option<string>
-  let astNode: t => option<AST.inputObjectTypeDefinitionNode>
-  let extensionASTNodes: t => option<array<AST.inputObjectTypeExtensionNode>>
+  let astNode: t => option<AST.InputObjectTypeDefinitionNode.t>
+  let extensionASTNodes: t => option<array<AST.InputObjectTypeExtensionNode.t>>
   let getFields: t => Dict.t<InputField.t>
 }
 
 type t
-let astNode: t => option<AST.schemaDefinitionNode>
-let extensionASTNodes: t => option<array<AST.schemaExtensionNode>>
+let astNode: t => option<AST.SchemaDefinitionNode.t>
+let extensionASTNodes: t => option<array<AST.SchemaExtensionNode.t>>
 let getQueryType: t => option<Object.t>
 let getMutationType: t => option<Object.t>
 let getSubscriptionType: t => option<Object.t>

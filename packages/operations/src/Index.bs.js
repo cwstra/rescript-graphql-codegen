@@ -2,10 +2,14 @@
 'use strict';
 
 
-var b = {
-  kind: "NameNode",
-  value: "1"
+async function default_plugin(schema, documents, param) {
+  return "";
+}
+
+var $$default = {
+  plugin: default_plugin
 };
 
-exports.b = b;
+exports.default = $$default;
+exports.__esModule = true;
 /* No side effect */

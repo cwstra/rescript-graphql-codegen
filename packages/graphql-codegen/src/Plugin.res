@@ -1,18 +1,3 @@
-let bleh: GraphQL.AST.operationDefinitionNode = OperationDefinition({
-  operation: Query,
-  selectionSet: SelectionSet({
-    selections: []
-  }),
-})
-
-type source = {
-  document: GraphQL.AST.documentNode,
-  schema: GraphQL.Schema.t,
-  rawSDL?: string,
-  location?: string,
-}
-type documentFile = source
-
 module PluginOutput = {
   @unboxed
   type t =
@@ -24,15 +9,15 @@ module AddToSchemaResult = {
   @unboxed
   type t =
     | String(string)
-    | DocumentNode(GraphQL.AST.documentNode)
+    | DocumentNode(Graphql.AST.DocumentNode.t)
 }
 
 type pluginFunction<'config> = (
-  GraphQL.Schema.t,
-  array<documentFile>,
+  Graphql.Schema.t,
+  array<Base.documentFile>,
   'config,
 ) => promise<PluginOutput.t>
-type pluginValidateFn<'config> = (GraphQL.Schema.t, array<documentFile>, 'config) => promise<unit>
+type pluginValidateFn<'config> = (Graphql.Schema.t, array<Base.documentFile>, 'config) => promise<unit>
 
 type codegenPlugin<'config> = {
   plugin: pluginFunction<'config>,
