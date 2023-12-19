@@ -3,6 +3,7 @@
 
 var Graphql = require("graphql");
 var Process = require("process");
+var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.bs.js");
 var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.bs.js");
 var Core__Array = require("@rescript/core/src/Core__Array.bs.js");
 var Core__Option = require("@rescript/core/src/Core__Option.bs.js");
@@ -13,76 +14,191 @@ var SchemaTypesSource = {};
 
 var Unknown_type = /* @__PURE__ */Caml_exceptions.create("Index-GraphqlCodegenOperations.FragmentRegistry.Unknown_type");
 
+var Duplicate_names = /* @__PURE__ */Caml_exceptions.create("Index-GraphqlCodegenOperations.FragmentRegistry.Duplicate_names");
+
 function build(param, param$1, schemaObject) {
-  return Core__Array.reduce(param$1.documents, {}, (function (registry, $$document) {
-                var fragments = Core__Array.filterMap($$document.document.definitions, (function (d) {
-                        if (d.kind !== "FragmentDefinition") {
-                          return ;
-                        }
-                        var loc = d.loc;
-                        if (loc === undefined) {
-                          return ;
-                        }
-                        var name = d.name;
-                        if (name === undefined) {
-                          return ;
-                        }
-                        var variableDefinitions = d.variableDefinitions;
-                        if (variableDefinitions === undefined) {
-                          return ;
-                        }
-                        var directives = d.directives;
-                        if (directives !== undefined) {
-                          return {
-                                  kind: "FragmentDefinition",
-                                  loc: loc,
-                                  name: name,
-                                  variableDefinitions: variableDefinitions,
-                                  typeCondition: d.typeCondition,
-                                  directives: directives,
-                                  selectionSet: d.selectionSet
-                                };
-                        }
-                        
+  var generateFilePath = param.generateFilePath;
+  var getFragmentImports = function (possibleTypes, name) {
+    var shared = {
+      TAG: "Document",
+      _0: name
+    };
+    var len = possibleTypes.length;
+    if (len !== 1) {
+      if (len !== 0) {
+        return [shared].concat(possibleTypes.map(function (concreteType) {
+                        return {
+                                TAG: "AbstractTypeImpl",
+                                name: name,
+                                concreteType: concreteType
+                              };
                       }));
-                fragments.map(function (f) {
-                      var typeName = AST$Graphql.NameNode.value(AST$Graphql.NamedTypeNode.name(f.typeCondition));
-                      var match = Core__Option.map(Schema$Graphql.getType(schemaObject, typeName), Schema$Graphql.Named.parse);
-                      if (match !== undefined) {
-                        switch (match.TAG) {
-                          case "Object" :
-                              [Schema$Graphql.$$Object.name(match._0)];
-                              break;
-                          case "Interface" :
-                              Schema$Graphql.getPossibleTypes(schemaObject, Schema$Graphql.Interface.toAbstract(match._0)).map(Schema$Graphql.$$Object.name);
-                              break;
-                          case "Union" :
-                              Schema$Graphql.getPossibleTypes(schemaObject, Schema$Graphql.Union.toAbstract(match._0)).map(Schema$Graphql.$$Object.name);
-                              break;
-                          case "Scalar" :
-                          case "Enum" :
-                              break;
-                          
+      } else {
+        return [shared];
+      }
+    } else {
+      return [
+              shared,
+              {
+                TAG: "ConcreteType",
+                _0: name
+              }
+            ];
+    }
+  };
+  var match = Core__Array.reduce(param$1.documents, [
+        [],
+        {}
+      ], (function (param, $$document) {
+          var fragments = Core__Array.filterMap($$document.document.definitions, (function (d) {
+                  if (d.kind !== "FragmentDefinition") {
+                    return ;
+                  }
+                  var loc = d.loc;
+                  if (loc === undefined) {
+                    return ;
+                  }
+                  var variableDefinitions = d.variableDefinitions;
+                  if (variableDefinitions === undefined) {
+                    return ;
+                  }
+                  var directives = d.directives;
+                  if (directives !== undefined) {
+                    return {
+                            kind: "FragmentDefinition",
+                            loc: loc,
+                            name: d.name,
+                            variableDefinitions: variableDefinitions,
+                            typeCondition: d.typeCondition,
+                            directives: directives,
+                            selectionSet: d.selectionSet
+                          };
+                  }
+                  
+                }));
+          return Core__Array.reduce(fragments, [
+                      param[0],
+                      param[1]
+                    ], (function (param, fragment) {
+                        var registry = param[1];
+                        var typeName = AST$Graphql.NameNode.value(AST$Graphql.NamedTypeNode.name(AST$Graphql.FragmentDefinitionNode.typeCondition(fragment)));
+                        var fragmentName = AST$Graphql.NameNode.value(AST$Graphql.FragmentDefinitionNode.name(fragment));
+                        var match = Core__Option.map(Schema$Graphql.getType(schemaObject, typeName), Schema$Graphql.Named.parse);
+                        var possibleTypes;
+                        if (match !== undefined) {
+                          switch (match.TAG) {
+                            case "Object" :
+                                possibleTypes = [Schema$Graphql.$$Object.name(match._0)];
+                                break;
+                            case "Interface" :
+                                possibleTypes = Schema$Graphql.getPossibleTypes(schemaObject, Schema$Graphql.Interface.toAbstract(match._0)).map(Schema$Graphql.$$Object.name);
+                                break;
+                            case "Union" :
+                                possibleTypes = Schema$Graphql.getPossibleTypes(schemaObject, Schema$Graphql.Union.toAbstract(match._0)).map(Schema$Graphql.$$Object.name);
+                                break;
+                            case "Scalar" :
+                            case "Enum" :
+                                possibleTypes = [];
+                                break;
+                            
+                          }
+                        } else {
+                          throw {
+                                RE_EXN_ID: Unknown_type,
+                                _1: "Fragment " + fragmentName + " is set on non-existing type \"" + typeName + "\"",
+                                Error: new Error()
+                              };
                         }
-                      } else {
-                        throw {
-                              RE_EXN_ID: Unknown_type,
-                              _1: "Fragment " + Core__Option.mapOr(f.name, "<unknown>", AST$Graphql.NameNode.value) + " is set on non-existing type \"" + typeName + "\"",
-                              Error: new Error()
-                            };
-                      }
-                    });
-                return registry;
-              }));
+                        var filePath = generateFilePath(Core__Option.getExn($$document.location));
+                        var imports = getFragmentImports(possibleTypes, fragmentName);
+                        return [
+                                param[0].concat(Core__Option.mapOr(Core__Option.filter(registry[fragmentName], (function (f) {
+                                                return Graphql.print(f.node) !== Graphql.print(fragment);
+                                              })), [], (function (param) {
+                                            return [fragmentName];
+                                          }))),
+                                CorePlus.Dict.put(registry, fragmentName, {
+                                      filePath: filePath,
+                                      onType: AST$Graphql.NameNode.value(AST$Graphql.NamedTypeNode.name(AST$Graphql.FragmentDefinitionNode.typeCondition(fragment))),
+                                      node: fragment,
+                                      imports: imports
+                                    })
+                              ];
+                      }));
+        }));
+  var duplicates = match[0];
+  if (duplicates.length !== 0) {
+    throw {
+          RE_EXN_ID: Duplicate_names,
+          _1: duplicates,
+          Error: new Error()
+        };
+  }
+  return match[1];
 }
 
 var FragmentRegistry = {
   Unknown_type: Unknown_type,
+  Duplicate_names: Duplicate_names,
   build: build
 };
 
+function extractExternalFragmentsInUse(documentNode, registry) {
+  var ignored = new Set(Core__Array.filterMap(documentNode.definitions, (function (d) {
+              if (d.kind === "FragmentDefinition") {
+                return AST$Graphql.NameNode.value(d.name);
+              }
+              
+            })));
+  var extract = function (selections, result, level) {
+    switch (selections.kind) {
+      case "Field" :
+          return Core__Option.mapOr(selections.selectionSet, result, (function (s) {
+                        return Core__Array.reduce(s.selections, result, (function (acc, s) {
+                                      return extract(s, acc, level);
+                                    }));
+                      }));
+      case "FragmentSpread" :
+          var fragmentName = AST$Graphql.NameNode.value(selections.name);
+          var match = ignored.has(fragmentName);
+          var match$1 = result[fragmentName];
+          if (match) {
+            return result;
+          }
+          if (match$1 !== undefined && level >= match$1) {
+            return result;
+          }
+          var updated = CorePlus.Dict.put(result, fragmentName, level);
+          return Core__Option.mapOr(registry[fragmentName], updated, (function (r) {
+                        return Core__Array.reduce(AST$Graphql.SelectionSetNode.selections(AST$Graphql.FragmentDefinitionNode.selectionSet(r.node)), updated, (function (acc, s) {
+                                      return extract(s, acc, level + 1 | 0);
+                                    }));
+                      }));
+      case "InlineFragment" :
+          return Core__Array.reduce(AST$Graphql.SelectionSetNode.selections(selections.selectionSet), result, (function (acc, s) {
+                        return extract(s, acc, level);
+                      }));
+      
+    }
+  };
+  Core__Array.reduce(documentNode.definitions.flatMap(function (d) {
+            switch (d.kind) {
+              case "OperationDefinition" :
+              case "FragmentDefinition" :
+                  return AST$Graphql.SelectionSetNode.selections(d.selectionSet);
+              default:
+                return [];
+            }
+          }), {}, (function (acc, f) {
+          return extract(f, acc, 0);
+        }));
+}
+
 function buildFragmentResolver(collectorOptions, presetOptions, schemaObject, dedupeFragments) {
-  build(collectorOptions, presetOptions, schemaObject);
+  var registry = build(collectorOptions, presetOptions, schemaObject);
+  return function (generatedFilePath, documentFileContent) {
+    extractExternalFragmentsInUse(documentFileContent, registry);
+  };
 }
 
 function resolveDocumentImports(presetOptions, schemaObject, importResolverOptions, dedupeFragmentsOpt) {
@@ -101,6 +217,7 @@ var $$default = {
 
 exports.SchemaTypesSource = SchemaTypesSource;
 exports.FragmentRegistry = FragmentRegistry;
+exports.extractExternalFragmentsInUse = extractExternalFragmentsInUse;
 exports.buildFragmentResolver = buildFragmentResolver;
 exports.resolveDocumentImports = resolveDocumentImports;
 exports.default = $$default;

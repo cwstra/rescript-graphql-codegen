@@ -10,9 +10,10 @@
     "in-source": true
   },
   "suffix": ".bs.js",
-  "bsc-flags": ["-open RescriptCore"],
+  "bsc-flags": ["-open CorePlus"],
   "bs-dependencies": [
     "@rescript/core",
+    "@re-graphql-codegen/core-plus",
     "@re-graphql-codegen/graphql",
     "@re-graphql-codegen/graphql-codegen",
     "rescript-nodejs"

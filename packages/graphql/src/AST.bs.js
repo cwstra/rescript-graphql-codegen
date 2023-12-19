@@ -15,22 +15,6 @@ var NameNode = {
   value: value
 };
 
-var VariableNode = {};
-
-var IntValueNode = {};
-
-var FloatValueNode = {};
-
-var StringValueNode = {};
-
-var BooleanValueNode = {};
-
-var NullValueNode = {};
-
-var EnumValueNode = {};
-
-var ValueNode = {};
-
 function loc$1(r) {
   return r.loc;
 }
@@ -39,68 +23,741 @@ function name(r) {
   return r.name;
 }
 
-var NamedTypeNode = {
+var VariableNode = {
   loc: loc$1,
   name: name
 };
 
+function loc$2(r) {
+  return r.loc;
+}
+
+function value$1(r) {
+  return r.value;
+}
+
+var IntValueNode = {
+  loc: loc$2,
+  value: value$1
+};
+
+function loc$3(r) {
+  return r.loc;
+}
+
+function value$2(r) {
+  return r.value;
+}
+
+var FloatValueNode = {
+  loc: loc$3,
+  value: value$2
+};
+
+function loc$4(r) {
+  return r.loc;
+}
+
+function value$3(r) {
+  return r.value;
+}
+
+function block(r) {
+  return r.block;
+}
+
+var StringValueNode = {
+  loc: loc$4,
+  value: value$3,
+  block: block
+};
+
+function loc$5(r) {
+  return r.loc;
+}
+
+function value$4(r) {
+  return r.value;
+}
+
+var BooleanValueNode = {
+  loc: loc$5,
+  value: value$4
+};
+
+function loc$6(r) {
+  return r.loc;
+}
+
+var NullValueNode = {
+  loc: loc$6
+};
+
+function loc$7(r) {
+  return r.loc;
+}
+
+function value$5(r) {
+  return r.value;
+}
+
+var EnumValueNode = {
+  loc: loc$7,
+  value: value$5
+};
+
+var ValueNode = {};
+
+function loc$8(r) {
+  return r.loc;
+}
+
+function name$1(r) {
+  return r.name;
+}
+
+var NamedTypeNode = {
+  loc: loc$8,
+  name: name$1
+};
+
 var TypeNode = {};
 
-var ArgumentNode = {};
+function loc$9(a) {
+  return a.loc;
+}
 
-var DirectiveNode = {};
+function name$2(a) {
+  return a.name;
+}
 
-var VariableDefinitionNode = {};
+function value$6(a) {
+  return a.value;
+}
 
-var SelectionSetNode = {};
+var ArgumentNode = {
+  loc: loc$9,
+  name: name$2,
+  value: value$6
+};
 
-var OperationTypeDefinitionNode = {};
+function loc$10(a) {
+  return a.loc;
+}
 
-var InputValueDefinitionNode = {};
+function name$3(a) {
+  return a.name;
+}
 
-var FieldDefinitionNode = {};
+function $$arguments(a) {
+  return a.arguments;
+}
 
-var EnumValueDefinitionNode = {};
+var DirectiveNode = {
+  loc: loc$10,
+  name: name$3,
+  $$arguments: $$arguments
+};
 
-var OperationDefinitionNode = {};
+function loc$11(a) {
+  return a.loc;
+}
 
-var FragmentDefinitionNode = {};
+function variable(a) {
+  return a.variable;
+}
+
+function type_(a) {
+  return a.type_;
+}
+
+function defaultValue(a) {
+  return a.defaultValue;
+}
+
+function directives(a) {
+  return a.directives;
+}
+
+var VariableDefinitionNode = {
+  loc: loc$11,
+  variable: variable,
+  type_: type_,
+  defaultValue: defaultValue,
+  directives: directives
+};
+
+function loc$12(s) {
+  return s.loc;
+}
+
+function selections(s) {
+  return s.selections;
+}
+
+function visit(t) {
+  return t;
+}
+
+var SelectionSetNode = {
+  loc: loc$12,
+  selections: selections,
+  visit: visit
+};
+
+function loc$13(o) {
+  return o.loc;
+}
+
+function operation(o) {
+  return o.operation;
+}
+
+function type_$1(o) {
+  return o.type_;
+}
+
+var OperationTypeDefinitionNode = {
+  loc: loc$13,
+  operation: operation,
+  type_: type_$1
+};
+
+function loc$14(i) {
+  return i.loc;
+}
+
+function description(i) {
+  return i.description;
+}
+
+function name$4(i) {
+  return i.name;
+}
+
+function type_$2(i) {
+  return i.type_;
+}
+
+function defaultValue$1(i) {
+  return i.defaultValue;
+}
+
+function directives$1(i) {
+  return i.directives;
+}
+
+var InputValueDefinitionNode = {
+  loc: loc$14,
+  description: description,
+  name: name$4,
+  type_: type_$2,
+  defaultValue: defaultValue$1,
+  directives: directives$1
+};
+
+function loc$15(i) {
+  return i.loc;
+}
+
+function description$1(i) {
+  return i.description;
+}
+
+function name$5(i) {
+  return i.name;
+}
+
+function $$arguments$1(i) {
+  return i.arguments;
+}
+
+function type_$3(i) {
+  return i.type_;
+}
+
+function directives$2(i) {
+  return i.directives;
+}
+
+var FieldDefinitionNode = {
+  loc: loc$15,
+  description: description$1,
+  name: name$5,
+  $$arguments: $$arguments$1,
+  type_: type_$3,
+  directives: directives$2
+};
+
+function loc$16(i) {
+  return i.loc;
+}
+
+function description$2(i) {
+  return i.description;
+}
+
+function name$6(i) {
+  return i.name;
+}
+
+function directives$3(i) {
+  return i.directives;
+}
+
+var EnumValueDefinitionNode = {
+  loc: loc$16,
+  description: description$2,
+  name: name$6,
+  directives: directives$3
+};
+
+function loc$17(i) {
+  return i.loc;
+}
+
+function operation$1(i) {
+  return i.operation;
+}
+
+function name$7(i) {
+  return i.name;
+}
+
+function variableDefinitions(i) {
+  return i.variableDefinitions;
+}
+
+function directives$4(i) {
+  return i.directives;
+}
+
+function selectionSet(i) {
+  return i.selectionSet;
+}
+
+var OperationDefinitionNode = {
+  loc: loc$17,
+  operation: operation$1,
+  name: name$7,
+  variableDefinitions: variableDefinitions,
+  directives: directives$4,
+  selectionSet: selectionSet
+};
+
+function loc$18(f) {
+  return f.loc;
+}
+
+function name$8(f) {
+  return f.name;
+}
+
+function variableDefinitions$1(f) {
+  return f.variableDefinitions;
+}
+
+function typeCondition(f) {
+  return f.typeCondition;
+}
+
+function directives$5(f) {
+  return f.directives;
+}
+
+function selectionSet$1(f) {
+  return f.selectionSet;
+}
+
+var FragmentDefinitionNode = {
+  loc: loc$18,
+  name: name$8,
+  variableDefinitions: variableDefinitions$1,
+  typeCondition: typeCondition,
+  directives: directives$5,
+  selectionSet: selectionSet$1
+};
 
 var ExecutableDefinitionNode = {};
 
-var SchemaDefinitionNode = {};
+function loc$19(f) {
+  return f.loc;
+}
 
-var ScalarTypeDefinitionNode = {};
+function directives$6(f) {
+  return f.directives;
+}
 
-var ObjectTypeDefinitionNode = {};
+function operationTypes(f) {
+  return f.operationTypes;
+}
 
-var InterfaceTypeDefinitionNode = {};
+var SchemaDefinitionNode = {
+  loc: loc$19,
+  directives: directives$6,
+  operationTypes: operationTypes
+};
 
-var UnionTypeDefinitionNode = {};
+function loc$20(f) {
+  return f.loc;
+}
 
-var EnumTypeDefinitionNode = {};
+function description$3(f) {
+  return f.description;
+}
 
-var InputObjectTypeDefinitionNode = {};
+function name$9(f) {
+  return f.name;
+}
+
+function directives$7(f) {
+  return f.directives;
+}
+
+var ScalarTypeDefinitionNode = {
+  loc: loc$20,
+  description: description$3,
+  name: name$9,
+  directives: directives$7
+};
+
+function loc$21(f) {
+  return f.loc;
+}
+
+function description$4(f) {
+  return f.description;
+}
+
+function name$10(f) {
+  return f.name;
+}
+
+function interfaces(f) {
+  return f.interfaces;
+}
+
+function directives$8(f) {
+  return f.directives;
+}
+
+function fields(f) {
+  return f.fields;
+}
+
+var ObjectTypeDefinitionNode = {
+  loc: loc$21,
+  description: description$4,
+  name: name$10,
+  interfaces: interfaces,
+  directives: directives$8,
+  fields: fields
+};
+
+function loc$22(f) {
+  return f.loc;
+}
+
+function description$5(f) {
+  return f.description;
+}
+
+function name$11(f) {
+  return f.name;
+}
+
+function directives$9(f) {
+  return f.directives;
+}
+
+function fields$1(f) {
+  return f.fields;
+}
+
+var InterfaceTypeDefinitionNode = {
+  loc: loc$22,
+  description: description$5,
+  name: name$11,
+  directives: directives$9,
+  fields: fields$1
+};
+
+function loc$23(f) {
+  return f.loc;
+}
+
+function description$6(f) {
+  return f.description;
+}
+
+function name$12(f) {
+  return f.name;
+}
+
+function directives$10(f) {
+  return f.directives;
+}
+
+function types(f) {
+  return f.types;
+}
+
+var UnionTypeDefinitionNode = {
+  loc: loc$23,
+  description: description$6,
+  name: name$12,
+  directives: directives$10,
+  types: types
+};
+
+function loc$24(f) {
+  return f.loc;
+}
+
+function description$7(f) {
+  return f.description;
+}
+
+function name$13(f) {
+  return f.name;
+}
+
+function directives$11(f) {
+  return f.directives;
+}
+
+function types$1(f) {
+  return f.values;
+}
+
+var EnumTypeDefinitionNode = {
+  loc: loc$24,
+  description: description$7,
+  name: name$13,
+  directives: directives$11,
+  types: types$1
+};
+
+function loc$25(f) {
+  return f.loc;
+}
+
+function description$8(f) {
+  return f.description;
+}
+
+function name$14(f) {
+  return f.name;
+}
+
+function directives$12(f) {
+  return f.directives;
+}
+
+function fields$2(f) {
+  return f.fields;
+}
+
+var InputObjectTypeDefinitionNode = {
+  loc: loc$25,
+  description: description$8,
+  name: name$14,
+  directives: directives$12,
+  fields: fields$2
+};
 
 var TypeDefinitionNode = {};
 
-var DirectiveDefinitionNode = {};
+function loc$26(f) {
+  return f.loc;
+}
+
+function description$9(f) {
+  return f.description;
+}
+
+function name$15(f) {
+  return f.name;
+}
+
+function $$arguments$2(f) {
+  return f.arguments;
+}
+
+function repeatable(f) {
+  return f.repeatable;
+}
+
+function locations(f) {
+  return f.locations;
+}
+
+var DirectiveDefinitionNode = {
+  loc: loc$26,
+  description: description$9,
+  name: name$15,
+  $$arguments: $$arguments$2,
+  repeatable: repeatable,
+  locations: locations
+};
 
 var TypeSystemDefinitionNode = {};
 
-var SchemaExtensionNode = {};
+function loc$27(f) {
+  return f.loc;
+}
 
-var ScalarTypeExtensionNode = {};
+function directives$13(f) {
+  return f.directives;
+}
 
-var ObjectTypeExtensionNode = {};
+function operationTypes$1(f) {
+  return f.operationTypes;
+}
 
-var InterfaceTypeExtensionNode = {};
+var SchemaExtensionNode = {
+  loc: loc$27,
+  directives: directives$13,
+  operationTypes: operationTypes$1
+};
 
-var UnionTypeExtensionNode = {};
+function loc$28(f) {
+  return f.loc;
+}
 
-var EnumTypeExtensionNode = {};
+function name$16(f) {
+  return f.name;
+}
 
-var InputObjectTypeExtensionNode = {};
+function directives$14(f) {
+  return f.directives;
+}
+
+var ScalarTypeExtensionNode = {
+  loc: loc$28,
+  name: name$16,
+  directives: directives$14
+};
+
+function loc$29(f) {
+  return f.loc;
+}
+
+function name$17(f) {
+  return f.name;
+}
+
+function interfaces$1(f) {
+  return f.interfaces;
+}
+
+function directives$15(f) {
+  return f.directives;
+}
+
+function fields$3(f) {
+  return f.fields;
+}
+
+var ObjectTypeExtensionNode = {
+  loc: loc$29,
+  name: name$17,
+  interfaces: interfaces$1,
+  directives: directives$15,
+  fields: fields$3
+};
+
+function loc$30(f) {
+  return f.loc;
+}
+
+function name$18(f) {
+  return f.name;
+}
+
+function directives$16(f) {
+  return f.directives;
+}
+
+function fields$4(f) {
+  return f.fields;
+}
+
+var InterfaceTypeExtensionNode = {
+  loc: loc$30,
+  name: name$18,
+  directives: directives$16,
+  fields: fields$4
+};
+
+function loc$31(f) {
+  return f.loc;
+}
+
+function name$19(f) {
+  return f.name;
+}
+
+function directives$17(f) {
+  return f.directives;
+}
+
+function types$2(f) {
+  return f.types;
+}
+
+var UnionTypeExtensionNode = {
+  loc: loc$31,
+  name: name$19,
+  directives: directives$17,
+  types: types$2
+};
+
+function loc$32(f) {
+  return f.loc;
+}
+
+function name$20(f) {
+  return f.name;
+}
+
+function directives$18(f) {
+  return f.directives;
+}
+
+function values(f) {
+  return f.values;
+}
+
+var EnumTypeExtensionNode = {
+  loc: loc$32,
+  name: name$20,
+  directives: directives$18,
+  values: values
+};
+
+function loc$33(f) {
+  return f.loc;
+}
+
+function name$21(f) {
+  return f.name;
+}
+
+function directives$19(f) {
+  return f.directives;
+}
+
+function fields$5(f) {
+  return f.fields;
+}
+
+var InputObjectTypeExtensionNode = {
+  loc: loc$33,
+  name: name$21,
+  directives: directives$19,
+  fields: fields$5
+};
 
 var TypeExtensionNode = {};
 

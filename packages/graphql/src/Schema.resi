@@ -139,7 +139,7 @@ module Object: {
   let description: t => option<string>
   let astNode: t => option<AST.ObjectTypeDefinitionNode.t>
   let extensionASTNodes: t => option<array<AST.ObjectTypeExtensionNode.t>>
-  let getFields: t => Dict.t<Field.t>
+  let getFields: t =>  Dict.t<Field.t>
   let getInterfaces: t => array<interfaceType>
 }
 
