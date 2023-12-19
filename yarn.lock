@@ -979,12 +979,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@re-graphql-codegen/core-plus@workspace:*, @re-graphql-codegen/core-plus@workspace:packages/core-plus":
+  version: 0.0.0-use.local
+  resolution: "@re-graphql-codegen/core-plus@workspace:packages/core-plus"
+  dependencies:
+    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11"
+    rescript: "npm:^11.0.0-rc.7"
+  languageName: unknown
+  linkType: soft
+
 "@re-graphql-codegen/graphql-codegen@workspace:*, @re-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen":
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen"
   dependencies:
+    "@re-graphql-codegen/core-plus": "workspace:*"
     "@re-graphql-codegen/graphql": "workspace:*"
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11"
     rescript: "npm:^11.0.0-rc.7"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
@@ -995,7 +1004,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/graphql@workspace:packages/graphql"
   dependencies:
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11"
+    "@re-graphql-codegen/core-plus": "workspace:*"
     rescript: "npm:^11.0.0-rc.7"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
@@ -1006,9 +1015,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/near-re-operation-file@workspace:packages/near-re-operation-file"
   dependencies:
+    "@re-graphql-codegen/core-plus": "workspace:*"
     "@re-graphql-codegen/graphql": "workspace:*"
     "@re-graphql-codegen/graphql-codegen": "workspace:*"
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11"
     rescript: "npm:^11.0.0-rc.7"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
@@ -1019,9 +1028,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/operations@workspace:packages/operations"
   dependencies:
+    "@re-graphql-codegen/core-plus": "workspace:*"
     "@re-graphql-codegen/graphql": "workspace:*"
     "@re-graphql-codegen/graphql-codegen": "workspace:*"
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11"
     rescript: "npm:^11.0.0-rc.7"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
