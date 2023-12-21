@@ -14,6 +14,32 @@ var Named = {
   parse: parse
 };
 
+function fromNamed(named) {
+  switch (named.TAG) {
+    case "Object" :
+        return {
+                TAG: "Object",
+                _0: named._0
+              };
+    case "Interface" :
+        return {
+                TAG: "Interface",
+                _0: named._0
+              };
+    case "Union" :
+        return {
+                TAG: "Union",
+                _0: named._0
+              };
+    default:
+      return ;
+  }
+}
+
+var ValidForTypeCondition = {
+  fromNamed: fromNamed
+};
+
 function parse$1(prim) {
   return Graphql_facade.wrapClassType(prim);
 }
@@ -431,6 +457,7 @@ function getDirective(prim0, prim1) {
 
 exports.UnionMembers = UnionMembers;
 exports.Named = Named;
+exports.ValidForTypeCondition = ValidForTypeCondition;
 exports.Abstract = Abstract;
 exports.Input = Input;
 exports.Output = Output;

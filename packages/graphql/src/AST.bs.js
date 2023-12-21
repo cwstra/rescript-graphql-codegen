@@ -195,14 +195,9 @@ function selections(s) {
   return s.selections;
 }
 
-function visit(t) {
-  return t;
-}
-
 var SelectionSetNode = {
   loc: loc$12,
-  selections: selections,
-  visit: visit
+  selections: selections
 };
 
 function loc$13(o) {

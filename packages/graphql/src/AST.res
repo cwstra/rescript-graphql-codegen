@@ -190,8 +190,6 @@ module SelectionSetNode = {
   let selections = (SelectionSet(s)) => s.selections
   @module("graphql")
   external print: t => string = "print"
-
-  let visit = (t: t) => t
 }
 
 module OperationTypeDefinitionNode = {
@@ -314,6 +312,8 @@ module ExecutableDefinitionNode = {
     | ...FragmentDefinitionNode.t
   @module("graphql")
   external print: t => string = "print"
+  external fromFragmentDefinition: (FragmentDefinitionNode.t) => t = "%identity"
+  external fromOperationDefinition: (OperationDefinitionNode.t) => t = "%identity"
 }
 module SchemaDefinitionNode = {
   @tag("kind")
@@ -447,6 +447,11 @@ module TypeDefinitionNode = {
     | ...InputObjectTypeDefinitionNode.t
   @module("graphql")
   external print: t => string = "print"
+  external fromScalarTypeDefinition: (ScalarTypeDefinitionNode.t) => t = "%identity"
+  external fromInterfaceTypeDefinition: (InterfaceTypeDefinitionNode.t) => t = "%identity"
+  external fromUnionTypeDefinition: (UnionTypeDefinitionNode.t) => t = "%identity"
+  external fromEnumTypeDefinition: (EnumTypeDefinitionNode.t) => t = "%identity"
+  external fromInputObjectTypeDefinition: (InputObjectTypeDefinitionNode.t) => t = "%identity"
 }
 module DirectiveDefinitionNode = {
   @tag("kind")
@@ -476,6 +481,9 @@ module TypeSystemDefinitionNode = {
     | ...DirectiveDefinitionNode.t
   @module("graphql")
   external print: t => string = "print"
+  external fromSchemaDefinition: (SchemaDefinitionNode.t) => t = "%identity"
+  external fromTypeDefinition: (TypeDefinitionNode.t) => t = "%identity"
+  external fromDirectiveDefinitionNode: (DirectiveDefinitionNode.t) => t = "%identity"
 }
 module SchemaExtensionNode = {
   @tag("kind")
@@ -594,6 +602,12 @@ module TypeExtensionNode = {
     | ...InputObjectTypeExtensionNode.t
   @module("graphql")
   external print: t => string = "print"
+  external fromScalarTypeExtension: (ScalarTypeExtensionNode.t) => t = "%identity"
+  external fromObjectTypeExtension: (ObjectTypeExtensionNode.t) => t = "%identity"
+  external fromInterfaceTypeExtension: (InterfaceTypeExtensionNode.t) => t = "%identity"
+  external fromUnionTypeExtension: (UnionTypeExtensionNode.t) => t = "%identity"
+  external fromEnumTypeExtension: (EnumTypeExtensionNode.t) => t = "%identity"
+  external fromInputObjectTypeExtension: (InputObjectTypeExtensionNode.t) => t = "%identity"
 }
 module TypeSystemExtensionNode = {
   @tag("kind")
@@ -602,6 +616,8 @@ module TypeSystemExtensionNode = {
     | ...TypeExtensionNode.t
   @module("graphql")
   external print: t => string = "print"
+  external fromSchemaExtension: (SchemaExtensionNode.t) => t = "%identity"
+  external fromTypeExtension: (TypeExtensionNode.t) => t = "%identity"
 }
 module DefinitionNode = {
   @tag("kind")
@@ -611,6 +627,10 @@ module DefinitionNode = {
     | ...TypeSystemExtensionNode.t
   @module("graphql")
   external print: t => string = "print"
+
+  external fromExecutableDefinition: (ExecutableDefinitionNode.t) => t = "%identity"
+  external fromTypeSystemDefinition: (TypeSystemDefinitionNode.t) => t = "%identity"
+  external fromTypeSystemExtension: (TypeSystemExtensionNode.t) => t = "%identity"
 }
 
 module DocumentNode = {

@@ -1,8 +1,8 @@
 type schemaType<'def, 'ext> = {
-    name: string,
-    description: null<string>,
-    astNode: null<'def>,
-    extensionASTNodes: null<array<'ext>>
+  name: string,
+  description: null<string>,
+  astNode: null<'def>,
+  extensionASTNodes: null<array<'ext>>,
 }
 
 type scalarType = schemaType<AST.ScalarTypeDefinitionNode.t, AST.ScalarTypeExtensionNode.t>
@@ -10,7 +10,10 @@ type objectType = schemaType<AST.ObjectTypeDefinitionNode.t, AST.ObjectTypeExten
 type interfaceType = schemaType<AST.InterfaceTypeDefinitionNode.t, AST.InterfaceTypeExtensionNode.t>
 type unionType = schemaType<AST.UnionTypeDefinitionNode.t, AST.UnionTypeExtensionNode.t>
 type enumType = schemaType<AST.EnumTypeDefinitionNode.t, AST.EnumTypeExtensionNode.t>
-type inputObjectType = schemaType<AST.InputObjectTypeDefinitionNode.t, AST.InputObjectTypeExtensionNode.t>
+type inputObjectType = schemaType<
+  AST.InputObjectTypeDefinitionNode.t,
+  AST.InputObjectTypeExtensionNode.t,
+>
 
 type listType<'t>
 type nonNullType<'t>
@@ -27,20 +30,35 @@ module UnionMembers = {
 module Named = {
   type t
   type parsed =
-    |...UnionMembers.scalar
-    |...UnionMembers.object
-    |...UnionMembers.interface
-    |...UnionMembers.union
-    |...UnionMembers.enum
+    | ...UnionMembers.scalar
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
+    | ...UnionMembers.enum
+    | ...UnionMembers.inputObject
   @module("./graphql_facade")
   external parse: t => parsed = "wrapClassType"
+}
+
+module ValidForTypeCondition = {
+  type t =
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
+  let fromNamed = named =>
+    switch named {
+    | Named.Object(o) => Some(Object(o))
+    | Interface(i) => Some(Interface(i))
+    | Union(u) => Some(Union(u))
+    | _ => None
+    }
 }
 
 module Abstract = {
   type t
   type parsed =
-    |...UnionMembers.interface
-    |...UnionMembers.union
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
   @module("./graphql_facade")
   external parse: t => parsed = "wrapClassType"
 }
@@ -96,7 +114,7 @@ module Argument = {
     @as("type")
     type_: Input.t,
     defaultValue: unknown,
-    astNode: null<AST.InputValueDefinitionNode.t>
+    astNode: null<AST.InputValueDefinitionNode.t>,
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -110,7 +128,7 @@ module Field = {
     name: string,
     description: null<string>,
     @as("type")
-    type_:  Output.t,
+    type_: Output.t,
     args: array<Argument.t>,
     isDeprecated?: bool,
     deprecationReason: nullable<string>,
@@ -126,7 +144,7 @@ module Field = {
 }
 
 module Directive = {
-  type location = 
+  type location =
     | QUERY
     | MUTATION
     | SUBSCRIPTION
@@ -152,7 +170,7 @@ module Directive = {
     locations: array<location>,
     isRepeatable: bool,
     args: array<Argument.t>,
-    astNode: null<AST.DirectiveDefinitionNode.t>
+    astNode: null<AST.DirectiveDefinitionNode.t>,
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -171,7 +189,7 @@ module Scalar = {
 }
 
 module Object = {
-  type t = objectType 
+  type t = objectType
   let name = t => t.name
   let description = t => Null.toOption(t.description)
   let astNode = t => Null.toOption(t.astNode)
@@ -207,7 +225,7 @@ module EnumValue = {
     value: unknown,
     isDeprecated?: bool,
     deprecationReason: null<string>,
-    astNode: nullable<AST.EnumValueDefinitionNode.t>
+    astNode: nullable<AST.EnumValueDefinitionNode.t>,
   }
   let name = t => t.name
   let description = t => Null.toOption(t.description)
@@ -235,7 +253,7 @@ module InputField = {
     @as("type")
     type_: Input.t,
     defaultValue: unknown,
-    astNode: nullable<AST.InputValueDefinitionNode.t>
+    astNode: nullable<AST.InputValueDefinitionNode.t>,
   }
   let name = t => t.name
   let description = t => Nullable.toOption(t.description)
@@ -255,7 +273,7 @@ module InputObject = {
 
 type t = {
   astNode: null<AST.SchemaDefinitionNode.t>,
-  extensionASTNodes: null<array<AST.SchemaExtensionNode.t>>
+  extensionASTNodes: null<array<AST.SchemaExtensionNode.t>>,
 }
 
 let astNode = t => Null.toOption(t.astNode)

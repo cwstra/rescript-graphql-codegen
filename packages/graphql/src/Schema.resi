@@ -25,7 +25,16 @@ module Named: {
     | ...UnionMembers.interface
     | ...UnionMembers.union
     | ...UnionMembers.enum
+    | ...UnionMembers.inputObject
   let parse: t => parsed
+}
+
+module ValidForTypeCondition: {
+  type t =
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+    | ...UnionMembers.union
+  let fromNamed: Named.parsed => option<t>
 }
 
 module Abstract: {
@@ -139,7 +148,7 @@ module Object: {
   let description: t => option<string>
   let astNode: t => option<AST.ObjectTypeDefinitionNode.t>
   let extensionASTNodes: t => option<array<AST.ObjectTypeExtensionNode.t>>
-  let getFields: t =>  Dict.t<Field.t>
+  let getFields: t => Dict.t<Field.t>
   let getInterfaces: t => array<interfaceType>
 }
 

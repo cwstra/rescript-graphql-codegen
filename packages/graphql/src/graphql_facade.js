@@ -1,4 +1,13 @@
-import { isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType } from "graphql"
+import { 
+    isScalarType, 
+    isObjectType, 
+    isInterfaceType, 
+    isUnionType, 
+    isEnumType, 
+    isInputObjectType, 
+    isListType, 
+    isNonNullType, 
+} from "graphql"
 
 export const wrapClassType = classType => {
     switch (true) {
@@ -19,4 +28,14 @@ export const wrapClassType = classType => {
         case isNonNullType(classType):
             return { TAG: "NonNull", _0: classType }
     }
+}
+
+export const match = (value, acc, record) => {
+    let result = acc;
+    visit(value, {
+      enter(node) {
+        result = record[node.kind]?.(node, result)
+      }
+    })
+    return result
 }
