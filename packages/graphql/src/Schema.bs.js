@@ -40,6 +40,27 @@ var ValidForTypeCondition = {
   fromNamed: fromNamed
 };
 
+function fromNamed$1(named) {
+  switch (named.TAG) {
+    case "Object" :
+        return {
+                TAG: "Object",
+                _0: named._0
+              };
+    case "Interface" :
+        return {
+                TAG: "Interface",
+                _0: named._0
+              };
+    default:
+      return ;
+  }
+}
+
+var ValidForField = {
+  fromNamed: fromNamed$1
+};
+
 function parse$1(prim) {
   return Graphql_facade.wrapClassType(prim);
 }
@@ -458,6 +479,7 @@ function getDirective(prim0, prim1) {
 exports.UnionMembers = UnionMembers;
 exports.Named = Named;
 exports.ValidForTypeCondition = ValidForTypeCondition;
+exports.ValidForField = ValidForField;
 exports.Abstract = Abstract;
 exports.Input = Input;
 exports.Output = Output;

@@ -50,7 +50,19 @@ module ValidForTypeCondition = {
     | Named.Object(o) => Some(Object(o))
     | Interface(i) => Some(Interface(i))
     | Union(u) => Some(Union(u))
-    | _ => None
+    | Scalar(_) | Enum(_) | InputObject(_) => None
+    }
+}
+
+module ValidForField = {
+  type t =
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+  let fromNamed = named =>
+    switch named {
+    | Named.Object(o) => Some(Object(o))
+    | Interface(i) => Some(Interface(i))
+    | Union(_) | Scalar(_) | Enum(_) | InputObject(_) => None
     }
 }
 

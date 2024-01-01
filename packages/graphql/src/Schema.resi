@@ -37,6 +37,13 @@ module ValidForTypeCondition: {
   let fromNamed: Named.parsed => option<t>
 }
 
+module ValidForField: {
+  type t =
+    | ...UnionMembers.object
+    | ...UnionMembers.interface
+  let fromNamed: Named.parsed => option<t>
+}
+
 module Abstract: {
   type t
   type parsed =

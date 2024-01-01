@@ -3,7 +3,28 @@
 
 var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.bs.js");
 var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.bs.js");
+var Caml_option = require("rescript/lib/js/caml_option.js");
+var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.bs.js");
 var Caml_exceptions = require("rescript/lib/js/caml_exceptions.js");
+
+var Unknown_field = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Unknown_field");
+
+function getFieldType(baseType, fieldName) {
+  var fields;
+  fields = baseType.TAG === "Object" ? Schema$Graphql.$$Object.getFields(baseType._0) : Schema$Graphql.Interface.getFields(baseType._0);
+  var f = fields[fieldName];
+  if (f !== undefined) {
+    return Schema$Graphql.Field.type_(Caml_option.valFromOption(f));
+  }
+  var tmp;
+  tmp = baseType.TAG === "Object" ? Schema$Graphql.$$Object.name(baseType._0) : Schema$Graphql.Interface.name(baseType._0);
+  throw {
+        RE_EXN_ID: Unknown_field,
+        _1: tmp,
+        _2: fieldName,
+        Error: new Error()
+      };
+}
 
 var Cyclic_fragments = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Cyclic_fragments");
 
@@ -97,6 +118,8 @@ function sortFragmentsTopologically(definitions) {
   };
 }
 
+exports.Unknown_field = Unknown_field;
+exports.getFieldType = getFieldType;
 exports.Cyclic_fragments = Cyclic_fragments;
 exports.sortFragmentsTopologically = sortFragmentsTopologically;
-/* No side effect */
+/* Schema-Graphql Not a pure module */

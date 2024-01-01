@@ -4,29 +4,44 @@ open GraphqlCodegen
 type config = {scalarModule: string}
 
 module RemainingWork = {
-  type gqlVariable = {}
+  open AST
+  type rec inputType = 
+    [ #Scalar(string) 
+    | #Enum(string) 
+    | #Object(Dict.t<inputType>)
+    | #List(inputType)
+    | #NonNull(nn_inputType)]
+  and nn_inputType =
+    [ #Scalar(string) 
+    | #Enum(string) 
+    | #Object(Dict.t<inputType>)
+    | #List(inputType)]
+  type gqlVariable = {
+    name: string,
+    type_: inputType
+  }
   type gqlType = {}
 
   type t =
     | PrintingTypes({
         openScalars: bool,
-        definitions: list<AST.ExecutableDefinitionNode.t>,
+        definitions: list<ExecutableDefinitionNode.t>,
         header: string,
         variables: list<gqlVariable>,
         types: list<gqlType>,
       })
     | PrintingVariables({
         openScalars: bool,
-        definitions: list<AST.ExecutableDefinitionNode.t>,
+        definitions: list<ExecutableDefinitionNode.t>,
         header: string,
         variables: list<gqlVariable>,
       })
     | FinalizeDefinition({
         openScalars: bool,
-        definitions: list<AST.ExecutableDefinitionNode.t>,
+        definitions: list<ExecutableDefinitionNode.t>,
         header: string,
       })
-    | ReadyForNextDefinition({openScalars: bool, definitions: list<AST.ExecutableDefinitionNode.t>})
+    | ReadyForNextDefinition({openScalars: bool, definitions: list<ExecutableDefinitionNode.t>})
     | FinalizeFile({openScalars: bool})
 
   // Assume sorted topologically  -> List.fromArray
@@ -39,14 +54,32 @@ module RemainingWork = {
   let processTypes = (gqlType, schema) => {
     (list{}, [])
   }
-  let processVariable = (gqlType, schema) => {
+  let processVariable = (gqlVariable, schema) => {
     []
   }
   let processHeader = (header, schema) => {
     []
   }
   let processDefinition = (definition, schema) => {
-    (list{}, list{}, "", [])
+    let (variableDefs, selectionSet) = switch definition {
+    | ExecutableDefinitionNode.OperationDefinition(o) =>
+      (o.variableDefinitions, o.selectionSet)
+    | FragmentDefinition(f) => 
+      (f.variableDefinitions, f.selectionSet)
+    }
+    let parseInputType = (t: TypeNode.t) => {
+    } 
+    (list{}, 
+    Array.map(Option.getOr(variableDefs, []), (a): gqlVariable => {
+      let name: string = 
+        VariableDefinitionNode.variable(a)
+        ->VariableNode.name
+        ->NameNode.value
+      {name, type_: []}
+    })
+    ->List.fromArray,
+    "",
+    [])
   }
   let processImports = (openScalars, schema) => {
     []

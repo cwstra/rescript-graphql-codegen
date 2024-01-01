@@ -101,6 +101,16 @@ function build(param, param$1, schemaObject) {
                             case "Enum" :
                                 possibleTypes = [];
                                 break;
+                            case "InputObject" :
+                                throw {
+                                      RE_EXN_ID: "Match_failure",
+                                      _1: [
+                                        "Index.res",
+                                        85,
+                                        28
+                                      ],
+                                      Error: new Error()
+                                    };
                             
                           }
                         } else {

@@ -241,6 +241,42 @@ function takeDropWhile(arr, fn) {
   }
 }
 
+var groupBy = ((arr, fn) => {
+      const result = {}
+      arr.forEach(e => {
+        const key = fn(e)
+        if (key in result) {
+          result[key][1].push(e)
+        } else {
+          result[key] = [e, []]
+        }
+      })
+      return result;
+    });
+
+var uniqBy = ((arr, fn) => {
+      const m = new Map()
+      arr.forEach(e => {
+        const key = fn(e)
+        if (!m.has(key)) {
+          m.set(key, e)
+        }
+      });
+      return new Array(...m.values())
+    });
+
+function headTail(arr) {
+  var match = arr.at(0);
+  var match$1 = arr.slice(1);
+  if (match !== undefined) {
+    return [
+            Caml_option.valFromOption(match),
+            match$1
+          ];
+  }
+  
+}
+
 var $$Array$1 = {
   make: make,
   fromInitializer: fromInitializer,
@@ -262,12 +298,26 @@ var $$Array$1 = {
   filterMap: filterMap,
   keepSome: keepSome,
   findMap: findMap,
-  takeDropWhile: takeDropWhile
+  takeDropWhile: takeDropWhile,
+  groupBy: groupBy,
+  uniqBy: uniqBy,
+  headTail: headTail
 };
 
 var put = ((dict, key, value) => ({...dict, [key]: value}));
 
 var merge = ((d1, d2) => ({...d1, ...d2}));
+
+var mergeWith = ((d1, d2, fn) => {
+      const result = {...d1}
+      Object.entries(d2).forEach(([k, v]) => {
+        result[k] = 
+          k in d1 
+            ? fn(d1[k], d2[k])
+            : d2[k]
+      })
+      return result
+    });
 
 var update = ((dict, key, fn) => ({...dict, [key]: fn(dict[key])}));
 
@@ -275,6 +325,7 @@ var Dict = {
   $$delete: Core__Dict.$$delete,
   put: put,
   merge: merge,
+  mergeWith: mergeWith,
   update: update
 };
 
@@ -304,6 +355,29 @@ function toArray(opt) {
   }
 }
 
+function traverse(arr, fn) {
+  return arr.reduce((function (res, ele) {
+                return Core__Option.flatMap(res, (function (arr) {
+                              return Core__Option.map(fn(ele), (function (a) {
+                                            arr.push(a);
+                                            return arr;
+                                          }));
+                            }));
+              }), []);
+}
+
+function liftConcat(concat, o1, o2) {
+  if (o1 !== undefined) {
+    if (o2 !== undefined) {
+      return Caml_option.some(concat(Caml_option.valFromOption(o1), Caml_option.valFromOption(o2)));
+    } else {
+      return o1;
+    }
+  } else {
+    return o2;
+  }
+}
+
 var $$Option = {
   filter: Core__Option.filter,
   forEach: Core__Option.forEach,
@@ -322,10 +396,12 @@ var $$Option = {
   ok_or: ok_or,
   apply: apply,
   apply2: apply2,
-  toArray: toArray
+  toArray: toArray,
+  traverse: traverse,
+  liftConcat: liftConcat
 };
 
-function traverse(arr, fn) {
+function traverse$1(arr, fn) {
   return arr.reduce((function (res, ele) {
                 return Core__Result.flatMap(res, (function (arr) {
                               return Core__Result.map(fn(ele), (function (a) {
@@ -353,7 +429,7 @@ var Result = {
   compare: Core__Result.compare,
   forEach: Core__Result.forEach,
   mapError: Core__Result.mapError,
-  traverse: traverse
+  traverse: traverse$1
 };
 
 function partition(arr, fn) {

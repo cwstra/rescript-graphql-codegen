@@ -1,12 +1,34 @@
 open Graphql
 
-exception Cyclic_fragments
+exception Unknown_field(string, string)
+
+let getFieldType = (baseType: Schema.ValidForField.t, fieldName) => {
+  let fields = switch baseType {
+  | Object(o) => Schema.Object.getFields(o)
+  | Interface(i) => Schema.Interface.getFields(i)
+  }
+  switch Dict.get(fields, fieldName) {
+  | None =>
+    raise(
+      Unknown_field(
+        switch baseType {
+        | Object(o) => Schema.Object.name(o)
+        | Interface(i) => Schema.Interface.name(i)
+        },
+        fieldName,
+      ),
+    )
+  | Some(f) => Schema.Field.type_(f)
+  }
+}
 
 type fragmentWithDeps = {
   name: string,
   node: AST.FragmentDefinitionNode.t,
   dependsOn: array<string>,
 }
+
+exception Cyclic_fragments
 
 let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.t>) => {
   open AST

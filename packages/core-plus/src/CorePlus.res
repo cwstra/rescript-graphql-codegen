@@ -437,6 +437,38 @@ module Array = {
       (slice(arr, ~start=0, ~end=ind), sliceToEnd(arr, ~start=ind))
     }
   }
+  let groupBy: (array<'t>, 't => string) => Js.Dict.t<('t, array<'t>)> = %raw(`
+    (arr, fn) => {
+      const result = {}
+      arr.forEach(e => {
+        const key = fn(e)
+        if (key in result) {
+          result[key][1].push(e)
+        } else {
+          result[key] = [e, []]
+        }
+      })
+      return result;
+    }
+  `)
+  let uniqBy: (array<'t>, 't => string) => array<'t> = %raw(`
+    (arr, fn) => {
+      const m = new Map()
+      arr.forEach(e => {
+        const key = fn(e)
+        if (!m.has(key)) {
+          m.set(key, e)
+        }
+      });
+      return new Array(...m.values())
+    }
+  `)
+  type nonEmpty<'t> = ('t, array<'t>)
+  let headTail = (arr): option<nonEmpty<_>> =>
+    switch (at(arr, 0), sliceToEnd(arr, ~start=1)) {
+    | (Some(e), es) => Some(e, es)
+    | (None, _) => None
+    }
 }
 module Console = RescriptCore.Console
 module DataView = RescriptCore.DataView
@@ -515,6 +547,18 @@ module Dict = {
   let merge: (t<'t>, t<'t>) => t<'t> = %raw(`
     (d1, d2) => ({...d1, ...d2}) 
   `)
+  let mergeWith: (t<'t>, t<'t>, ('t, 't) => 't) => t<'t> = %raw(`
+    (d1, d2, fn) => {
+      const result = {...d1}
+      Object.entries(d2).forEach(([k, v]) => {
+        result[k] = 
+          k in d1 
+            ? fn(d1[k], d2[k])
+            : d2[k]
+      })
+      return result
+    }
+  `)
   let update: (t<'t>, string, option<'t> => 't) => t<'t> = %raw(`
     (dict, key, fn) => ({...dict, [key]: fn(dict[key])})
   `)
@@ -537,15 +581,38 @@ module Option = {
     | Some(o) => [o]
     | None => []
     }
+  let traverse = (arr, fn): option<array<_>> =>
+    Array.reduce(arr, Some([]), (res, ele) =>
+      flatMap(res, arr =>
+        map(
+          fn(ele),
+          a => {
+            Array.push(arr, a)
+            arr
+          },
+        )
+      )
+    )
+  let liftConcat = (concat, o1, o2) =>
+    switch (o1, o2) {
+    | (Some(v1), Some(v2)) => Some(concat(v1, v2))
+    | (Some(_), None) => o1
+    | (None, _) => o2
+    }
 }
 module Result = {
   include RescriptCore.Result
   let traverse = (arr, fn): result<array<'b>, 'e> =>
-    Array.reduce(arr, Ok([]), (res, ele) => 
-      flatMap(res, arr => map(fn(ele), a => {
-        Array.push(arr, a)
-        arr
-      }))
+    Array.reduce(arr, Ok([]), (res, ele) =>
+      flatMap(res, arr =>
+        map(
+          fn(ele),
+          a => {
+            Array.push(arr, a)
+            arr
+          },
+        )
+      )
     )
 }
 module Either = {
@@ -555,7 +622,7 @@ module Either = {
   let partition = (arr, fn) => {
     let lefts = []
     let rights = []
-    Array.forEach(arr, elem => 
+    Array.forEach(arr, elem =>
       switch fn(elem) {
       | Left(l) => Array.push(lefts, l)
       | Right(r) => Array.push(rights, r)
@@ -566,11 +633,12 @@ module Either = {
 }
 module Ordering = {
   include RescriptCore.Ordering
-  let compare = (a, b) => if a == b {
-    equal
-  } else if a < b {
-    less
-  } else {
-    greater
-  }
+  let compare = (a, b) =>
+    if a == b {
+      equal
+    } else if a < b {
+      less
+    } else {
+      greater
+    }
 }

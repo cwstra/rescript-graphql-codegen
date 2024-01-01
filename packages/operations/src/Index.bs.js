@@ -20,7 +20,7 @@ function processTypes(gqlType, schema) {
         ];
 }
 
-function processVariable(gqlType, schema) {
+function processVariable(gqlVariable, schema) {
   return [];
 }
 
@@ -29,6 +29,7 @@ function processHeader(header, schema) {
 }
 
 function processDefinition(definition, schema) {
+  definition.kind === "OperationDefinition";
   return [
           /* [] */0,
           /* [] */0,
