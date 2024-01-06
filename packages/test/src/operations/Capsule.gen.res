@@ -1,4 +1,25 @@
 module Capsule = {
+  let document = `
+    query Capsule($id: ID!) {
+      capsule(id: $id) {
+        id
+        landings
+        missions {
+          flight
+          name
+          __typename
+        }
+        original_launch
+        reuse_count
+        status
+        type
+        __typename
+      }
+    }
+  `
+  let variables = {
+    id: GraphqlBase.Scalars.ID.t
+  }
   type t_capsule_missions = {
     flight: null<GraphqlBase.Scalars.Int.t>,
     name: null<GraphqlBase.Scalars.String.t>,

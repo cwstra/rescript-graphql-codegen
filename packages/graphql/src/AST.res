@@ -641,3 +641,6 @@ module DocumentNode = {
   @module("graphql")
   external print: t => string = "print"
 }
+
+@module("./graphql_facade")
+external addTypenameToDocument: (DocumentNode.t) => DocumentNode.t = "addTypenameToDocument"

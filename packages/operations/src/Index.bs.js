@@ -3,62 +3,76 @@
 
 var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.bs.js");
 var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.bs.js");
+var Caml_js_exceptions = require("rescript/lib/js/caml_js_exceptions.js");
 var Helpers$GraphqlCodegen = require("@re-graphql-codegen/graphql-codegen/src/Helpers.bs.js");
 var WorkItem$GraphqlCodegenOperations = require("./WorkItem.bs.js");
 
 async function plugin(schema, documents, config) {
-  var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
-                return d.document.definitions;
-              }), (function (d) {
-              switch (d.kind) {
-                case "OperationDefinition" :
-                    return {
-                            TAG: "Right",
-                            _0: {
-                              kind: "OperationDefinition",
-                              loc: d.loc,
-                              operation: d.operation,
-                              name: d.name,
-                              variableDefinitions: d.variableDefinitions,
-                              directives: d.directives,
-                              selectionSet: d.selectionSet
-                            }
-                          };
-                case "FragmentDefinition" :
-                    return {
-                            TAG: "Left",
-                            _0: {
-                              kind: "FragmentDefinition",
-                              loc: d.loc,
-                              name: d.name,
-                              variableDefinitions: d.variableDefinitions,
-                              typeCondition: d.typeCondition,
-                              directives: d.directives,
-                              selectionSet: d.selectionSet
-                            }
-                          };
-                default:
-                  return ;
-              }
-            })), (function (f) {
-          return f;
-        }));
-  var fragments = match[0];
-  var fragmentLookup = Object.fromEntries(fragments.map(function (f) {
-            return [
-                    AST$Graphql.NameNode.value(AST$Graphql.FragmentDefinitionNode.name(f)),
-                    f
-                  ];
+  try {
+    var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
+                  return AST$Graphql.addTypenameToDocument(d.document).definitions;
+                }), (function (d) {
+                switch (d.kind) {
+                  case "OperationDefinition" :
+                      return {
+                              TAG: "Right",
+                              _0: {
+                                kind: "OperationDefinition",
+                                loc: d.loc,
+                                operation: d.operation,
+                                name: d.name,
+                                variableDefinitions: d.variableDefinitions,
+                                directives: d.directives,
+                                selectionSet: d.selectionSet
+                              }
+                            };
+                  case "FragmentDefinition" :
+                      return {
+                              TAG: "Left",
+                              _0: {
+                                kind: "FragmentDefinition",
+                                loc: d.loc,
+                                name: d.name,
+                                variableDefinitions: d.variableDefinitions,
+                                typeCondition: d.typeCondition,
+                                directives: d.directives,
+                                selectionSet: d.selectionSet
+                              }
+                            };
+                  default:
+                    return ;
+                }
+              })), (function (f) {
+            return f;
           }));
-  var sorted = Helpers$GraphqlCodegen.sortFragmentsTopologically(fragments).map(function (prim) {
-          return prim;
-        }).concat(match[1].map(function (prim) {
+    var fragments = match[0];
+    var fragmentLookup = Object.fromEntries(fragments.map(function (f) {
+              return [
+                      AST$Graphql.NameNode.value(AST$Graphql.FragmentDefinitionNode.name(f)),
+                      f
+                    ];
+            }));
+    var sorted = Helpers$GraphqlCodegen.sortFragmentsTopologically(fragments).map(function (prim) {
             return prim;
-          }));
-  var init = WorkItem$GraphqlCodegenOperations.fromDefinitions(sorted);
-  var res = WorkItem$GraphqlCodegenOperations.$$process(init, fragmentLookup, schema, config.baseTypesModule, config.scalarModule);
-  return res;
+          }).concat(match[1].map(function (prim) {
+              return prim;
+            }));
+    var init = WorkItem$GraphqlCodegenOperations.fromDefinitions(sorted);
+    var res = WorkItem$GraphqlCodegenOperations.$$process(init, fragmentLookup, schema, config.baseTypesModule, config.scalarModule, CorePlus.$$Option.getOr(config.nullType, "null"), CorePlus.$$Option.getOr(config.listType, "array"));
+    return res;
+  }
+  catch (raw_e){
+    var e = Caml_js_exceptions.internalToOCamlException(raw_e);
+    console.log(e);
+    throw e;
+  }
 }
 
+var config = {
+  scalarModule: "GraphqlBase.Scalars",
+  baseTypesModule: "GraphqlBase.Gen"
+};
+
+exports.config = config;
 exports.plugin = plugin;
-/* Helpers-GraphqlCodegen Not a pure module */
+/* AST-Graphql Not a pure module */

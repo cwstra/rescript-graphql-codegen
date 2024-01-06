@@ -7,6 +7,8 @@ const {
     isInputObjectType, 
     isListType, 
     isNonNullType, 
+    Kind,
+    visit
 } = require("graphql")
 
 exports.wrapClassType = classType => {
@@ -39,3 +41,63 @@ exports.match = (value, acc, record) => {
     })
     return result
 }
+
+// Ripped from https://github.com/apollographql/apollo-client/blob/eb2cfee1846b6271e438d1a268e187151e691db4/src/utilities/graphql/transform.ts#L453
+const TYPENAME_FIELD = {
+  kind: Kind.FIELD,
+  name: {
+    kind: Kind.NAME,
+    value: "__typename"
+  }
+}
+exports.addTypenameToDocument = (document) =>
+  visit(document, {
+      SelectionSet: {
+        enter(node, _key, parent) {
+          // Don't add __typename to OperationDefinitions.
+          if (
+            parent &&
+            parent.kind === Kind.OPERATION_DEFINITION
+          ) {
+            return;
+          }
+
+          // No changes if no selections.
+          const { selections } = node;
+          if (!selections) {
+            return;
+          }
+
+          // If selections already have a __typename, or are part of an
+          // introspection query, do nothing.
+          const skip = selections.some((selection) => {
+            return (
+              selection.kind === Kind.Field &&
+              (selection.name.value === "__typename" ||
+                selection.name.value.lastIndexOf("__", 0) === 0)
+            );
+          });
+          if (skip) {
+            return;
+          }
+
+          /*
+          // If this SelectionSet is @export-ed as an input variable, it should
+          // not have a __typename field (see issue #4691).
+          if (
+            parent.kind === Kind.Field &&
+            parent.directives &&
+            parent.directives.some((d) => d.name.value === "export")
+          ) {
+            return;
+          }
+          */
+
+          // Create and return a new SelectionSet with a __typename Field.
+          return {
+            ...node,
+            selections: [...selections, TYPENAME_FIELD],
+          };
+        },
+      },
+    })

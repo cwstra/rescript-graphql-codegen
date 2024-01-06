@@ -38,7 +38,38 @@ module BaseInput = {
     | Object(string)
 }
 
-module InputType = WithGqlWrappers(BaseInput)
+module InputType = {
+  include WithGqlWrappers(BaseInput)
+  let traverse = (
+    base: t,
+    ~onScalar,
+    ~onEnum,
+    ~onObject,
+    ~onList= t=>t,
+    ~onNull= t=>t,
+    ~onNonNull= t=>t
+  ) => {
+    let rec down = (t, wrappers) =>
+      switch t {
+        | Base(Scalar(s)) => (onScalar(s), list{onNull, ...wrappers})
+        | Base(Enum(e)) => (onEnum(e), list{onNull, ...wrappers})
+        | Base(Object(o)) => (onObject(o), list{onNull, ...wrappers})
+        | List(l) => down(l, list{onList, onNull, ...wrappers})
+        | NonNull(nn) => switch nn {
+          | Base_nn(Scalar(s)) => (onScalar(s), list{onNonNull, ...wrappers})
+          | Base_nn(Enum(e)) => (onEnum(e), list{onNonNull, ...wrappers})
+          | Base_nn(Object(o)) => (onObject(o), list{onNonNull, ...wrappers})
+          | List_nn(l) => down(l, list{onList, onNonNull, ...wrappers})
+        }
+      }
+    let rec up = ((v, wrappers)) =>
+      switch wrappers {
+        | list{} => v
+        | list{fst, ...rst} => up((fst(v), rst))
+      }
+    up(down(base, list{}))
+  }
+}
 
 module BaseUnresolvedOutput = {
   type selectionSet = {
@@ -104,6 +135,7 @@ type t =
   | PrintString(string)
   | PrintType({namePath: array<string>, type_: BaseUnresolvedOutput.t})
   | PrintVariables({fields: Dict.t<InputType.t>})
+  | PrintDocument(ExecutableDefinitionNode.t)
   | PrintDefinition(ExecutableDefinitionNode.t)
 
 let fromDefinitions = definitions =>
@@ -118,12 +150,25 @@ let joinPath = path => {
   Array.joinWith(path, sep)
 }
 
+let nonTypenameSelections = (selections) =>
+  SelectionSetNode.selections(selections)
+  ->Array.filter(s =>
+    switch s {
+      |Field({name}) => 
+        NameNode.value(name) != "__typename"
+      | _ => true
+    }
+  )
+
+
 let process = (
   ~steps,
   ~fragments: Dict.t<FragmentDefinitionNode.t>,
   ~schema,
   ~baseTypesModule,
   ~scalarModule,
+  ~nullType,
+  ~listType
 ) => {
   let formatModuleName = (path) => {
     let ls = 
@@ -188,7 +233,7 @@ let process = (
             Dict.get(fragments, fragmentName)
             ->Option.getOrExn(Missing_fragment(fragmentName))
             ->FragmentDefinitionNode.selectionSet
-            ->SelectionSetNode.selections
+            ->nonTypenameSelections
             ->Array.headTail
             ->Option.getOrExn(Empty_fragment(fragmentName))
           UnresolvedOutputType.combineLike((
@@ -213,7 +258,7 @@ let process = (
             ->Schema.ValidForTypeCondition.fromNamed
             ->Option.getOrExn(Invalid_type_condition(typeName))
           let merged =
-            SelectionSetNode.selections(selectionSet)
+            nonTypenameSelections(selectionSet)
             ->Array.map(extractFields(_, selectionType))
             ->Array.headTail
             ->Option.getOrExn(Empty_inline_fragment)
@@ -240,7 +285,7 @@ let process = (
         }
       | InlineFragment({selectionSet}) =>
         let (fstSelection, rstSelections) =
-          SelectionSetNode.selections(selectionSet)
+          nonTypenameSelections(selectionSet)
           ->Array.headTail
           ->Option.getOrExn(Empty_inline_fragment)
         UnresolvedOutputType.combineLike((
@@ -280,14 +325,14 @@ let process = (
             ),
             ~onList=e => 
               switch e {
-              | Left(n, a) => Left(n, `array<${a}>`)
-              | Right(n, t, w) => Right(n, t, s => `array<${w(s)}>`)
+              | Left(n, a) => Left(n, `${listType}<${a}>`)
+              | Right(n, t, w) => Right(n, t, s => `${listType}<${w(s)}>`)
               }
             ,
             ~onNull=e =>
               switch e {
-              | Left(n, a) => Left(n, `null<${a}>`)
-              | Right(n, t, w) => Right(n, t, s => `null<${w(s)}>`)
+              | Left(n, a) => Left(n, `${nullType}<${a}>`)
+              | Right(n, t, w) => Right(n, t, s => `${nullType}<${w(s)}>`)
               },
           )
         let parseSelectionSet = (
@@ -303,7 +348,7 @@ let process = (
               Dict.get(lookup, k)
               ->Option.getOrExn(Unknown_field(k))
               ->Schema.Field.type_
-            let selections = Array.flatMap(v, SelectionSetNode.selections)
+            let selections = Array.flatMap(v, nonTypenameSelections)
             let (value, neededType) = switch (Array.headTail(selections), extractNamed(fieldType)) {
             | (None, Left(_, str)) => (str, None)
             | (Some(fst, rst), Right(_, selections, wrapper)) => {
@@ -347,13 +392,13 @@ let process = (
                 }
               Option.mapOr(
                 selectionSet,
-                ([`    | ${String.capitalize(typeConditionName)}`], []),
+                ([`      | ${String.capitalize(typeConditionName)}`], []),
                 ss => {
                   let fields = parseSelectionSet(ss, ~midfix=typeConditionName)
                   let lines = Array.map(fields, ((s,_))=>s)
                   let bases = Array.filterMap(fields, ((_, o)) => o)
                   (Array.concatMany([], [
-                    [`    | ${String.capitalize(typeConditionName)}({`],
+                    [`      | ${String.capitalize(typeConditionName)}({`],
                     Array.map(lines, l => `    ${l}`),
                     ["      })"]
                   ]), 
@@ -364,6 +409,7 @@ let process = (
           let moduleName = formatModuleName(namePath)
           (Array.concatMany([], [
               [`  module ${moduleName} = {`],
+              [`    @tag("__typename")`],
               [`    type t =`],
               Array.flatMap(results, ((l, _)) => l),
               ["  }"],
@@ -375,9 +421,32 @@ let process = (
         (List.fromArray(bases), lines)
       }
     | PrintVariables({fields}) => {
-        let a = 1
-        (list{}, [])
+        (list{}, Array.concatMany([], [
+          ["  let variables = {"],
+          Dict.toArray(fields)
+          ->Array.map(((key, inputType)) =>  {
+            let value =
+              InputType.traverse(
+                inputType,
+                ~onScalar= s=>`${scalarModule}.${s}.t`,
+                ~onEnum= s=>`${baseTypesModule}.${s}.t`,
+                ~onObject= s=>`${baseTypesModule}.${s}.t`,
+                ~onList= s=>`${listType}<${s}>`,
+                ~onNull= s=>`${nullType}<${s}>`
+              )
+            `    ${key}: ${value}`
+          }),
+          ["  }"]
+        ]))
       }
+    | PrintDocument(document) =>
+      (list{}, Array.concatMany([], [
+        ["  let document = `"],
+        AST.ExecutableDefinitionNode.print(document)
+        ->String.split("\n")
+        ->Array.map(l => `    ${l}`),
+        ["  `"]
+      ]))
     | PrintDefinition(definition) => {
         let definitionName = switch definition {
         | OperationDefinition(o) => Option.map(o.name, NameNode.value)
@@ -416,7 +485,7 @@ let process = (
         })->Dict.fromArray
         let selectionSteps =
           selectionSet
-          ->SelectionSetNode.selections
+          ->nonTypenameSelections
           ->Array.headTail
           ->Option.getOrExn(Empty_definition(Option.getOr(definitionName, "<unnamed operation>")))
           ->(extractSelectionType(baseType, _))
@@ -429,7 +498,8 @@ let process = (
               type_: selectionSteps,
             }),
             PrintVariables({fields: variables}),
-            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`),
+            PrintDocument(definition),
+            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)
           },
           ["}"],
         )

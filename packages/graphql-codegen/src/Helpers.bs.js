@@ -126,4 +126,4 @@ exports.Unknown_field = Unknown_field;
 exports.getFieldType = getFieldType;
 exports.Cyclic_fragments = Cyclic_fragments;
 exports.sortFragmentsTopologically = sortFragmentsTopologically;
-/* Schema-Graphql Not a pure module */
+/* AST-Graphql Not a pure module */
