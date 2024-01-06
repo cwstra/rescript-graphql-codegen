@@ -8,4 +8,4 @@ This monorepo contains packages for a few purposes, in varying states of complet
 ## WiP
 - `operations`: Baseline Rescript codegen plugin. Generates variable and output types.
 ## TODO
-- `near-re-operation-file`: Planned output preset; the `near-operation-file` preset automatic generates Typescript imports, which need to be prevented with certain specific values in the `presetConfig`.Ideally, this would be a very similar equivalent that requires no special config.
+- `near-re-operation-file`: Planned output preset; the `near-operation-file` preset automatic generates Typescript imports, which need to be prevented with certain specific values in the `presetConfig. Ideally, this would be a very similar equivalent that requires no special config.
