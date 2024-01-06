@@ -8,6 +8,7 @@ var Caml_option = require("rescript/lib/js/caml_option.js");
 var Core__Error = require("@rescript/core/src/Core__Error.bs.js");
 var Core__Option = require("@rescript/core/src/Core__Option.bs.js");
 var Core__Result = require("@rescript/core/src/Core__Result.bs.js");
+var Core__String = require("@rescript/core/src/Core__String.bs.js");
 var Core__Ordering = require("@rescript/core/src/Core__Ordering.bs.js");
 
 function $$setTimeout$1(prim0, prim1) {
@@ -378,6 +379,13 @@ function liftConcat(concat, o1, o2) {
   }
 }
 
+function getOrExn(o, e) {
+  if (o !== undefined) {
+    return Caml_option.valFromOption(o);
+  }
+  throw e;
+}
+
 var $$Option = {
   filter: Core__Option.filter,
   forEach: Core__Option.forEach,
@@ -398,7 +406,8 @@ var $$Option = {
   apply2: apply2,
   toArray: toArray,
   traverse: traverse,
-  liftConcat: liftConcat
+  liftConcat: liftConcat,
+  getOrExn: getOrExn
 };
 
 function traverse$1(arr, fn) {
@@ -472,6 +481,19 @@ var Ordering = {
   compare: compare$1
 };
 
+function capitalize(s) {
+  return s.charAt(0).toUpperCase().concat(s.slice(1));
+}
+
+var $$String = {
+  equal: Core__String.equal,
+  compare: Core__String.compare,
+  indexOfOpt: Core__String.indexOfOpt,
+  lastIndexOfOpt: Core__String.lastIndexOfOpt,
+  searchOpt: Core__String.searchOpt,
+  capitalize: capitalize
+};
+
 var Console;
 
 var $$DataView;
@@ -497,8 +519,6 @@ var $$Object;
 var $$Promise;
 
 var $$RegExp;
-
-var $$String;
 
 var $$Symbol;
 
@@ -582,7 +602,6 @@ exports.Nullable = Nullable;
 exports.$$Object = $$Object;
 exports.$$Promise = $$Promise;
 exports.$$RegExp = $$RegExp;
-exports.$$String = $$String;
 exports.$$Symbol = $$Symbol;
 exports.Type = Type;
 exports.$$JSON = $$JSON;
@@ -617,4 +636,5 @@ exports.$$Option = $$Option;
 exports.Result = Result;
 exports.Either = Either;
 exports.Ordering = Ordering;
+exports.$$String = $$String;
 /* No side effect */

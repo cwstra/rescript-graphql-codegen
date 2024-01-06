@@ -2,12 +2,12 @@
 'use strict';
 
 
-function loc(r) {
-  return r.loc;
+function loc(param) {
+  return param.loc;
 }
 
-function value(r) {
-  return r.value;
+function value(param) {
+  return param.value;
 }
 
 var NameNode = {
@@ -15,12 +15,12 @@ var NameNode = {
   value: value
 };
 
-function loc$1(r) {
-  return r.loc;
+function loc$1(param) {
+  return param.loc;
 }
 
-function name(r) {
-  return r.name;
+function name(param) {
+  return param.name;
 }
 
 var VariableNode = {
@@ -28,12 +28,12 @@ var VariableNode = {
   name: name
 };
 
-function loc$2(r) {
-  return r.loc;
+function loc$2(param) {
+  return param.loc;
 }
 
-function value$1(r) {
-  return r.value;
+function value$1(param) {
+  return param.value;
 }
 
 var IntValueNode = {
@@ -41,12 +41,12 @@ var IntValueNode = {
   value: value$1
 };
 
-function loc$3(r) {
-  return r.loc;
+function loc$3(param) {
+  return param.loc;
 }
 
-function value$2(r) {
-  return r.value;
+function value$2(param) {
+  return param.value;
 }
 
 var FloatValueNode = {
@@ -54,16 +54,16 @@ var FloatValueNode = {
   value: value$2
 };
 
-function loc$4(r) {
-  return r.loc;
+function loc$4(param) {
+  return param.loc;
 }
 
-function value$3(r) {
-  return r.value;
+function value$3(param) {
+  return param.value;
 }
 
-function block(r) {
-  return r.block;
+function block(param) {
+  return param.block;
 }
 
 var StringValueNode = {
@@ -72,12 +72,12 @@ var StringValueNode = {
   block: block
 };
 
-function loc$5(r) {
-  return r.loc;
+function loc$5(param) {
+  return param.loc;
 }
 
-function value$4(r) {
-  return r.value;
+function value$4(param) {
+  return param.value;
 }
 
 var BooleanValueNode = {
@@ -85,20 +85,20 @@ var BooleanValueNode = {
   value: value$4
 };
 
-function loc$6(r) {
-  return r.loc;
+function loc$6(param) {
+  return param.loc;
 }
 
 var NullValueNode = {
   loc: loc$6
 };
 
-function loc$7(r) {
-  return r.loc;
+function loc$7(param) {
+  return param.loc;
 }
 
-function value$5(r) {
-  return r.value;
+function value$5(param) {
+  return param.value;
 }
 
 var EnumValueNode = {
@@ -108,12 +108,12 @@ var EnumValueNode = {
 
 var ValueNode = {};
 
-function loc$8(r) {
-  return r.loc;
+function loc$8(param) {
+  return param.loc;
 }
 
-function name$1(r) {
-  return r.name;
+function name$1(param) {
+  return param.name;
 }
 
 var NamedTypeNode = {
@@ -123,16 +123,16 @@ var NamedTypeNode = {
 
 var TypeNode = {};
 
-function loc$9(a) {
-  return a.loc;
+function loc$9(param) {
+  return param.loc;
 }
 
-function name$2(a) {
-  return a.name;
+function name$2(param) {
+  return param.name;
 }
 
-function value$6(a) {
-  return a.value;
+function value$6(param) {
+  return param.value;
 }
 
 var ArgumentNode = {
@@ -141,16 +141,16 @@ var ArgumentNode = {
   value: value$6
 };
 
-function loc$10(a) {
-  return a.loc;
+function loc$10(param) {
+  return param.loc;
 }
 
-function name$3(a) {
-  return a.name;
+function name$3(param) {
+  return param.name;
 }
 
-function $$arguments(a) {
-  return a.arguments;
+function $$arguments(param) {
+  return param.arguments;
 }
 
 var DirectiveNode = {
@@ -159,24 +159,24 @@ var DirectiveNode = {
   $$arguments: $$arguments
 };
 
-function loc$11(a) {
-  return a.loc;
+function loc$11(param) {
+  return param.loc;
 }
 
-function variable(a) {
-  return a.variable;
+function variable(param) {
+  return param.variable;
 }
 
-function type_(a) {
-  return a.type_;
+function type_(param) {
+  return param.type;
 }
 
-function defaultValue(a) {
-  return a.defaultValue;
+function defaultValue(param) {
+  return param.defaultValue;
 }
 
-function directives(a) {
-  return a.directives;
+function directives(param) {
+  return param.directives;
 }
 
 var VariableDefinitionNode = {
@@ -187,12 +187,12 @@ var VariableDefinitionNode = {
   directives: directives
 };
 
-function loc$12(s) {
-  return s.loc;
+function loc$12(param) {
+  return param.loc;
 }
 
-function selections(s) {
-  return s.selections;
+function selections(param) {
+  return param.selections;
 }
 
 var SelectionSetNode = {
@@ -200,16 +200,16 @@ var SelectionSetNode = {
   selections: selections
 };
 
-function loc$13(o) {
-  return o.loc;
+function loc$13(param) {
+  return param.loc;
 }
 
-function operation(o) {
-  return o.operation;
+function operation(param) {
+  return param.operation;
 }
 
-function type_$1(o) {
-  return o.type_;
+function type_$1(param) {
+  return param.type;
 }
 
 var OperationTypeDefinitionNode = {
@@ -218,28 +218,28 @@ var OperationTypeDefinitionNode = {
   type_: type_$1
 };
 
-function loc$14(i) {
-  return i.loc;
+function loc$14(param) {
+  return param.loc;
 }
 
-function description(i) {
-  return i.description;
+function description(param) {
+  return param.description;
 }
 
-function name$4(i) {
-  return i.name;
+function name$4(param) {
+  return param.name;
 }
 
-function type_$2(i) {
-  return i.type_;
+function type_$2(param) {
+  return param.type;
 }
 
-function defaultValue$1(i) {
-  return i.defaultValue;
+function defaultValue$1(param) {
+  return param.defaultValue;
 }
 
-function directives$1(i) {
-  return i.directives;
+function directives$1(param) {
+  return param.directives;
 }
 
 var InputValueDefinitionNode = {
@@ -251,28 +251,28 @@ var InputValueDefinitionNode = {
   directives: directives$1
 };
 
-function loc$15(i) {
-  return i.loc;
+function loc$15(param) {
+  return param.loc;
 }
 
-function description$1(i) {
-  return i.description;
+function description$1(param) {
+  return param.description;
 }
 
-function name$5(i) {
-  return i.name;
+function name$5(param) {
+  return param.name;
 }
 
-function $$arguments$1(i) {
-  return i.arguments;
+function $$arguments$1(param) {
+  return param.arguments;
 }
 
-function type_$3(i) {
-  return i.type_;
+function type_$3(param) {
+  return param.type;
 }
 
-function directives$2(i) {
-  return i.directives;
+function directives$2(param) {
+  return param.directives;
 }
 
 var FieldDefinitionNode = {
@@ -284,20 +284,20 @@ var FieldDefinitionNode = {
   directives: directives$2
 };
 
-function loc$16(i) {
-  return i.loc;
+function loc$16(param) {
+  return param.loc;
 }
 
-function description$2(i) {
-  return i.description;
+function description$2(param) {
+  return param.description;
 }
 
-function name$6(i) {
-  return i.name;
+function name$6(param) {
+  return param.name;
 }
 
-function directives$3(i) {
-  return i.directives;
+function directives$3(param) {
+  return param.directives;
 }
 
 var EnumValueDefinitionNode = {
@@ -307,28 +307,28 @@ var EnumValueDefinitionNode = {
   directives: directives$3
 };
 
-function loc$17(i) {
-  return i.loc;
+function loc$17(param) {
+  return param.loc;
 }
 
-function operation$1(i) {
-  return i.operation;
+function operation$1(param) {
+  return param.operation;
 }
 
-function name$7(i) {
-  return i.name;
+function name$7(param) {
+  return param.name;
 }
 
-function variableDefinitions(i) {
-  return i.variableDefinitions;
+function variableDefinitions(param) {
+  return param.variableDefinitions;
 }
 
-function directives$4(i) {
-  return i.directives;
+function directives$4(param) {
+  return param.directives;
 }
 
-function selectionSet(i) {
-  return i.selectionSet;
+function selectionSet(param) {
+  return param.selectionSet;
 }
 
 var OperationDefinitionNode = {
@@ -340,28 +340,28 @@ var OperationDefinitionNode = {
   selectionSet: selectionSet
 };
 
-function loc$18(f) {
-  return f.loc;
+function loc$18(param) {
+  return param.loc;
 }
 
-function name$8(f) {
-  return f.name;
+function name$8(param) {
+  return param.name;
 }
 
-function variableDefinitions$1(f) {
-  return f.variableDefinitions;
+function variableDefinitions$1(param) {
+  return param.variableDefinitions;
 }
 
-function typeCondition(f) {
-  return f.typeCondition;
+function typeCondition(param) {
+  return param.typeCondition;
 }
 
-function directives$5(f) {
-  return f.directives;
+function directives$5(param) {
+  return param.directives;
 }
 
-function selectionSet$1(f) {
-  return f.selectionSet;
+function selectionSet$1(param) {
+  return param.selectionSet;
 }
 
 var FragmentDefinitionNode = {
@@ -375,16 +375,16 @@ var FragmentDefinitionNode = {
 
 var ExecutableDefinitionNode = {};
 
-function loc$19(f) {
-  return f.loc;
+function loc$19(param) {
+  return param.loc;
 }
 
-function directives$6(f) {
-  return f.directives;
+function directives$6(param) {
+  return param.directives;
 }
 
-function operationTypes(f) {
-  return f.operationTypes;
+function operationTypes(param) {
+  return param.operationTypes;
 }
 
 var SchemaDefinitionNode = {
@@ -393,20 +393,20 @@ var SchemaDefinitionNode = {
   operationTypes: operationTypes
 };
 
-function loc$20(f) {
-  return f.loc;
+function loc$20(param) {
+  return param.loc;
 }
 
-function description$3(f) {
-  return f.description;
+function description$3(param) {
+  return param.description;
 }
 
-function name$9(f) {
-  return f.name;
+function name$9(param) {
+  return param.name;
 }
 
-function directives$7(f) {
-  return f.directives;
+function directives$7(param) {
+  return param.directives;
 }
 
 var ScalarTypeDefinitionNode = {
@@ -416,28 +416,28 @@ var ScalarTypeDefinitionNode = {
   directives: directives$7
 };
 
-function loc$21(f) {
-  return f.loc;
+function loc$21(param) {
+  return param.loc;
 }
 
-function description$4(f) {
-  return f.description;
+function description$4(param) {
+  return param.description;
 }
 
-function name$10(f) {
-  return f.name;
+function name$10(param) {
+  return param.name;
 }
 
-function interfaces(f) {
-  return f.interfaces;
+function interfaces(param) {
+  return param.interfaces;
 }
 
-function directives$8(f) {
-  return f.directives;
+function directives$8(param) {
+  return param.directives;
 }
 
-function fields(f) {
-  return f.fields;
+function fields(param) {
+  return param.fields;
 }
 
 var ObjectTypeDefinitionNode = {
@@ -449,24 +449,24 @@ var ObjectTypeDefinitionNode = {
   fields: fields
 };
 
-function loc$22(f) {
-  return f.loc;
+function loc$22(param) {
+  return param.loc;
 }
 
-function description$5(f) {
-  return f.description;
+function description$5(param) {
+  return param.description;
 }
 
-function name$11(f) {
-  return f.name;
+function name$11(param) {
+  return param.name;
 }
 
-function directives$9(f) {
-  return f.directives;
+function directives$9(param) {
+  return param.directives;
 }
 
-function fields$1(f) {
-  return f.fields;
+function fields$1(param) {
+  return param.fields;
 }
 
 var InterfaceTypeDefinitionNode = {
@@ -477,24 +477,24 @@ var InterfaceTypeDefinitionNode = {
   fields: fields$1
 };
 
-function loc$23(f) {
-  return f.loc;
+function loc$23(param) {
+  return param.loc;
 }
 
-function description$6(f) {
-  return f.description;
+function description$6(param) {
+  return param.description;
 }
 
-function name$12(f) {
-  return f.name;
+function name$12(param) {
+  return param.name;
 }
 
-function directives$10(f) {
-  return f.directives;
+function directives$10(param) {
+  return param.directives;
 }
 
-function types(f) {
-  return f.types;
+function types(param) {
+  return param.types;
 }
 
 var UnionTypeDefinitionNode = {
@@ -505,24 +505,24 @@ var UnionTypeDefinitionNode = {
   types: types
 };
 
-function loc$24(f) {
-  return f.loc;
+function loc$24(param) {
+  return param.loc;
 }
 
-function description$7(f) {
-  return f.description;
+function description$7(param) {
+  return param.description;
 }
 
-function name$13(f) {
-  return f.name;
+function name$13(param) {
+  return param.name;
 }
 
-function directives$11(f) {
-  return f.directives;
+function directives$11(param) {
+  return param.directives;
 }
 
-function types$1(f) {
-  return f.values;
+function values(param) {
+  return param.values;
 }
 
 var EnumTypeDefinitionNode = {
@@ -530,27 +530,27 @@ var EnumTypeDefinitionNode = {
   description: description$7,
   name: name$13,
   directives: directives$11,
-  types: types$1
+  values: values
 };
 
-function loc$25(f) {
-  return f.loc;
+function loc$25(param) {
+  return param.loc;
 }
 
-function description$8(f) {
-  return f.description;
+function description$8(param) {
+  return param.description;
 }
 
-function name$14(f) {
-  return f.name;
+function name$14(param) {
+  return param.name;
 }
 
-function directives$12(f) {
-  return f.directives;
+function directives$12(param) {
+  return param.directives;
 }
 
-function fields$2(f) {
-  return f.fields;
+function fields$2(param) {
+  return param.fields;
 }
 
 var InputObjectTypeDefinitionNode = {
@@ -563,28 +563,28 @@ var InputObjectTypeDefinitionNode = {
 
 var TypeDefinitionNode = {};
 
-function loc$26(f) {
-  return f.loc;
+function loc$26(param) {
+  return param.loc;
 }
 
-function description$9(f) {
-  return f.description;
+function description$9(param) {
+  return param.description;
 }
 
-function name$15(f) {
-  return f.name;
+function name$15(param) {
+  return param.name;
 }
 
-function $$arguments$2(f) {
-  return f.arguments;
+function $$arguments$2(param) {
+  return param.arguments;
 }
 
-function repeatable(f) {
-  return f.repeatable;
+function repeatable(param) {
+  return param.repeatable;
 }
 
-function locations(f) {
-  return f.locations;
+function locations(param) {
+  return param.locations;
 }
 
 var DirectiveDefinitionNode = {
@@ -598,16 +598,16 @@ var DirectiveDefinitionNode = {
 
 var TypeSystemDefinitionNode = {};
 
-function loc$27(f) {
-  return f.loc;
+function loc$27(param) {
+  return param.loc;
 }
 
-function directives$13(f) {
-  return f.directives;
+function directives$13(param) {
+  return param.directives;
 }
 
-function operationTypes$1(f) {
-  return f.operationTypes;
+function operationTypes$1(param) {
+  return param.operationTypes;
 }
 
 var SchemaExtensionNode = {
@@ -616,16 +616,16 @@ var SchemaExtensionNode = {
   operationTypes: operationTypes$1
 };
 
-function loc$28(f) {
-  return f.loc;
+function loc$28(param) {
+  return param.loc;
 }
 
-function name$16(f) {
-  return f.name;
+function name$16(param) {
+  return param.name;
 }
 
-function directives$14(f) {
-  return f.directives;
+function directives$14(param) {
+  return param.directives;
 }
 
 var ScalarTypeExtensionNode = {
@@ -634,24 +634,24 @@ var ScalarTypeExtensionNode = {
   directives: directives$14
 };
 
-function loc$29(f) {
-  return f.loc;
+function loc$29(param) {
+  return param.loc;
 }
 
-function name$17(f) {
-  return f.name;
+function name$17(param) {
+  return param.name;
 }
 
-function interfaces$1(f) {
-  return f.interfaces;
+function interfaces$1(param) {
+  return param.interfaces;
 }
 
-function directives$15(f) {
-  return f.directives;
+function directives$15(param) {
+  return param.directives;
 }
 
-function fields$3(f) {
-  return f.fields;
+function fields$3(param) {
+  return param.fields;
 }
 
 var ObjectTypeExtensionNode = {
@@ -662,20 +662,20 @@ var ObjectTypeExtensionNode = {
   fields: fields$3
 };
 
-function loc$30(f) {
-  return f.loc;
+function loc$30(param) {
+  return param.loc;
 }
 
-function name$18(f) {
-  return f.name;
+function name$18(param) {
+  return param.name;
 }
 
-function directives$16(f) {
-  return f.directives;
+function directives$16(param) {
+  return param.directives;
 }
 
-function fields$4(f) {
-  return f.fields;
+function fields$4(param) {
+  return param.fields;
 }
 
 var InterfaceTypeExtensionNode = {
@@ -685,66 +685,66 @@ var InterfaceTypeExtensionNode = {
   fields: fields$4
 };
 
-function loc$31(f) {
-  return f.loc;
+function loc$31(param) {
+  return param.loc;
 }
 
-function name$19(f) {
-  return f.name;
+function name$19(param) {
+  return param.name;
 }
 
-function directives$17(f) {
-  return f.directives;
+function directives$17(param) {
+  return param.directives;
 }
 
-function types$2(f) {
-  return f.types;
+function types$1(param) {
+  return param.types;
 }
 
 var UnionTypeExtensionNode = {
   loc: loc$31,
   name: name$19,
   directives: directives$17,
-  types: types$2
+  types: types$1
 };
 
-function loc$32(f) {
-  return f.loc;
+function loc$32(param) {
+  return param.loc;
 }
 
-function name$20(f) {
-  return f.name;
+function name$20(param) {
+  return param.name;
 }
 
-function directives$18(f) {
-  return f.directives;
+function directives$18(param) {
+  return param.directives;
 }
 
-function values(f) {
-  return f.values;
+function values$1(param) {
+  return param.values;
 }
 
 var EnumTypeExtensionNode = {
   loc: loc$32,
   name: name$20,
   directives: directives$18,
-  values: values
+  values: values$1
 };
 
-function loc$33(f) {
-  return f.loc;
+function loc$33(param) {
+  return param.loc;
 }
 
-function name$21(f) {
-  return f.name;
+function name$21(param) {
+  return param.name;
 }
 
-function directives$19(f) {
-  return f.directives;
+function directives$19(param) {
+  return param.directives;
 }
 
-function fields$5(f) {
-  return f.fields;
+function fields$5(param) {
+  return param.fields;
 }
 
 var InputObjectTypeExtensionNode = {

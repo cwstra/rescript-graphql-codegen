@@ -1,0 +1,8 @@
+query Union {
+  get_union {
+    ... on MemberA {
+      id
+      a
+    }
+  }
+}

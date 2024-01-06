@@ -1,5 +1,4 @@
 open Graphql
-open GraphqlCodegen
 open AST
 
 exception Unknown_type(string)
@@ -7,7 +6,15 @@ exception Missing_fragment(string)
 exception Non_input_type(string)
 exception Empty_fragment(string)
 exception Empty_inline_fragment
+exception Invalid_inline_fragment(string)
 exception Invalid_type_condition(string)
+exception Selection_on_union(string)
+exception Empty_definition(string)
+exception Missing_base_type(operationTypeNode)
+exception Unknown_field(string)
+exception Composite_type_without_fields(string)
+exception Simple_type_with_fields(string)
+exception Invalid_type_name(array<string>)
 
 module type Container = {
   type t
@@ -35,10 +42,11 @@ module InputType = WithGqlWrappers(BaseInput)
 
 module BaseUnresolvedOutput = {
   type selectionSet = {
-    type_: TypeNode.t,
+    type_: Schema.ValidForField.t,
     fields: Dict.t<array<SelectionSetNode.t>>,
   }
   type union = {
+    type_: Schema.Abstract.t,
     base?: selectionSet,
     members: Dict.t<selectionSet>,
   }
@@ -49,34 +57,13 @@ module BaseUnresolvedOutput = {
 
 module UnresolvedOutputType = {
   include WithGqlWrappers(BaseUnresolvedOutput)
-  /*
-  let combineSelectionSetFields = (
-    fields1: array<SelectionSetNode.t>, 
-    fields2: array<SelectionSetNode.t>
-  ) => 
-    Array.concat(fields1, fields2)
-          ->Array.groupBy(f => f.name)
-          ->Dict.valuesToArray
-          ->Array.map(
-            (({name, selectionSets: ?fst}, vs)) =>  {
-              let selectionSets =
-                Array.reduce(vs, fst, (acc, {selectionSets: ?ss}) =>
-                  switch (acc, ss) {
-                    | (Some(a1), Some(a2)) => Some(Array.concat(a1, a2))
-                    | (Some(a), _) => Some(a)
-                    | (_, ma) => ma
-                  })
-              {BaseUnresolvedOutput.name, selectionSets: ?selectionSets}
-            })
- */
 
-  let combineLikeSelectionSets = (
+  let combineSelectionSets = (
     {type_, fields: f1}: BaseUnresolvedOutput.selectionSet,
     {fields: f2}: BaseUnresolvedOutput.selectionSet,
   ) => {
     BaseUnresolvedOutput.type_,
     fields: Dict.mergeWith(f1, f2, Array.concat),
-    //combineSelectionSetFields(f1, f2)
   }
 
   let mergeSelectionSets = (
@@ -88,8 +75,9 @@ module UnresolvedOutputType = {
     })
 
   let combineUnions = (u1: BaseUnresolvedOutput.union, u2: BaseUnresolvedOutput.union) => {
-    BaseUnresolvedOutput.base: ?Option.liftConcat(combineLikeSelectionSets, u1.base, u2.base),
-    members: Dict.mergeWith(u1.members, u2.members, combineLikeSelectionSets),
+    BaseUnresolvedOutput.type_: u1.type_,
+    base: ?Option.liftConcat(combineSelectionSets, u1.base, u2.base),
+    members: Dict.mergeWith(u1.members, u2.members, combineSelectionSets),
   }
 
   let mergeUnions = (
@@ -98,12 +86,13 @@ module UnresolvedOutputType = {
 
   let mergeLike = (t1: base, t2: base): base =>
     switch (t1, t2) {
-    | (SelectionSet(ss1), SelectionSet(ss2)) => SelectionSet(combineLikeSelectionSets(ss1, ss2))
+    | (SelectionSet(ss1), SelectionSet(ss2)) => SelectionSet(combineSelectionSets(ss1, ss2))
     | (Union(u1), Union(u2)) => Union(combineUnions(u1, u2))
-    | (SelectionSet(ss), Union({?base, members}))
-    | (Union({?base, members}), SelectionSet(ss)) =>
+    | (SelectionSet(ss), Union({type_, ?base, members}))
+    | (Union({type_, ?base, members}), SelectionSet(ss)) =>
       Union({
-        base: ?Option.liftConcat(combineLikeSelectionSets, base, Some(ss)),
+        type_,
+        base: ?Option.liftConcat(combineSelectionSets, base, Some(ss)),
         members,
       })
     }
@@ -113,8 +102,8 @@ module UnresolvedOutputType = {
 
 type t =
   | PrintString(string)
-  | PrintType({name: string, type_: UnresolvedOutputType.t})
-  | PrintVariable({name: string, type_: InputType.t})
+  | PrintType({namePath: array<string>, type_: BaseUnresolvedOutput.t})
+  | PrintVariables({fields: Dict.t<InputType.t>})
   | PrintDefinition(ExecutableDefinitionNode.t)
 
 let fromDefinitions = definitions =>
@@ -122,30 +111,54 @@ let fromDefinitions = definitions =>
   ->Array.map(d => PrintDefinition(d))
   ->List.fromArray
 
-let process = (t, fragments: Dict.t<FragmentDefinitionNode.t>, schema) => {
+let joinPath = path => {
+  // TODO: Make sure the separator doesn't 
+  //       show up in the path
+  let sep = "_"
+  Array.joinWith(path, sep)
+}
+
+let process = (
+  ~steps,
+  ~fragments: Dict.t<FragmentDefinitionNode.t>,
+  ~schema,
+  ~baseTypesModule,
+  ~scalarModule,
+) => {
+  let formatModuleName = (path) => {
+    let ls = 
+      switch Array.slice(path, ~start=0, ~end=2) {
+        | ["t"]  => ["t"]
+        | ["t", _] => 
+          Array.sliceToEnd(path, ~start=1)
+        | ["inner", "t"] =>
+          Array.concat(["inner"], Array.sliceToEnd(path, ~start=2))
+        | _ => raise(Invalid_type_name(path))
+      }
+    Array.map(ls, String.capitalize)
+    ->Array.joinWith("") 
+  }
   let extractInputType = (typeNode: TypeNode.t): InputType.t => {
     open Schema
     let rec named = (nameNode): InputType.base => {
       let name = NameNode.value(nameNode)
-      switch getType(schema, name)->Option.map(Named.parse) {
-      | None => raise(Unknown_type(name))
-      | Some(Scalar(s)) => Scalar(Scalar.name(s))
-      | Some(Enum(e)) => Enum(Enum.name(e))
-      | Some(InputObject(io)) => Object(InputObject.name(io))
-      | Some(Object(_))
-      | Some(Interface(_))
-      | Some(Union(_)) =>
+      switch getType(schema, name)->Option.map(Named.parse)->Option.getOrExn(Unknown_type(name)) {
+      | Scalar(s) => Scalar(Scalar.name(s))
+      | Enum(e) => Enum(Enum.name(e))
+      | InputObject(io) => Object(InputObject.name(io))
+      | Object(_)
+      | Interface(_)
+      | Union(_) =>
         raise(Non_input_type(name))
       }
     }
     and base = (typeNode: TypeNode.t): InputType.t =>
       switch typeNode {
       | NamedType(n) => Base(named(n.name))
-      | ListType({type_}) => List(base(type_))
-      | NonNullType(nn) =>
+      | ListType({type_}) => List(base(type_)) | NonNullType({type_}) =>
         NonNull(
-          switch nn.type_ {
-          | NamedType(n) => Base_nn(named(n.name))
+          switch type_ {
+          | NamedType({name}) => Base_nn(named(name))
           | NullListType({type_}) => List_nn(base(type_))
           },
         )
@@ -155,91 +168,281 @@ let process = (t, fragments: Dict.t<FragmentDefinitionNode.t>, schema) => {
 
   let extractSelectionType = (
     baseType: Schema.ValidForTypeCondition.t,
-    selections: array<SelectionSetNode.selectionNode>,
-  ): UnresolvedOutputType.t => {
-    let rec extractFields = (node: SelectionSetNode.selectionNode, type_: TypeNode.t) =>
+    (fstSelection, rstSelections): Array.nonEmpty<SelectionSetNode.selectionNode>,
+  ): UnresolvedOutputType.base => {
+    let rec extractFields = (
+      node: SelectionSetNode.selectionNode,
+      type_: Schema.ValidForTypeCondition.t,
+    ) =>
       switch node {
       | Field({name, ?selectionSet}) =>
         BaseUnresolvedOutput.SelectionSet({
-          type_,
+          type_: Schema.ValidForField.fromValidForTypeCondition(type_)->Option.getOrExn(
+            Selection_on_union(Schema.ValidForTypeCondition.name(type_)),
+          ),
           fields: Dict.fromArray([(AST.NameNode.value(name), Option.toArray(selectionSet))]),
         })
       | FragmentSpread(f) => {
           let fragmentName = NameNode.value(f.name)
-          let fragment = Dict.get(fragments, fragmentName)
-          switch fragment {
-          | None => raise(Missing_fragment(fragmentName))
-          | Some(f) => {
-              let selections = f->FragmentDefinitionNode.selectionSet->SelectionSetNode.selections
-              switch Array.headTail(selections) {
-              | None => raise(Empty_fragment(fragmentName))
-              | Some(s, ss) =>
-                UnresolvedOutputType.combineLike((
-                  extractFields(s, type_),
-                  Array.map(ss, extractFields(_, type_)),
-                ))
-              }
-            }
-          }
-        }
-      | InlineFragment({typeCondition, selectionSet}) => {
-          let typeName = NamedTypeNode.name(typeCondition)->NameNode.value
-          let nestedType = switch Schema.getType(schema, typeName) {
-          | None => raise(Unknown_type(typeName))
-          | Some(t) => Schema.Named.parse(t)
-          }
-          let validatedType = switch Schema.ValidForTypeCondition.fromNamed(nestedType) {
-          | None => raise(Invalid_type_condition(typeName))
-          | Some(t) => t
-          }
-          Union({
-            members: Dict.fromArray([
-              (typeName, {BaseUnresolvedOutput.type_: validatedType, fields}),
-            ]),
-          })
-        }
-      | InlineFragment({selectionSet}) =>
-        switch Array.headTail(selections) {
-        | None => raise(Empty_inline_fragment)
-        | Some(s, ss) =>
+          let (fstSelection, rstSelections) =
+            Dict.get(fragments, fragmentName)
+            ->Option.getOrExn(Missing_fragment(fragmentName))
+            ->FragmentDefinitionNode.selectionSet
+            ->SelectionSetNode.selections
+            ->Array.headTail
+            ->Option.getOrExn(Empty_fragment(fragmentName))
           UnresolvedOutputType.combineLike((
-            extractFields(s, type_),
-            Array.map(ss, extractFields(_, type_)),
+            extractFields(fstSelection, type_),
+            Array.map(rstSelections, extractFields(_, type_)),
           ))
         }
+      | InlineFragment({typeCondition, selectionSet}) => {
+          let validatedBase = 
+            switch baseType {
+              | Object(o) => raise(Invalid_inline_fragment(
+                Schema.Object.name(o)
+              ))
+              | Interface(i) => Schema.Interface.toAbstract(i)
+              | Union(u) => Schema.Union.toAbstract(u)
+            }
+          let typeName = NameNode.value(NamedTypeNode.name(typeCondition))
+          let selectionType =
+            Schema.getType(schema, typeName)
+            ->Option.getOrExn(Unknown_type(typeName))
+            ->Schema.Named.parse
+            ->Schema.ValidForTypeCondition.fromNamed
+            ->Option.getOrExn(Invalid_type_condition(typeName))
+          let merged =
+            SelectionSetNode.selections(selectionSet)
+            ->Array.map(extractFields(_, selectionType))
+            ->Array.headTail
+            ->Option.getOrExn(Empty_inline_fragment)
+            ->UnresolvedOutputType.combineLike
+          switch merged {
+          | SelectionSet(ss) => Union({
+            type_: validatedBase,
+            members: Dict.fromArray([(typeName, ss)])
+          })
+          | Union({base, members}) => {
+              let basePair = (typeName, base)
+              let memberPairs =
+                Dict.toArray(members)->Array.map(((k, v)) => (
+                  k,
+                  UnresolvedOutputType.combineSelectionSets(base, v),
+                ))
+              Union({
+                type_: validatedBase,
+                members: Array.concat([basePair], memberPairs)->Dict.fromArray
+              })
+            }
+          | Union(u) => Union(u)
+          }
+        }
+      | InlineFragment({selectionSet}) =>
+        let (fstSelection, rstSelections) =
+          SelectionSetNode.selections(selectionSet)
+          ->Array.headTail
+          ->Option.getOrExn(Empty_inline_fragment)
+        UnresolvedOutputType.combineLike((
+          extractFields(fstSelection, type_),
+          Array.map(rstSelections, extractFields(_, type_)),
+        ))
       }
-
-    let arr = selections->Array.map(extractFields)
-    arr
+    UnresolvedOutputType.combineLike((
+      extractFields(fstSelection, baseType),
+      Array.map(rstSelections, extractFields(_, baseType)),
+    ))
   }
 
   let processStep = (t): (list<t>, array<string>) =>
     switch t {
     | PrintString(str) => (list{}, [str])
-    | PrintType(_) => (list{}, [])
-    | PrintVariable(_) => (list{}, [])
+    | PrintType({namePath, type_}) => {
+        let extractNamed = type_ =>
+          Schema.Output.traverse(
+            type_,
+            ~onScalar=s => Either.Left(Schema.Scalar.name(s), Schema.Scalar.print(s, scalarModule)),
+            ~onEnum=e => Either.Left(Schema.Enum.name(e), Schema.Enum.print(e, baseTypesModule)),
+            ~onObject=o => Either.Right(
+              Schema.Object.name(o),
+              Schema.ValidForTypeCondition.Object(o),
+              i => i,
+            ),
+            ~onInterface=i => Either.Right(
+              Schema.Interface.name(i),
+              Schema.ValidForTypeCondition.Interface(i),
+              i => i,
+            ),
+            ~onUnion=u => Either.Right(
+              Schema.Union.name(u),
+              Schema.ValidForTypeCondition.Union(u),
+              i => i,
+            ),
+            ~onList=e => 
+              switch e {
+              | Left(n, a) => Left(n, `array<${a}>`)
+              | Right(n, t, w) => Right(n, t, s => `array<${w(s)}>`)
+              }
+            ,
+            ~onNull=e =>
+              switch e {
+              | Left(n, a) => Left(n, `null<${a}>`)
+              | Right(n, t, w) => Right(n, t, s => `null<${w(s)}>`)
+              },
+          )
+        let parseSelectionSet = (
+          {type_, fields}: BaseUnresolvedOutput.selectionSet,
+          ~midfix = ?
+        ) => {
+          let lookup = switch type_ {
+          | Object(o) => Schema.Object.getFields(o)
+          | Interface(i) => Schema.Interface.getFields(i)
+          }
+          Dict.toArray(fields)->Array.map(((k, v)) => {
+            let fieldType =
+              Dict.get(lookup, k)
+              ->Option.getOrExn(Unknown_field(k))
+              ->Schema.Field.type_
+            let selections = Array.flatMap(v, SelectionSetNode.selections)
+            let (value, neededType) = switch (Array.headTail(selections), extractNamed(fieldType)) {
+            | (None, Left(_, str)) => (str, None)
+            | (Some(fst, rst), Right(_, selections, wrapper)) => {
+                let res = extractSelectionType(selections, (fst, rst))
+                let fieldPath = 
+                  Option.mapOr(
+                    midfix,
+                    Array.concat(namePath, [k]),
+                    m => Array.concat(namePath, [m, k])
+                  )
+                (wrapper(joinPath(fieldPath)), 
+                 Some(PrintType({namePath: fieldPath, type_: res})))
+              }
+            | (Some(_), Left(n, _)) => raise(Composite_type_without_fields(n))
+            | (None, Right(n, _, _)) => raise(Simple_type_with_fields(n))
+            }
+            (`    ${k}: ${value},`, neededType)
+          })
+        }
+        let (lines, bases) = switch type_ {
+        | SelectionSet(ss) => {
+            let results = parseSelectionSet(ss)
+            let lines = Array.map(results, ((s, _)) => s)
+            let bases = Array.filterMap(results, ((_, o)) => o)
+            let name = joinPath(namePath)
+            (Array.concatMany([], [[`  type ${name} = {`], lines, [`  }`]]), bases)
+          }
+        | Union({type_, ?base, members}) => {
+          let possibleTypes =
+            Schema.getPossibleTypes(schema, type_)
+            //Dict.toArray(members)
+          let results =
+            Array.map(possibleTypes, (objectType) => {
+              let typeConditionName = Schema.Object.name(objectType)
+              let selectionSet =
+                switch (base, Dict.get(members, typeConditionName)) {
+                  | (Some(a), Some(b)) => 
+                    Some(UnresolvedOutputType.combineSelectionSets(a,b))
+                  | (a, None) => a
+                  | (None, b) => b
+                }
+              Option.mapOr(
+                selectionSet,
+                ([`    | ${String.capitalize(typeConditionName)}`], []),
+                ss => {
+                  let fields = parseSelectionSet(ss, ~midfix=typeConditionName)
+                  let lines = Array.map(fields, ((s,_))=>s)
+                  let bases = Array.filterMap(fields, ((_, o)) => o)
+                  (Array.concatMany([], [
+                    [`    | ${String.capitalize(typeConditionName)}({`],
+                    Array.map(lines, l => `    ${l}`),
+                    ["      })"]
+                  ]), 
+                   bases)
+                }
+              )
+            })
+          let moduleName = formatModuleName(namePath)
+          (Array.concatMany([], [
+              [`  module ${moduleName} = {`],
+              [`    type t =`],
+              Array.flatMap(results, ((l, _)) => l),
+              ["  }"],
+              [`  type ${joinPath(namePath)} = ${moduleName}.t`]
+            ]),
+           Array.flatMap(results, ((_, t)) => t))
+        }
+        }
+        (List.fromArray(bases), lines)
+      }
+    | PrintVariables({fields}) => {
+        let a = 1
+        (list{}, [])
+      }
     | PrintDefinition(definition) => {
+        let definitionName = switch definition {
+        | OperationDefinition(o) => Option.map(o.name, NameNode.value)
+        | FragmentDefinition(f) => Some(NameNode.value(f.name))
+        }
+        let baseType = switch definition {
+        | OperationDefinition({operation}) =>
+          switch operation {
+          | Query => Schema.getQueryType(schema)
+          | Mutation => Schema.getMutationType(schema)
+          | Subscription => Schema.getSubscriptionType(schema)
+          }
+          ->Option.getOrExn(Missing_base_type(operation))
+          ->Schema.ValidForTypeCondition.Object
+        | FragmentDefinition({name, typeCondition}) => {
+            let conditionName = NamedTypeNode.name(typeCondition)->NameNode.value
+
+            Schema.getType(schema, conditionName)
+            ->Option.getOrExn(Unknown_type(NameNode.value(name)))
+            ->Schema.Named.parse
+            ->Schema.ValidForTypeCondition.fromNamed
+            ->Option.getOrExn(Invalid_type_condition(conditionName))
+          }
+        }
         let (variableDefs, selectionSet) = switch definition {
         | OperationDefinition(o) => (o.variableDefinitions, o.selectionSet)
         | FragmentDefinition(f) => (f.variableDefinitions, f.selectionSet)
         }
-        let variableSteps = Array.map(Option.getOr(variableDefs, []), a => {
-          let name =
-            a
-            ->VariableDefinitionNode.variable
+        let variables = Array.map(Option.getOr(variableDefs, []), a => {
+          (
+            VariableDefinitionNode.variable(a)
             ->VariableNode.name
-            ->NameNode.value
-          let type_ =
-            a
-            ->VariableDefinitionNode.type_
-            ->extractInputType
-          PrintVariable({name, type_})
-        })
+            ->NameNode.value,
+            VariableDefinitionNode.type_(a)->extractInputType,
+          )
+        })->Dict.fromArray
         let selectionSteps =
           selectionSet
           ->SelectionSetNode.selections
-          ->Array.map(a => a)
-        (Array.concat(variableSteps, [])->List.fromArray, [])
+          ->Array.headTail
+          ->Option.getOrExn(Empty_definition(Option.getOr(definitionName, "<unnamed operation>")))
+          ->(extractSelectionType(baseType, _))
+
+        (
+          list{
+            PrintType({
+              namePath: ["t"],
+              // Top-level GQL types are implicitly non-null
+              type_: selectionSteps,
+            }),
+            PrintVariables({fields: variables}),
+            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`),
+          },
+          ["}"],
+        )
       }
     }
+  let rec main = (remaining, output) => {
+    switch remaining {
+    | list{} => output
+    | list{nxt, ...rst} => {
+        let (newSteps, newLines) = processStep(nxt)
+        main(List.concat(newSteps, rst), Array.joinWith(Array.concat(newLines, [output]), "\n"))
+      }
+    }
+  }
+  main(steps, "")
 }

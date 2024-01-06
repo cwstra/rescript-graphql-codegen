@@ -2,152 +2,11 @@
 'use strict';
 
 var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.bs.js");
-var Core__List = require("@rescript/core/src/Core__List.bs.js");
+var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.bs.js");
 var Helpers$GraphqlCodegen = require("@re-graphql-codegen/graphql-codegen/src/Helpers.bs.js");
-
-function fromDefinitions(definitions) {
-  return {
-          TAG: "ReadyForNextDefinition",
-          openScalars: false,
-          definitions: Core__List.fromArray(definitions.toReversed())
-        };
-}
-
-function processTypes(gqlType, schema) {
-  return [
-          /* [] */0,
-          []
-        ];
-}
-
-function processVariable(gqlVariable, schema) {
-  return [];
-}
-
-function processHeader(header, schema) {
-  return [];
-}
-
-function processDefinition(definition, schema) {
-  definition.kind === "OperationDefinition";
-  return [
-          /* [] */0,
-          /* [] */0,
-          "",
-          []
-        ];
-}
-
-function processImports(openScalars, schema) {
-  return [];
-}
-
-function $$process(_t, schema, _lines) {
-  while(true) {
-    var lines = _lines;
-    var t = _t;
-    switch (t.TAG) {
-      case "PrintingTypes" :
-          var match = t.types;
-          var variables = t.variables;
-          var header = t.header;
-          var definitions = t.definitions;
-          var openScalars = t.openScalars;
-          if (match) {
-            var match_1 = [];
-            _lines = match_1.concat(lines);
-            _t = {
-              TAG: "PrintingTypes",
-              openScalars: openScalars,
-              definitions: definitions,
-              header: header,
-              variables: variables,
-              types: Core__List.concat(/* [] */0, match.tl)
-            };
-            continue ;
-          }
-          _t = {
-            TAG: "PrintingVariables",
-            openScalars: openScalars,
-            definitions: definitions,
-            header: header,
-            variables: variables
-          };
-          continue ;
-      case "PrintingVariables" :
-          var match$1 = t.variables;
-          var header$1 = t.header;
-          var definitions$1 = t.definitions;
-          var openScalars$1 = t.openScalars;
-          if (match$1) {
-            var newLines = [];
-            _lines = newLines.concat(lines);
-            _t = {
-              TAG: "PrintingVariables",
-              openScalars: openScalars$1,
-              definitions: definitions$1,
-              header: header$1,
-              variables: match$1.tl
-            };
-            continue ;
-          }
-          _t = {
-            TAG: "FinalizeDefinition",
-            openScalars: openScalars$1,
-            definitions: definitions$1,
-            header: header$1
-          };
-          continue ;
-      case "FinalizeDefinition" :
-          var newLines$1 = [];
-          _lines = newLines$1.concat(lines);
-          _t = {
-            TAG: "ReadyForNextDefinition",
-            openScalars: t.openScalars,
-            definitions: t.definitions
-          };
-          continue ;
-      case "ReadyForNextDefinition" :
-          var match$2 = t.definitions;
-          var s = t.openScalars;
-          if (match$2) {
-            var match$3 = processDefinition(match$2.hd, schema);
-            _lines = match$3[3].concat(lines);
-            _t = {
-              TAG: "PrintingTypes",
-              openScalars: s,
-              definitions: match$2.tl,
-              header: match$3[2],
-              variables: match$3[1],
-              types: match$3[0]
-            };
-            continue ;
-          }
-          _t = {
-            TAG: "FinalizeFile",
-            openScalars: s
-          };
-          continue ;
-      case "FinalizeFile" :
-          var newLines$2 = [];
-          return newLines$2.concat(lines);
-      
-    }
-  };
-}
-
-var RemainingWork = {
-  fromDefinitions: fromDefinitions,
-  processTypes: processTypes,
-  processVariable: processVariable,
-  processHeader: processHeader,
-  processDefinition: processDefinition,
-  processImports: processImports,
-  $$process: $$process
-};
+var WorkItem$GraphqlCodegenOperations = require("./WorkItem.bs.js");
 
 async function plugin(schema, documents, config) {
-  console.log(config);
   var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
                 return d.document.definitions;
               }), (function (d) {
@@ -184,15 +43,22 @@ async function plugin(schema, documents, config) {
             })), (function (f) {
           return f;
         }));
-  Helpers$GraphqlCodegen.sortFragmentsTopologically(match[0]).map(function (prim) {
+  var fragments = match[0];
+  var fragmentLookup = Object.fromEntries(fragments.map(function (f) {
+            return [
+                    AST$Graphql.NameNode.value(AST$Graphql.FragmentDefinitionNode.name(f)),
+                    f
+                  ];
+          }));
+  var sorted = Helpers$GraphqlCodegen.sortFragmentsTopologically(fragments).map(function (prim) {
           return prim;
         }).concat(match[1].map(function (prim) {
             return prim;
           }));
-  console.log("\n\n\n\n\n");
-  return "";
+  var init = WorkItem$GraphqlCodegenOperations.fromDefinitions(sorted);
+  var res = WorkItem$GraphqlCodegenOperations.$$process(init, fragmentLookup, schema, config.baseTypesModule, config.scalarModule);
+  return res;
 }
 
-exports.RemainingWork = RemainingWork;
 exports.plugin = plugin;
-/* No side effect */
+/* Helpers-GraphqlCodegen Not a pure module */

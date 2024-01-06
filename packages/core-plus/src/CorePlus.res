@@ -485,7 +485,7 @@ module Object = RescriptCore.Object
 //module Ordering = RescriptCore.Ordering
 module Promise = RescriptCore.Promise
 module RegExp = RescriptCore.RegExp
-module String = RescriptCore.String
+//module String = RescriptCore.String
 module Symbol = RescriptCore.Symbol
 module Type = RescriptCore.Type
 module JSON = RescriptCore.JSON
@@ -599,6 +599,11 @@ module Option = {
     | (Some(_), None) => o1
     | (None, _) => o2
     }
+  let getOrExn = (o: option<'t>, e: exn): 't =>
+    switch o {
+    | Some(o) => o
+    | None => raise(e)
+    }
 }
 module Result = {
   include RescriptCore.Result
@@ -641,4 +646,8 @@ module Ordering = {
     } else {
       greater
     }
+}
+module String = {
+  include RescriptCore.String
+  let capitalize = (s) => concat(charAt(s, 0)->toUpperCase, sliceToEnd(s, ~start=1))
 }

@@ -1,4 +1,4 @@
-import { 
+const { 
     isScalarType, 
     isObjectType, 
     isInterfaceType, 
@@ -7,9 +7,9 @@ import {
     isInputObjectType, 
     isListType, 
     isNonNullType, 
-} from "graphql"
+} = require("graphql")
 
-export const wrapClassType = classType => {
+exports.wrapClassType = classType => {
     switch (true) {
         case isScalarType(classType):
             return { TAG: "Scalar", _0: classType }
@@ -30,7 +30,7 @@ export const wrapClassType = classType => {
     }
 }
 
-export const match = (value, acc, record) => {
+exports.match = (value, acc, record) => {
     let result = acc;
     visit(value, {
       enter(node) {

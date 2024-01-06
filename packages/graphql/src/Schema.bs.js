@@ -4,6 +4,22 @@
 var Caml_option = require("rescript/lib/js/caml_option.js");
 var Graphql_facade = require("./graphql_facade");
 
+function ofType(l) {
+  return l.ofType;
+}
+
+var List = {
+  ofType: ofType
+};
+
+function ofType$1(nn) {
+  return nn.ofType;
+}
+
+var NonNull = {
+  ofType: ofType$1
+};
+
 var UnionMembers = {};
 
 function parse(prim) {
@@ -36,8 +52,13 @@ function fromNamed(named) {
   }
 }
 
+function name(t) {
+  return t._0.name;
+}
+
 var ValidForTypeCondition = {
-  fromNamed: fromNamed
+  fromNamed: fromNamed,
+  name: name
 };
 
 function fromNamed$1(named) {
@@ -57,8 +78,27 @@ function fromNamed$1(named) {
   }
 }
 
+function fromValidForTypeCondition(typeCond) {
+  switch (typeCond.TAG) {
+    case "Object" :
+        return {
+                TAG: "Object",
+                _0: typeCond._0
+              };
+    case "Interface" :
+        return {
+                TAG: "Interface",
+                _0: typeCond._0
+              };
+    case "Union" :
+        return ;
+    
+  }
+}
+
 var ValidForField = {
-  fromNamed: fromNamed$1
+  fromNamed: fromNamed$1,
+  fromValidForTypeCondition: fromValidForTypeCondition
 };
 
 function parse$1(prim) {
@@ -82,12 +122,170 @@ function parse_nn$1(prim) {
   return Graphql_facade.wrapClassType(prim);
 }
 
+function traverse(base, onScalar, onObject, onInterface, onUnion, onEnum, onListOpt, onNullOpt, onNonNullOpt) {
+  var onList = onListOpt !== undefined ? onListOpt : (function (r) {
+        return r;
+      });
+  var onNull = onNullOpt !== undefined ? onNullOpt : (function (r) {
+        return r;
+      });
+  var onNonNull = onNonNullOpt !== undefined ? onNonNullOpt : (function (r) {
+        return r;
+      });
+  var down = function (_t, _mods) {
+    while(true) {
+      var mods = _mods;
+      var t = _t;
+      var s = Graphql_facade.wrapClassType(t);
+      switch (s.TAG) {
+        case "Scalar" :
+            return [
+                    onScalar(s._0),
+                    {
+                      hd: "NullMark",
+                      tl: mods
+                    }
+                  ];
+        case "Object" :
+            return [
+                    onObject(s._0),
+                    {
+                      hd: "NullMark",
+                      tl: mods
+                    }
+                  ];
+        case "Interface" :
+            return [
+                    onInterface(s._0),
+                    {
+                      hd: "NullMark",
+                      tl: mods
+                    }
+                  ];
+        case "Union" :
+            return [
+                    onUnion(s._0),
+                    {
+                      hd: "NullMark",
+                      tl: mods
+                    }
+                  ];
+        case "Enum" :
+            return [
+                    onEnum(s._0),
+                    {
+                      hd: "NullMark",
+                      tl: mods
+                    }
+                  ];
+        case "List" :
+            _mods = {
+              hd: "ListMark",
+              tl: {
+                hd: "NullMark",
+                tl: mods
+              }
+            };
+            _t = s._0.ofType;
+            continue ;
+        case "NonNull" :
+            var s$1 = Graphql_facade.wrapClassType(s._0.ofType);
+            switch (s$1.TAG) {
+              case "Scalar" :
+                  return [
+                          onScalar(s$1._0),
+                          {
+                            hd: "NonNullMark",
+                            tl: mods
+                          }
+                        ];
+              case "Object" :
+                  return [
+                          onObject(s$1._0),
+                          {
+                            hd: "NonNullMark",
+                            tl: mods
+                          }
+                        ];
+              case "Interface" :
+                  return [
+                          onInterface(s$1._0),
+                          {
+                            hd: "NonNullMark",
+                            tl: mods
+                          }
+                        ];
+              case "Union" :
+                  return [
+                          onUnion(s$1._0),
+                          {
+                            hd: "NonNullMark",
+                            tl: mods
+                          }
+                        ];
+              case "Enum" :
+                  return [
+                          onEnum(s$1._0),
+                          {
+                            hd: "NonNullMark",
+                            tl: mods
+                          }
+                        ];
+              case "List" :
+                  _mods = {
+                    hd: "ListMark",
+                    tl: {
+                      hd: "NonNullMark",
+                      tl: mods
+                    }
+                  };
+                  _t = s$1._0.ofType;
+                  continue ;
+              
+            }
+        
+      }
+    };
+  };
+  var _param = down(base, /* [] */0);
+  while(true) {
+    var param = _param;
+    var tags = param[1];
+    var base$1 = param[0];
+    if (!tags) {
+      return base$1;
+    }
+    switch (tags.hd) {
+      case "NullMark" :
+          _param = [
+            onNull(base$1),
+            tags.tl
+          ];
+          continue ;
+      case "NonNullMark" :
+          _param = [
+            onNonNull(base$1),
+            tags.tl
+          ];
+          continue ;
+      case "ListMark" :
+          _param = [
+            onList(base$1),
+            tags.tl
+          ];
+          continue ;
+      
+    }
+  };
+}
+
 var Output = {
   parse: parse$2,
-  parse_nn: parse_nn$1
+  parse_nn: parse_nn$1,
+  traverse: traverse
 };
 
-function name(t) {
+function name$1(t) {
   return t.name;
 }
 
@@ -108,14 +306,14 @@ function astNode(t) {
 }
 
 var Argument = {
-  name: name,
+  name: name$1,
   description: description,
   type_: type_,
   defaultValue: defaultValue,
   astNode: astNode
 };
 
-function name$1(t) {
+function name$2(t) {
   return t.name;
 }
 
@@ -144,7 +342,7 @@ function astNode$1(t) {
 }
 
 var Field = {
-  name: name$1,
+  name: name$2,
   description: description$1,
   type_: type_$1,
   args: args,
@@ -153,7 +351,7 @@ var Field = {
   astNode: astNode$1
 };
 
-function name$2(t) {
+function name$3(t) {
   return t.name;
 }
 
@@ -178,7 +376,7 @@ function astNode$2(t) {
 }
 
 var Directive = {
-  name: name$2,
+  name: name$3,
   description: description$2,
   locations: locations,
   isRepeatable: isRepeatable,
@@ -186,7 +384,7 @@ var Directive = {
   astNode: astNode$2
 };
 
-function name$3(t) {
+function name$4(t) {
   return t.name;
 }
 
@@ -202,14 +400,19 @@ function extensionASTNodes(t) {
   return Caml_option.null_to_opt(t.extensionASTNodes);
 }
 
+function print(t, prefix) {
+  return prefix + "." + t.name + ".t";
+}
+
 var Scalar = {
-  name: name$3,
+  name: name$4,
   description: description$3,
   astNode: astNode$3,
-  extensionASTNodes: extensionASTNodes
+  extensionASTNodes: extensionASTNodes,
+  print: print
 };
 
-function name$4(t) {
+function name$5(t) {
   return t.name;
 }
 
@@ -225,7 +428,7 @@ function extensionASTNodes$1(t) {
   return Caml_option.null_to_opt(t.extensionASTNodes);
 }
 
-function name$5(t) {
+function name$6(t) {
   return t.name;
 }
 
@@ -241,7 +444,7 @@ function extensionASTNodes$2(t) {
   return Caml_option.null_to_opt(t.extensionASTNodes);
 }
 
-function name$6(t) {
+function name$7(t) {
   return t.name;
 }
 
@@ -257,7 +460,7 @@ function extensionASTNodes$3(t) {
   return Caml_option.null_to_opt(t.extensionASTNodes);
 }
 
-function name$7(t) {
+function name$8(t) {
   return t.name;
 }
 
@@ -282,7 +485,7 @@ function astNode$7(t) {
 }
 
 var EnumValue = {
-  name: name$7,
+  name: name$8,
   description: description$7,
   value: value,
   isDeprecated: isDeprecated$1,
@@ -290,7 +493,7 @@ var EnumValue = {
   astNode: astNode$7
 };
 
-function name$8(t) {
+function name$9(t) {
   return t.name;
 }
 
@@ -310,7 +513,11 @@ function getValue(t, s) {
   return Caml_option.null_to_opt(t.getValue(s));
 }
 
-function name$9(t) {
+function print$1(t, prefix) {
+  return prefix + "." + t.name + ".t";
+}
+
+function name$10(t) {
   return t.name;
 }
 
@@ -331,14 +538,14 @@ function astNode$9(t) {
 }
 
 var InputField = {
-  name: name$9,
+  name: name$10,
   description: description$9,
   type_: type_$2,
   defaultValue: defaultValue$1,
   astNode: astNode$9
 };
 
-function name$10(t) {
+function name$11(t) {
   return t.name;
 }
 
@@ -373,7 +580,7 @@ function Object_getInterfaces(prim) {
 }
 
 var $$Object = {
-  name: name$4,
+  name: name$5,
   description: description$4,
   astNode: astNode$4,
   extensionASTNodes: extensionASTNodes$1,
@@ -390,7 +597,7 @@ function Interface_toAbstract(prim) {
 }
 
 var Interface = {
-  name: name$5,
+  name: name$6,
   description: description$5,
   astNode: astNode$5,
   extensionASTNodes: extensionASTNodes$2,
@@ -407,7 +614,7 @@ function Union_toAbstract(prim) {
 }
 
 var Union = {
-  name: name$6,
+  name: name$7,
   description: description$6,
   astNode: astNode$6,
   extensionASTNodes: extensionASTNodes$3,
@@ -420,12 +627,13 @@ function Enum_getValues(prim) {
 }
 
 var Enum = {
-  name: name$8,
+  name: name$9,
   description: description$8,
   astNode: astNode$8,
   extensionASTNodes: extensionASTNodes$4,
   getValues: Enum_getValues,
-  getValue: getValue
+  getValue: getValue,
+  print: print$1
 };
 
 function InputObject_getFields(prim) {
@@ -433,7 +641,7 @@ function InputObject_getFields(prim) {
 }
 
 var InputObject = {
-  name: name$10,
+  name: name$11,
   description: description$10,
   astNode: astNode$10,
   extensionASTNodes: extensionASTNodes$5,
@@ -494,6 +702,8 @@ exports.EnumValue = EnumValue;
 exports.Enum = Enum;
 exports.InputField = InputField;
 exports.InputObject = InputObject;
+exports.List = List;
+exports.NonNull = NonNull;
 exports.astNode = astNode$11;
 exports.extensionASTNodes = extensionASTNodes$6;
 exports.getQueryType = getQueryType;

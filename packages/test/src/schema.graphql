@@ -510,7 +510,25 @@ input PayloadsFind {
   semi_major_axis_km: Float
 }
 
+type MemberA {
+  id: ID
+  a: String
+}
+
+type MemberB {
+  id: ID
+  b: Float
+}
+
+type MemberC {
+  id: ID
+  c: Capsule
+}
+
+union Union = MemberA | MemberB | MemberC
+
 type Query {
+  get_union: Union
   capsule(id: ID!): Capsule
   capsules(find: CapsulesFind, limit: Int, offset: Int, order: String, sort: String): [Capsule]
   capsulesPast(find: CapsulesFind, limit: Int, offset: Int, order: String, sort: String): [Capsule]

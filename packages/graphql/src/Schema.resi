@@ -35,6 +35,7 @@ module ValidForTypeCondition: {
     | ...UnionMembers.interface
     | ...UnionMembers.union
   let fromNamed: Named.parsed => option<t>
+  let name: t => string
 }
 
 module ValidForField: {
@@ -42,6 +43,7 @@ module ValidForField: {
     | ...UnionMembers.object
     | ...UnionMembers.interface
   let fromNamed: Named.parsed => option<t>
+  let fromValidForTypeCondition: ValidForTypeCondition.t => option<t>
 }
 
 module Abstract: {
@@ -89,6 +91,17 @@ module Output: {
     | List(listType<t>)
   let parse: t => parsed
   let parse_nn: t_nn => parsed_nn
+  let traverse: 
+    (t, 
+     ~onScalar: scalarType => 'r, 
+     ~onObject: objectType => 'r,
+     ~onInterface: interfaceType => 'r,
+     ~onUnion: unionType => 'r,
+     ~onEnum: enumType => 'r,
+     ~onList: 'r => 'r =?,
+     ~onNull: 'r => 'r =?,
+     ~onNonNull: 'r => 'r=?
+    ) => 'r
 }
 
 module Argument: {
@@ -147,6 +160,7 @@ module Scalar: {
   let description: t => option<string>
   let astNode: t => option<AST.ScalarTypeDefinitionNode.t>
   let extensionASTNodes: t => option<array<AST.ScalarTypeExtensionNode.t>>
+  let print: (t, string) => string
 }
 
 module Object: {
@@ -197,6 +211,7 @@ module Enum: {
   let extensionASTNodes: t => option<array<AST.EnumTypeExtensionNode.t>>
   let getValues: t => array<EnumValue.t>
   let getValue: (t, string) => option<EnumValue.t>
+  let print: (t, string) => string
 }
 
 module InputField: {
@@ -215,6 +230,13 @@ module InputObject: {
   let astNode: t => option<AST.InputObjectTypeDefinitionNode.t>
   let extensionASTNodes: t => option<array<AST.InputObjectTypeExtensionNode.t>>
   let getFields: t => Dict.t<InputField.t>
+}
+
+module List: {
+  let ofType: listType<'t> => 't
+}
+module NonNull: {
+  let ofType: nonNullType<'t> => 't
 }
 
 type t

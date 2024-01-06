@@ -15,8 +15,22 @@ type inputObjectType = schemaType<
   AST.InputObjectTypeExtensionNode.t,
 >
 
-type listType<'t>
-type nonNullType<'t>
+type marks = NullMark | NonNullMark | ListMark
+
+type listType<'t> = {
+  ofType: 't
+}
+type nonNullType<'t> = {
+  ofType: 't
+}
+
+module List = {
+  let ofType = (l: listType<_>) => l.ofType
+}
+
+module NonNull = {
+  let ofType = (nn: nonNullType<_>) => nn.ofType
+}
 
 module UnionMembers = {
   type scalar = Scalar(scalarType)
@@ -52,6 +66,11 @@ module ValidForTypeCondition = {
     | Union(u) => Some(Union(u))
     | Scalar(_) | Enum(_) | InputObject(_) => None
     }
+  let name = t => switch t {
+    | Object(o) => o.name
+    | Interface(i) => i.name
+    | Union(u) => u.name
+  }
 }
 
 module ValidForField = {
@@ -63,6 +82,12 @@ module ValidForField = {
     | Named.Object(o) => Some(Object(o))
     | Interface(i) => Some(Interface(i))
     | Union(_) | Scalar(_) | Enum(_) | InputObject(_) => None
+    }
+  let fromValidForTypeCondition = typeCond =>
+    switch typeCond {
+    | ValidForTypeCondition.Object(o) => Some(Object(o))
+    | Interface(o) => Some(Interface(o))
+    | Union(_) => None
     }
 }
 
@@ -117,6 +142,44 @@ module Output = {
   external parse: t => parsed = "wrapClassType"
   @module("./graphql_facade")
   external parse_nn: t_nn => parsed_nn = "wrapClassType"
+  let traverse = (base,
+    ~onScalar,
+    ~onObject,
+    ~onInterface,
+    ~onUnion,
+    ~onEnum,
+    ~onList=r => r,
+    ~onNull=r => r,
+    ~onNonNull=r => r
+  ) => {
+    let rec down = (t, mods) => {
+      switch parse(t) {
+        | Scalar(s) => (onScalar(s), list{NullMark, ...mods})
+        | Object(o) => (onObject(o), list{NullMark, ...mods})
+        | Interface(i) => (onInterface(i), list{NullMark, ...mods})
+        | Union(o) => (onUnion(o), list{NullMark, ...mods})
+        | Enum(o) => (onEnum(o), list{NullMark, ...mods})
+        | List(l) => down(List.ofType(l), list{ListMark, NullMark, ...mods})
+        | NonNull(nn) => 
+          switch NonNull.ofType(nn)->parse_nn {
+            | Scalar(s) => (onScalar(s), list{NonNullMark, ...mods})
+            | Object(s) => (onObject(s), list{NonNullMark, ...mods})
+            | Interface(s) => (onInterface(s), list{NonNullMark, ...mods})
+            | Union(s) => (onUnion(s), list{NonNullMark, ...mods})
+            | Enum(s) => (onEnum(s), list{NonNullMark, ...mods})
+            | List(l) => down(List.ofType(l), list{ListMark, NonNullMark, ...mods})
+          }
+      }
+    }
+    let rec up = ((base, tags)) =>
+      switch tags {
+        | list{} => base
+        | list{NullMark, ...rst} => up((onNull(base), rst))
+        | list{NonNullMark, ...rst} => up((onNonNull(base), rst))
+        | list{ListMark, ...rst} => up((onList(base), rst))
+      }
+    up(down(base, list{}))
+  }
 }
 
 module Argument = {
@@ -198,6 +261,7 @@ module Scalar = {
   let description = t => Null.toOption(t.description)
   let astNode = t => Null.toOption(t.astNode)
   let extensionASTNodes = t => Null.toOption(t.extensionASTNodes)
+  let print = (t, prefix) => `${prefix}.${name(t)}.t`
 }
 
 module Object = {
@@ -256,6 +320,7 @@ module Enum = {
   @send external getValues: t => array<EnumValue.t> = "getValues"
   @send external rawGetValue: (t, string) => null<EnumValue.t> = "getValue"
   let getValue = (t, s) => Null.toOption(rawGetValue(t, s))
+  let print = (t, prefix) => `${prefix}.${name(t)}.t`
 }
 
 module InputField = {

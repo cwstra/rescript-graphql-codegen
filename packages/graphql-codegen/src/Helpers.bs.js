@@ -75,47 +75,51 @@ function sortFragmentsTopologically(definitions) {
                 dependsOn: extractDependsFromSelections(AST$Graphql.SelectionSetNode.selections(AST$Graphql.FragmentDefinitionNode.selectionSet(node)), undefined)
               };
       });
-  var _unsortedFragments = withDepends;
-  var _sortedFragmentsOpt;
-  while(true) {
-    var sortedFragmentsOpt = _sortedFragmentsOpt;
-    var unsortedFragments = _unsortedFragments;
-    var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
-    unsortedFragments.sort(function (f1, f2) {
-          return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
-        });
-    var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
-            return f.dependsOn.length === 0;
-          }));
-    var independent = match[0];
-    if (independent.length !== 0) {
-      var dependent = match[1];
-      if (dependent.length === 0) {
-        return sortedFragments.concat(independent).map(function (f) {
-                    return f.node;
-                  });
+  if (withDepends.length !== 0) {
+    var _unsortedFragments = withDepends;
+    var _sortedFragmentsOpt;
+    while(true) {
+      var sortedFragmentsOpt = _sortedFragmentsOpt;
+      var unsortedFragments = _unsortedFragments;
+      var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
+      unsortedFragments.sort(function (f1, f2) {
+            return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
+          });
+      var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
+              return f.dependsOn.length === 0;
+            }));
+      var independent = match[0];
+      if (independent.length !== 0) {
+        var dependent = match[1];
+        if (dependent.length === 0) {
+          return sortedFragments.concat(independent).map(function (f) {
+                      return f.node;
+                    });
+        }
+        _sortedFragmentsOpt = sortedFragments.concat(independent);
+        _unsortedFragments = dependent.map((function(independent){
+            return function (fragment) {
+              return {
+                      name: fragment.name,
+                      node: fragment.node,
+                      dependsOn: fragment.dependsOn.filter(function (dependency) {
+                            return independent.some(function (i) {
+                                        return i.name === dependency;
+                                      });
+                          })
+                    };
+            }
+            }(independent)));
+        continue ;
       }
-      _sortedFragmentsOpt = sortedFragments.concat(independent);
-      _unsortedFragments = dependent.map((function(independent){
-          return function (fragment) {
-            return {
-                    name: fragment.name,
-                    node: fragment.node,
-                    dependsOn: fragment.dependsOn.filter(function (dependency) {
-                          return independent.some(function (i) {
-                                      return i.name === dependency;
-                                    });
-                        })
-                  };
-          }
-          }(independent)));
-      continue ;
-    }
-    throw {
-          RE_EXN_ID: Cyclic_fragments,
-          Error: new Error()
-        };
-  };
+      throw {
+            RE_EXN_ID: Cyclic_fragments,
+            Error: new Error()
+          };
+    };
+  } else {
+    return [];
+  }
 }
 
 exports.Unknown_field = Unknown_field;

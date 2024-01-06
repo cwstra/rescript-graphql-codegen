@@ -84,5 +84,8 @@ let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.
       )
     }
   }
-  sort(withDepends)
+  switch withDepends {
+    | [] => []
+    | arr => sort(arr)
+  }
 }
