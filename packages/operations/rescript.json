@@ -9,7 +9,7 @@
     "module": "commonjs",
     "in-source": true
   },
-  "suffix": ".bs.js",
+  "suffix": ".res.js",
   "bsc-flags": ["-open CorePlus"],
   "bs-dependencies": ["@rescript/core", "@re-graphql-codegen/core-plus", "@re-graphql-codegen/graphql", "@re-graphql-codegen/graphql-codegen"]
 }

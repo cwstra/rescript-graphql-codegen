@@ -2,10 +2,10 @@
 'use strict';
 
 var Graphql = require("graphql");
-var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.bs.js");
-var Core__List = require("@rescript/core/src/Core__List.bs.js");
-var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.bs.js");
-var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.bs.js");
+var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.res.js");
+var Core__List = require("@rescript/core/src/Core__List.res.js");
+var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.res.js");
+var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.res.js");
 var Caml_exceptions = require("rescript/lib/js/caml_exceptions.js");
 
 var Unknown_type = /* @__PURE__ */Caml_exceptions.create("WorkItem-GraphqlCodegenOperations.Unknown_type");
