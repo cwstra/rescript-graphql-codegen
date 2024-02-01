@@ -1,0 +1,4 @@
+fragment MissionInfo on CapsuleMission {
+  flight
+  name
+}

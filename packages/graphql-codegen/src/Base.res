@@ -10,3 +10,11 @@ type documentFile = {
   rawSDL?: string,
   location: string,
 }
+type resolvedFragment = {
+  name: string,
+  onType: string,
+  node: Graphql.AST.FragmentDefinitionNode.t,
+  isExternal: bool,
+  importFrom?: string,
+  level: int,
+}

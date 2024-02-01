@@ -9,6 +9,8 @@ var WorkItem$GraphqlCodegenOperations = require("./WorkItem.bs.js");
 
 async function plugin(schema, documents, config) {
   try {
+    console.log(config);
+    console.log(documents);
     var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
                   return AST$Graphql.addTypenameToDocument(d.document).definitions;
                 }), (function (d) {
@@ -45,14 +47,16 @@ async function plugin(schema, documents, config) {
               })), (function (f) {
             return f;
           }));
-    var fragments = match[0];
-    var fragmentLookup = Object.fromEntries(fragments.map(function (f) {
+    var allFragments = config.externalFragments.map(function (e) {
+            return AST$Graphql.addTypenameToFragment(e.node);
+          }).concat(match[0]);
+    var fragmentLookup = Object.fromEntries(allFragments.map(function (f) {
               return [
                       AST$Graphql.NameNode.value(AST$Graphql.FragmentDefinitionNode.name(f)),
                       f
                     ];
             }));
-    var sorted = Helpers$GraphqlCodegen.sortFragmentsTopologically(fragments).map(function (prim) {
+    var sorted = Helpers$GraphqlCodegen.sortFragmentsTopologically(allFragments).map(function (prim) {
             return prim;
           }).concat(match[1].map(function (prim) {
               return prim;
@@ -68,11 +72,5 @@ async function plugin(schema, documents, config) {
   }
 }
 
-var config = {
-  scalarModule: "GraphqlBase.Scalars",
-  baseTypesModule: "GraphqlBase.Gen"
-};
-
-exports.config = config;
 exports.plugin = plugin;
 /* AST-Graphql Not a pure module */

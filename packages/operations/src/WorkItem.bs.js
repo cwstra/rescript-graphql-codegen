@@ -36,6 +36,58 @@ var Simple_type_with_fields = /* @__PURE__ */Caml_exceptions.create("WorkItem-Gr
 
 var Invalid_type_name = /* @__PURE__ */Caml_exceptions.create("WorkItem-GraphqlCodegenOperations.Invalid_type_name");
 
+var keywords = [
+  "await",
+  "open",
+  "true",
+  "false",
+  "let",
+  "and",
+  "rec",
+  "as",
+  "exception",
+  "assert",
+  "lazy",
+  "if",
+  "else",
+  "for",
+  "in",
+  "while",
+  "switch",
+  "when",
+  "external",
+  "type",
+  "private",
+  "constraint",
+  "mutable",
+  "include",
+  "module",
+  "try"
+];
+
+function sanitizeFieldName(original, fields) {
+  if (!keywords.includes(original)) {
+    return [
+            original,
+            undefined
+          ];
+  }
+  var _fieldName = original;
+  while(true) {
+    var fieldName = _fieldName;
+    var newName = fieldName + "_";
+    var match = fields[newName];
+    if (match === undefined) {
+      return [
+              newName,
+              original
+            ];
+    }
+    _fieldName = newName;
+    continue ;
+  };
+}
+
 function WithGqlWrappers(Base) {
   return {};
 }
@@ -638,61 +690,68 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
                         }), undefined);
           };
           var parseSelectionSet = function (param, midfix) {
+            var fields = param.fields;
             var type_ = param.type_;
             var lookup;
             lookup = type_.TAG === "Object" ? Schema$Graphql.$$Object.getFields(type_._0) : Schema$Graphql.Interface.getFields(type_._0);
-            return Object.entries(param.fields).map(function (param) {
-                        var k = param[0];
-                        var fieldType = Schema$Graphql.Field.type_(CorePlus.$$Option.getOrExn(lookup[k], {
+            return Object.entries(fields).map(function (param) {
+                        var rawKey = param[0];
+                        var match = sanitizeFieldName(rawKey, fields);
+                        var alias = match[1];
+                        var fieldType = Schema$Graphql.Field.type_(CorePlus.$$Option.getOrExn(lookup[rawKey], {
                                   RE_EXN_ID: Unknown_field,
-                                  _1: k
+                                  _1: rawKey
                                 }));
                         var selections = param[1].flatMap(nonTypenameSelections);
-                        var match = CorePlus.$$Array.headTail(selections);
-                        var match$1 = extractNamed(fieldType);
-                        var match$2;
-                        if (match !== undefined) {
-                          if (match$1.TAG === "Left") {
+                        var match$1 = CorePlus.$$Array.headTail(selections);
+                        var match$2 = extractNamed(fieldType);
+                        var match$3;
+                        if (match$1 !== undefined) {
+                          if (match$2.TAG === "Left") {
                             throw {
                                   RE_EXN_ID: Composite_type_without_fields,
-                                  _1: match$1._0[0],
+                                  _1: match$2._0[0],
                                   Error: new Error()
                                 };
                           }
-                          var match$3 = match$1._0;
-                          var res = extractSelectionType(match$3[1], [
-                                match[0],
-                                match[1]
+                          var match$4 = match$2._0;
+                          var res = extractSelectionType(match$4[1], [
+                                match$1[0],
+                                match$1[1]
                               ]);
-                          var fieldPath = CorePlus.$$Option.mapOr(midfix, namePath.concat([k]), (function (m) {
+                          var fieldPath = CorePlus.$$Option.mapOr(midfix, namePath.concat([rawKey]), (function (m) {
                                   return namePath.concat([
                                               m,
-                                              k
+                                              rawKey
                                             ]);
                                 }));
-                          match$2 = [
-                            match$3[2](joinPath(fieldPath)),
+                          match$3 = [
+                            match$4[2](joinPath(fieldPath)),
                             {
                               TAG: "PrintType",
                               namePath: fieldPath,
                               type_: res
                             }
                           ];
-                        } else if (match$1.TAG === "Left") {
-                          match$2 = [
-                            match$1._0[1],
+                        } else if (match$2.TAG === "Left") {
+                          match$3 = [
+                            match$2._0[1],
                             undefined
                           ];
                         } else {
                           throw {
                                 RE_EXN_ID: Simple_type_with_fields,
-                                _1: match$1._0[0],
+                                _1: match$2._0[0],
                                 Error: new Error()
                               };
                         }
+                        var mainLine = "    " + match[0] + ": " + match$3[0] + ",";
                         return [
-                                "    " + k + ": " + match$2[0] + ",",
-                                match$2[1]
+                                alias !== undefined ? [
+                                      "    @as(\"" + alias + "\")",
+                                      mainLine
+                                    ].join("\n") : mainLine,
+                                match$3[1]
                               ];
                       });
           };
@@ -759,9 +818,12 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
                   match[0]
                 ];
       case "PrintVariables" :
+          var fields = t.fields;
           return [
                   /* [] */0,
-                  [].concat(["  let variables = {"], Object.entries(t.fields).map(function (param) {
+                  [].concat(["  let variables = {"], Object.entries(fields).map(function (param) {
+                            var match = sanitizeFieldName(param[0], fields);
+                            var alias = match[1];
                             var value = traverse(param[1], (function (s) {
                                     return scalarModule + "." + s + ".t";
                                   }), (function (s) {
@@ -773,7 +835,15 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
                                   }), (function (s) {
                                     return nullType + "<" + s + ">";
                                   }), undefined);
-                            return "    " + param[0] + ": " + value;
+                            var mainLine = "    " + match[0] + ": " + value;
+                            if (alias !== undefined) {
+                              return [
+                                        "    @as(\"" + alias + "\")",
+                                        mainLine
+                                      ].join("\n");
+                            } else {
+                              return mainLine;
+                            }
                           }), ["  }"])
                 ];
       case "PrintDocument" :
@@ -901,6 +971,8 @@ exports.Unknown_field = Unknown_field;
 exports.Composite_type_without_fields = Composite_type_without_fields;
 exports.Simple_type_with_fields = Simple_type_with_fields;
 exports.Invalid_type_name = Invalid_type_name;
+exports.keywords = keywords;
+exports.sanitizeFieldName = sanitizeFieldName;
 exports.WithGqlWrappers = WithGqlWrappers;
 exports.BaseInput = BaseInput;
 exports.InputType = InputType;

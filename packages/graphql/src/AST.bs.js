@@ -767,6 +767,10 @@ function addTypenameToDocument(prim) {
   return Graphql_facade.addTypenameToDocument(prim);
 }
 
+function addTypenameToFragment(prim) {
+  return Graphql_facade.addTypenameToDocument(prim);
+}
+
 exports.NameNode = NameNode;
 exports.VariableNode = VariableNode;
 exports.IntValueNode = IntValueNode;
@@ -811,4 +815,5 @@ exports.TypeSystemExtensionNode = TypeSystemExtensionNode;
 exports.DefinitionNode = DefinitionNode;
 exports.DocumentNode = DocumentNode;
 exports.addTypenameToDocument = addTypenameToDocument;
+exports.addTypenameToFragment = addTypenameToFragment;
 /* ./graphql_facade Not a pure module */

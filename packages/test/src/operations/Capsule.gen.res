@@ -1,3 +1,18 @@
+module MissionInfo = {
+  let document = `
+    fragment MissionInfo on CapsuleMission {
+      flight
+      name
+      __typename
+    }
+  `
+  let variables = {
+  }
+  type t = {
+    flight: null<GraphqlBase.Scalars.Int.t>,
+    name: null<GraphqlBase.Scalars.String.t>,
+  }
+}
 module Capsule = {
   let document = `
     query Capsule($id: ID!) {
@@ -5,8 +20,7 @@ module Capsule = {
         id
         landings
         missions {
-          flight
-          name
+          ...MissionInfo
           __typename
         }
         original_launch
@@ -31,7 +45,8 @@ module Capsule = {
     original_launch: null<GraphqlBase.Scalars.Date.t>,
     reuse_count: null<GraphqlBase.Scalars.Int.t>,
     status: null<GraphqlBase.Scalars.String.t>,
-    type: null<GraphqlBase.Scalars.String.t>,
+    @as("type")
+    type_: null<GraphqlBase.Scalars.String.t>,
   }
   type t = {
     capsule: null<t_capsule>,

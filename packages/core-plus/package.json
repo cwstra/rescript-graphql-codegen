@@ -13,7 +13,7 @@
     "dev": "rescript build -w"
   },
   "dependencies": {
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
-    "rescript": "^11.0.0-rc.8"
+    "@rescript/core": "^0.6.0",
+    "rescript": "^11.0.1"
   }
 }

@@ -9,8 +9,8 @@
     "graphql": "^16.0.0"
   },
   "dependencies": {
-    "@rescript/core": "git+https://github.com/cwstra/rescript-core#rescript-v11",
-    "rescript": "^11.0.0-rc.8",
+    "@rescript/core": "^0.6.0",
+    "rescript": "^11.0.1",
     "rescript-nodejs": "^15.0.0"
   },
   "packageManager": "yarn@4.0.2",

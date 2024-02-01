@@ -644,3 +644,6 @@ module DocumentNode = {
 
 @module("./graphql_facade")
 external addTypenameToDocument: (DocumentNode.t) => DocumentNode.t = "addTypenameToDocument"
+
+@module("./graphql_facade")
+external addTypenameToFragment: (FragmentDefinitionNode.t) => FragmentDefinitionNode.t = "addTypenameToDocument"

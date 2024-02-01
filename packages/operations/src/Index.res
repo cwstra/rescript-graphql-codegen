@@ -4,13 +4,9 @@ open GraphqlCodegen
 type config = {
   scalarModule: string,
   baseTypesModule: string,
+  externalFragments: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
-}
-
-let config = {
-  scalarModule: "GraphqlBase.Scalars",
-  baseTypesModule: "GraphqlBase.Gen",
 }
 
 let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) => 
@@ -18,7 +14,9 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
     // Need to have __typename for unions;
     // at least for now, just going to shove
     // that onto seleciton sets at the start.
-    let (fragments, operations) =
+    Console.log(config)
+    Console.log(documents)
+    let (internalFragments, operations) =
       Array.flatMap(documents, d =>  AST.addTypenameToDocument(d.document).definitions)
       ->Array.filterMap(d =>
         switch d {
@@ -52,14 +50,21 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
         }
       )
       ->Either.partition(f => f)
+
+    let allFragments =
+      Array.concat(
+        Array.map(config.externalFragments, e => AST.addTypenameToFragment(e.node)), 
+        internalFragments
+      )
+
     let fragmentLookup =
-      Array.map(fragments, f => (
+      Array.map(allFragments, f => (
         AST.FragmentDefinitionNode.name(f)->AST.NameNode.value,
         f,
       ))->Dict.fromArray
 
     let sorted = Array.concat(
-      Helpers.sortFragmentsTopologically(fragments)->Array.map(
+      Helpers.sortFragmentsTopologically(allFragments)->Array.map(
         AST.ExecutableDefinitionNode.fromFragmentDefinition,
       ),
       operations->Array.map(AST.ExecutableDefinitionNode.fromOperationDefinition),

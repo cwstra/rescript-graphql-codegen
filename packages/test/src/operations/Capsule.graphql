@@ -5,8 +5,7 @@ query Capsule(
     id
     landings
     missions {
-      flight
-      name
+      ...MissionInfo
     }
     original_launch
     reuse_count

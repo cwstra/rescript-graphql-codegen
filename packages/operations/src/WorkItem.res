@@ -16,6 +16,50 @@ exception Composite_type_without_fields(string)
 exception Simple_type_with_fields(string)
 exception Invalid_type_name(array<string>)
 
+let keywords = [
+  "await",
+  "open",
+  "true",
+  "false",
+  "let",
+  "and",
+  "rec",
+  "as",
+  "exception",
+  "assert",
+  "lazy",
+  "if",
+  "else",
+  "for",
+  "in",
+  "while",
+  "switch",
+  "when",
+  "external",
+  "type",
+  "private",
+  "constraint",
+  "mutable",
+  "include",
+  "module",
+  "try",
+]
+
+let sanitizeFieldName = (original, fields: Dict.t<_>) =>
+  if Array.includes(keywords, original) {
+    let rec wrapField = (fieldName) => {
+      let newName = `${fieldName}_`
+      switch Dict.get(fields, newName) {
+        | Some(_) => wrapField(newName)
+        | None => (newName, Some(original))
+      }
+    }
+    wrapField(original)
+  } else {
+    (original, None)
+  }
+
+
 module type Container = {
   type t
 }
@@ -343,10 +387,11 @@ let process = (
           | Object(o) => Schema.Object.getFields(o)
           | Interface(i) => Schema.Interface.getFields(i)
           }
-          Dict.toArray(fields)->Array.map(((k, v)) => {
+          Dict.toArray(fields)->Array.map(((rawKey, v)) => {
+            let (key, alias) = sanitizeFieldName(rawKey, fields)
             let fieldType =
-              Dict.get(lookup, k)
-              ->Option.getOrExn(Unknown_field(k))
+              Dict.get(lookup, rawKey)
+              ->Option.getOrExn(Unknown_field(rawKey))
               ->Schema.Field.type_
             let selections = Array.flatMap(v, nonTypenameSelections)
             let (value, neededType) = switch (Array.headTail(selections), extractNamed(fieldType)) {
@@ -356,8 +401,8 @@ let process = (
                 let fieldPath = 
                   Option.mapOr(
                     midfix,
-                    Array.concat(namePath, [k]),
-                    m => Array.concat(namePath, [m, k])
+                    Array.concat(namePath, [rawKey]),
+                    m => Array.concat(namePath, [m, rawKey])
                   )
                 (wrapper(joinPath(fieldPath)), 
                  Some(PrintType({namePath: fieldPath, type_: res})))
@@ -365,7 +410,11 @@ let process = (
             | (Some(_), Left(n, _)) => raise(Composite_type_without_fields(n))
             | (None, Right(n, _, _)) => raise(Simple_type_with_fields(n))
             }
-            (`    ${k}: ${value},`, neededType)
+            let mainLine = `    ${key}: ${value},`
+            (switch alias {
+              | None => mainLine
+              | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
+            }, neededType)
           })
         }
         let (lines, bases) = switch type_ {
@@ -423,8 +472,10 @@ let process = (
     | PrintVariables({fields}) => {
         (list{}, Array.concatMany([], [
           ["  let variables = {"],
+          
           Dict.toArray(fields)
-          ->Array.map(((key, inputType)) =>  {
+          ->Array.map(((rawKey, inputType)) =>  {
+            let (key, alias) = sanitizeFieldName(rawKey, fields)
             let value =
               InputType.traverse(
                 inputType,
@@ -434,7 +485,11 @@ let process = (
                 ~onList= s=>`${listType}<${s}>`,
                 ~onNull= s=>`${nullType}<${s}>`
               )
-            `    ${key}: ${value}`
+            let mainLine = `    ${key}: ${value}`
+            switch alias {
+              | None => mainLine
+              | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
+            }
           }),
           ["  }"]
         ]))
