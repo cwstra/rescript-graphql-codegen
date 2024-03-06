@@ -303,7 +303,9 @@ var UnresolvedOutputType = {
 };
 
 function fromDefinitions(definitions) {
-  return Core__List.fromArray(definitions.toReversed().map(function (d) {
+  var res = definitions.slice();
+  res.reverse();
+  return Core__List.fromArray(res.map(function (d) {
                   return {
                           TAG: "PrintDefinition",
                           _0: d

@@ -182,10 +182,14 @@ type t =
   | PrintDocument(ExecutableDefinitionNode.t)
   | PrintDefinition(ExecutableDefinitionNode.t)
 
-let fromDefinitions = definitions =>
-  Array.toReversed(definitions)
+let fromDefinitions = definitions => {
+  let res = Array.copy(definitions)
+  Array.reverse(res)
+  res
   ->Array.map(d => PrintDefinition(d))
   ->List.fromArray
+}
+
 
 let joinPath = path => {
   // TODO: Make sure the separator doesn't 
