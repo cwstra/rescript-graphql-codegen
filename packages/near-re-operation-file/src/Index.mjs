@@ -4,10 +4,10 @@
 var Path = require("path");
 var Graphql = require("graphql");
 var Process = require("process");
-var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.res.js");
-var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.res.js");
+var CorePlus = require("@re-graphql-codegen/core-plus/src/CorePlus.mjs");
+var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.mjs");
 var Caml_option = require("rescript/lib/js/caml_option.js");
-var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.res.js");
+var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.mjs");
 var Caml_exceptions = require("rescript/lib/js/caml_exceptions.js");
 var Caml_splice_call = require("rescript/lib/js/caml_splice_call.js");
 

@@ -1692,7 +1692,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/core-plus@workspace:packages/core-plus"
   dependencies:
-    "@rescript/core": "npm:^0.6.0"
+    "@rescript/core": "npm:^1.1.0"
     rescript: "npm:^11.0.1"
   languageName: unknown
   linkType: soft
@@ -1773,6 +1773,15 @@ __metadata:
   peerDependencies:
     rescript: "*"
   checksum: 1976f90582d1fe368449b0c6d46d6173625f66c18ac99d02cefecf41ea05d36bf50c23e71b70ac5045376216f843e95d80d6cf22a67c9d7811f8a7bc668b8cc8
+  languageName: node
+  linkType: hard
+
+"@rescript/core@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@rescript/core@npm:1.1.0"
+  peerDependencies:
+    rescript: ">=11.0.0 || ^11.1.0-rc.2"
+  checksum: 439e4e1f35db2d5e39de1a29b98234d84f285307ed5dd5e6db682b5ede24dd8020b207620b6063d78d7818258d7ac4b29370fbcf38604b26453f9781155bf504
   languageName: node
   linkType: hard
 

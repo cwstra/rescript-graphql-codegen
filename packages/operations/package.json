@@ -1,4 +1,5 @@
 {
+  "main": "src/Index.res.js",
   "name": "@re-graphql-codegen/operations",
   "version": "0.0.1",
   "keywords": [

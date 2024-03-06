@@ -317,8 +317,8 @@ module Option = {
   include RescriptCore.Option
   let ok_or = (opt, err): result<_, _> =>
     switch opt {
-    | Some(v) => RescriptCore.Result.Ok(v)
-    | None => RescriptCore.Result.Error(err)
+    | Some(v) => Ok(v)
+    | None => Error(err)
     }
   let apply: (option<'a => 'b>, 'a) => option<'b> = %raw(`
     (mFn, a) => mFn?.(a)

@@ -2,14 +2,14 @@
 'use strict';
 
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
-var Core__Dict = require("@rescript/core/src/Core__Dict.res.js");
+var Core__Dict = require("@rescript/core/src/Core__Dict.mjs");
 var Caml_option = require("rescript/lib/js/caml_option.js");
-var Core__Array = require("@rescript/core/src/Core__Array.res.js");
-var Core__Error = require("@rescript/core/src/Core__Error.res.js");
-var Core__Option = require("@rescript/core/src/Core__Option.res.js");
-var Core__Result = require("@rescript/core/src/Core__Result.res.js");
-var Core__String = require("@rescript/core/src/Core__String.res.js");
-var Core__Ordering = require("@rescript/core/src/Core__Ordering.res.js");
+var Core__Array = require("@rescript/core/src/Core__Array.mjs");
+var Core__Error = require("@rescript/core/src/Core__Error.mjs");
+var Core__Option = require("@rescript/core/src/Core__Option.mjs");
+var Core__Result = require("@rescript/core/src/Core__Result.mjs");
+var Core__String = require("@rescript/core/src/Core__String.mjs");
+var Core__Ordering = require("@rescript/core/src/Core__Ordering.mjs");
 
 function $$setTimeout$1(prim0, prim1) {
   return setTimeout(prim0, prim1);
