@@ -26,7 +26,97 @@ function getFieldType(baseType, fieldName) {
       };
 }
 
-var Cyclic_fragments = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Cyclic_fragments");
+var keywords = [
+  "await",
+  "open",
+  "true",
+  "false",
+  "let",
+  "and",
+  "rec",
+  "as",
+  "exception",
+  "assert",
+  "lazy",
+  "if",
+  "else",
+  "for",
+  "in",
+  "while",
+  "switch",
+  "when",
+  "external",
+  "type",
+  "private",
+  "constraint",
+  "mutable",
+  "include",
+  "module",
+  "try"
+];
+
+function sanitizeFieldName(original, fields) {
+  if (!keywords.includes(original)) {
+    return [
+            original,
+            undefined
+          ];
+  }
+  var _fieldName = original;
+  while(true) {
+    var fieldName = _fieldName;
+    var newName = fieldName + "_";
+    var match = fields[newName];
+    if (match === undefined) {
+      return [
+              newName,
+              original
+            ];
+    }
+    _fieldName = newName;
+    continue ;
+  };
+}
+
+var Cyclic_topology = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Cyclic_topology");
+
+function topologicalSort(input, getValue, updateValue, mapOut) {
+  if (input.length !== 0) {
+    var _unsortedFragments = input;
+    var _sortedFragmentsOpt;
+    while(true) {
+      var sortedFragmentsOpt = _sortedFragmentsOpt;
+      var unsortedFragments = _unsortedFragments;
+      var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
+      unsortedFragments.sort(function (f1, f2) {
+            return CorePlus.Ordering.compare(getValue(f1), getValue(f2));
+          });
+      var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
+              return getValue(f) === 0;
+            }));
+      var independent = match[0];
+      if (independent.length !== 0) {
+        var dependent = match[1];
+        if (dependent.length === 0) {
+          return sortedFragments.concat(independent).map(mapOut);
+        }
+        _sortedFragmentsOpt = sortedFragments.concat(independent);
+        _unsortedFragments = dependent.map((function(independent){
+            return function (fragment) {
+              return updateValue(fragment, independent);
+            }
+            }(independent)));
+        continue ;
+      }
+      throw {
+            RE_EXN_ID: Cyclic_topology,
+            Error: new Error()
+          };
+    };
+  } else {
+    return [];
+  }
+}
 
 function sortFragmentsTopologically(definitions) {
   var extractDependsFromSelections = function (_selections, _fragmentNamesOpt) {
@@ -75,55 +165,84 @@ function sortFragmentsTopologically(definitions) {
                 dependsOn: extractDependsFromSelections(AST$Graphql.SelectionSetNode.selections(AST$Graphql.FragmentDefinitionNode.selectionSet(node)), undefined)
               };
       });
-  if (withDepends.length !== 0) {
-    var _unsortedFragments = withDepends;
-    var _sortedFragmentsOpt;
-    while(true) {
-      var sortedFragmentsOpt = _sortedFragmentsOpt;
-      var unsortedFragments = _unsortedFragments;
-      var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
-      unsortedFragments.sort(function (f1, f2) {
-            return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
-          });
-      var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
-              return f.dependsOn.length === 0;
-            }));
-      var independent = match[0];
-      if (independent.length !== 0) {
-        var dependent = match[1];
-        if (dependent.length === 0) {
-          return sortedFragments.concat(independent).map(function (f) {
-                      return f.node;
-                    });
-        }
-        _sortedFragmentsOpt = sortedFragments.concat(independent);
-        _unsortedFragments = dependent.map((function(independent){
-            return function (fragment) {
-              return {
-                      name: fragment.name,
-                      node: fragment.node,
-                      dependsOn: fragment.dependsOn.filter(function (dependency) {
-                            return independent.some(function (i) {
-                                        return i.name === dependency;
-                                      });
-                          })
-                    };
-            }
-            }(independent)));
-        continue ;
-      }
-      throw {
-            RE_EXN_ID: Cyclic_fragments,
-            Error: new Error()
-          };
-    };
-  } else {
-    return [];
-  }
+  return topologicalSort(withDepends, (function (f) {
+                return f.dependsOn.length;
+              }), (function (f, is) {
+                return {
+                        name: f.name,
+                        node: f.node,
+                        dependsOn: f.dependsOn.filter(function (dependency) {
+                              return is.some(function (i) {
+                                          return i.name === dependency;
+                                        });
+                            })
+                      };
+              }), (function (f) {
+                return f.node;
+              }));
+}
+
+function sortInputObjectsTopologically(definitions) {
+  var withDepends = definitions.map(function (node) {
+        return {
+                name: Schema$Graphql.InputObject.name(node),
+                node: node,
+                dependsOn: CorePlus.$$Array.filterMap(Object.values(Schema$Graphql.InputObject.getFields(node)), (function (field) {
+                        var _f = Schema$Graphql.InputField.type_(field);
+                        while(true) {
+                          var f = _f;
+                          var io = Schema$Graphql.Input.parse(f);
+                          switch (io.TAG) {
+                            case "Scalar" :
+                            case "Enum" :
+                                return ;
+                            case "InputObject" :
+                                return Schema$Graphql.InputObject.name(io._0);
+                            case "List" :
+                                _f = Schema$Graphql.List.ofType(io._0);
+                                continue ;
+                            case "NonNull" :
+                                var io$1 = Schema$Graphql.Input.parse_nn(Schema$Graphql.NonNull.ofType(io._0));
+                                switch (io$1.TAG) {
+                                  case "Scalar" :
+                                  case "Enum" :
+                                      return ;
+                                  case "InputObject" :
+                                      return Schema$Graphql.InputObject.name(io$1._0);
+                                  case "List" :
+                                      _f = Schema$Graphql.List.ofType(io$1._0);
+                                      continue ;
+                                  
+                                }
+                            
+                          }
+                        };
+                      }))
+              };
+      });
+  return topologicalSort(withDepends, (function (io) {
+                return io.dependsOn.length;
+              }), (function (io, is) {
+                return {
+                        name: io.name,
+                        node: io.node,
+                        dependsOn: io.dependsOn.filter(function (dependency) {
+                              return is.some(function (i) {
+                                          return i.name === dependency;
+                                        });
+                            })
+                      };
+              }), (function (f) {
+                return f.node;
+              }));
 }
 
 exports.Unknown_field = Unknown_field;
 exports.getFieldType = getFieldType;
-exports.Cyclic_fragments = Cyclic_fragments;
+exports.keywords = keywords;
+exports.sanitizeFieldName = sanitizeFieldName;
+exports.Cyclic_topology = Cyclic_topology;
+exports.topologicalSort = topologicalSort;
 exports.sortFragmentsTopologically = sortFragmentsTopologically;
-/* AST-Graphql Not a pure module */
+exports.sortInputObjectsTopologically = sortInputObjectsTopologically;
+/* CorePlus Not a pure module */

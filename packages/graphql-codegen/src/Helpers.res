@@ -22,14 +22,75 @@ let getFieldType = (baseType: Schema.ValidForField.t, fieldName) => {
   }
 }
 
+let keywords = [
+  "await",
+  "open",
+  "true",
+  "false",
+  "let",
+  "and",
+  "rec",
+  "as",
+  "exception",
+  "assert",
+  "lazy",
+  "if",
+  "else",
+  "for",
+  "in",
+  "while",
+  "switch",
+  "when",
+  "external",
+  "type",
+  "private",
+  "constraint",
+  "mutable",
+  "include",
+  "module",
+  "try",
+]
+
+let sanitizeFieldName = (original, fields: Dict.t<_>) =>
+  if Array.includes(keywords, original) {
+    let rec wrapField = fieldName => {
+      let newName = `${fieldName}_`
+      switch Dict.get(fields, newName) {
+      | Some(_) => wrapField(newName)
+      | None => (newName, Some(original))
+      }
+    }
+    wrapField(original)
+  } else {
+    (original, None)
+  }
+
+exception Cyclic_topology
+
+let topologicalSort = (input, getValue, updateValue, mapOut) => {
+  let rec sort = (unsortedFragments, ~sortedFragments=[]) => {
+    Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(getValue(f1), getValue(f2)))
+    switch Array.takeDropWhile(unsortedFragments, f => getValue(f) == 0) {
+    | ([], _) => raise(Cyclic_topology)
+    | (independent, []) => Array.concat(sortedFragments, independent)->Array.map(mapOut)
+    | (independent, dependent) =>
+      sort(
+        Array.map(dependent, fragment => updateValue(fragment, independent)),
+        ~sortedFragments=Array.concat(sortedFragments, independent),
+      )
+    }
+  }
+  switch input {
+  | [] => []
+  | arr => sort(arr)
+  }
+}
+
 type fragmentWithDeps = {
   name: string,
   node: AST.FragmentDefinitionNode.t,
   dependsOn: array<string>,
 }
-
-exception Cyclic_fragments
-
 let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.t>) => {
   open AST
   let rec extractDependsFromSelections = (selections, ~fragmentNames=[]) => {
@@ -65,27 +126,54 @@ let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.
       ->extractDependsFromSelections,
     }
   })
-  let rec sort = (unsortedFragments: array<fragmentWithDeps>, ~sortedFragments=[]) => {
-    Array.sort(unsortedFragments, (f1, f2) =>
-      Ordering.compare(f1.dependsOn->Array.length, f2.dependsOn->Array.length)
-    )
-    switch Array.takeDropWhile(unsortedFragments, f => f.dependsOn->Array.length == 0) {
-    | ([], _) => raise(Cyclic_fragments)
-    | (independent, []) => Array.concat(sortedFragments, independent)->Array.map(f => f.node)
-    | (independent, dependent) =>
-      sort(
-        Array.map(dependent, fragment => {
-          ...fragment,
-          dependsOn: Array.filter(fragment.dependsOn, dependency =>
-            Array.some(independent, i => i.name == dependency)
-          ),
-        }),
-        ~sortedFragments=Array.concat(sortedFragments, independent),
-      )
-    }
-  }
-  switch withDepends {
-    | [] => []
-    | arr => sort(arr)
-  }
+  topologicalSort(
+    withDepends,
+    f => f.dependsOn->Array.length,
+    (f, is) => {
+      ...f,
+      dependsOn: Array.filter(f.dependsOn, dependency => Array.some(is, i => i.name == dependency)),
+    },
+    f => f.node,
+  )
+}
+
+type ioWithDeps = {
+  name: string,
+  node: Schema.InputObject.t,
+  dependsOn: array<string>,
+}
+// TODO?: Handle dependency cycles
+let sortInputObjectsTopologically = (definitions: array<Schema.InputObject.t>) => {
+  let withDepends = Array.map(definitions, node => {
+    name: Schema.InputObject.name(node),
+    node,
+    dependsOn: Schema.InputObject.getFields(node)
+    ->Dict.valuesToArray
+    ->Array.filterMap(field => {
+      let rec go = f =>
+        switch Schema.Input.parse(f) {
+        | InputObject(io) => Some(Schema.InputObject.name(io))
+        | List(l) => Schema.List.ofType(l)->go
+        | NonNull(nn) =>
+          switch Schema.NonNull.ofType(nn)->Schema.Input.parse_nn {
+          | InputObject(io) => Some(Schema.InputObject.name(io))
+          | List(l) => Schema.List.ofType(l)->go
+          | Scalar(_) | Enum(_) => None
+          }
+        | Scalar(_) | Enum(_) => None
+        }
+      go(Schema.InputField.type_(field))
+    }),
+  })
+  topologicalSort(
+    withDepends,
+    io => io.dependsOn->Array.length,
+    (io, is) => {
+      ...io,
+      dependsOn: Array.filter(io.dependsOn, dependency =>
+        Array.some(is, i => i.name == dependency)
+      ),
+    },
+    f => f.node,
+  )
 }

@@ -1,0 +1,15 @@
+{
+  "name": "@re-graphql-codegen/base-types",
+  "namespace": "graphql-codegen-base-types",
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  },
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".mjs",
+  "bsc-flags": ["-open CorePlus"],
+  "bs-dependencies": ["@rescript/core", "@re-graphql-codegen/core-plus", "@re-graphql-codegen/graphql", "@re-graphql-codegen/graphql-codegen"]
+}

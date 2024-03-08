@@ -1,6 +1,7 @@
 import type {CodegenConfig} from '@graphql-codegen/cli'
 
 const config: CodegenConfig = {
+  pluginLoader: (mod) => mod.includes('@re-graphql-codegen') ? import(mod) : require(mod),
   generates: {
     "src/operations": {
 	preset: "near-operation-file",
@@ -15,7 +16,8 @@ const config: CodegenConfig = {
 	schema: "src/schema.graphql",
 	documents: "src/operations/*.graphql",
 	plugins: [
-	  "../operations/src/Index.bs.js"
+	  "../base-types/src/Index.mjs",
+	  "../operations/src/Index.mjs"
 	]
     }
   }

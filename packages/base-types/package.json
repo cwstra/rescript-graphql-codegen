@@ -1,0 +1,25 @@
+{
+  "main": "src/Index.res.js",
+  "name": "@re-graphql-codegen/base-types",
+  "version": "0.0.1",
+  "keywords": [
+    "rescript"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "build": "rescript",
+    "clean": "rescript clean",
+    "fmt": "rescript format",
+    "dev": "rescript build -w"
+  },
+  "dependencies": {
+    "@re-graphql-codegen/core-plus": "workspace:*",
+    "@re-graphql-codegen/graphql": "workspace:*",
+    "@re-graphql-codegen/graphql-codegen": "workspace:*",
+    "rescript": "^11.0.1"
+  },
+  "peerDependencies": {
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
+  }
+}

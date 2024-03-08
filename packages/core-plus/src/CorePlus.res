@@ -292,17 +292,17 @@ let panic = RescriptCore.Error.panic
 module Dict = {
   include RescriptCore.Dict
   let put: (t<'t>, string, 't) => t<'t> = %raw(`
-    (dict, key, value) => ({...dict, [key]: value}) 
+    (dict, key, value) => ({...dict, [key]: value})
   `)
   let merge: (t<'t>, t<'t>) => t<'t> = %raw(`
-    (d1, d2) => ({...d1, ...d2}) 
+    (d1, d2) => ({...d1, ...d2})
   `)
   let mergeWith: (t<'t>, t<'t>, ('t, 't) => 't) => t<'t> = %raw(`
     (d1, d2, fn) => {
       const result = {...d1}
       Object.entries(d2).forEach(([k, v]) => {
-        result[k] = 
-          k in d1 
+        result[k] =
+          k in d1
             ? fn(d1[k], d2[k])
             : d2[k]
       })
@@ -374,7 +374,18 @@ module Either = {
   type t<'a, 'b> =
     | Left('a)
     | Right('b)
-  let partition = (arr, fn) => {
+  let partition = arr => {
+    let lefts = []
+    let rights = []
+    Array.forEach(arr, elem =>
+      switch elem {
+      | Left(l) => Array.push(lefts, l)
+      | Right(r) => Array.push(rights, r)
+      }
+    )
+    (lefts, rights)
+  }
+  let partitionMap = (arr, fn) => {
     let lefts = []
     let rights = []
     Array.forEach(arr, elem =>
@@ -399,5 +410,7 @@ module Ordering = {
 }
 module String = {
   include RescriptCore.String
-  let capitalize = (s) => concat(charAt(s, 0)->toUpperCase, sliceToEnd(s, ~start=1))
+  let capitalize = s => concat(charAt(s, 0)->toUpperCase, sliceToEnd(s, ~start=1))
+  @module("./camelcase_facade")
+  external pascalCase: string => string = "pascalCase"
 }

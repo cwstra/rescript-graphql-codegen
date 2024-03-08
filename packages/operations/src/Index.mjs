@@ -9,8 +9,6 @@ var WorkItem$GraphqlCodegenOperations = require("./WorkItem.mjs");
 
 async function plugin(schema, documents, config) {
   try {
-    console.log(config);
-    console.log(documents);
     var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
                   return AST$Graphql.addTypenameToDocument(d.document).definitions;
                 }), (function (d) {
@@ -44,9 +42,7 @@ async function plugin(schema, documents, config) {
                   default:
                     return ;
                 }
-              })), (function (f) {
-            return f;
-          }));
+              })));
     var allFragments = config.externalFragments.map(function (e) {
             return AST$Graphql.addTypenameToFragment(e.node);
           }).concat(match[0]);
@@ -73,4 +69,4 @@ async function plugin(schema, documents, config) {
 }
 
 exports.plugin = plugin;
-/* AST-Graphql Not a pure module */
+/* CorePlus Not a pure module */
