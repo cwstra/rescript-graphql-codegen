@@ -66,17 +66,72 @@ let sanitizeFieldName = (original, fields: Dict.t<_>) =>
   }
 
 exception Cyclic_topology
+exception Empty_argument
 
-let topologicalSort = (input, getValue, updateValue, mapOut) => {
+type topologyNode<'value> = {
+  name: string,
+  node: 'value,
+  dependsOn: array<string>,
+}
+
+let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
+  let rateNode = n => Array.length(n.dependsOn)
+  let removeHandledDependencies = (node, names) => {
+    ...node,
+    dependsOn: Array.filter(node.dependsOn, dependency => !Array.includes(names, dependency)),
+  }
+  let handleCycle = switch mapCycle {
+  | None => _ => raise(Cyclic_topology)
+  | Some(mapCycle) =>
+    ((n, ns)) => {
+      let rec go = (collected, border, untouched, dependencies) =>
+        switch Array.flatMap(border, b => b.dependsOn)->Array.uniqBy(v => v) {
+        | [] => (mapCycle(Array.concat(collected, border)), untouched, dependencies)
+        | newDepNames => {
+            let remove = removeHandledDependencies(_, newDepNames)
+            let newCollected = Array.concat(collected, Array.map(border, remove))
+            let (newBorder, newUntouched) = Array.map(untouched, remove)->Either.partitionMap(n =>
+              if Array.includes(newDepNames, n.name) {
+                Either.Left(n)
+              } else {
+                Either.Right(n)
+              }
+            )
+            go(newCollected, newBorder, newUntouched, Array.concat(dependencies, newDepNames))
+          }
+        }
+      go([], [n], ns, [])
+    }
+  }
+  let trace = ((a, b)) => {
+    Console.log("independent")
+    (Array.map(a, n => n.name))->Console.log
+    Console.log("dependent")
+    (Array.map(b, n => `${n.name}: ${Array.joinWith(n.dependsOn, ", ")}`))->Console.log
+    (a, b)
+  }
   let rec sort = (unsortedFragments, ~sortedFragments=[]) => {
-    Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(getValue(f1), getValue(f2)))
-    switch Array.takeDropWhile(unsortedFragments, f => getValue(f) == 0) {
-    | ([], _) => raise(Cyclic_topology)
-    | (independent, []) => Array.concat(sortedFragments, independent)->Array.map(mapOut)
+    Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(rateNode(f1), rateNode(f2)))
+    switch Array.takeDropWhile(unsortedFragments, f => rateNode(f) == 0)->trace {
+    | ([], dependent) => {
+        let (cycleEntry, remainingDependents, handledDeps) =
+          Array.headTail(dependent)->Option.getOrExn(Empty_argument)->handleCycle
+        Console.log3(cycleEntry, remainingDependents, handledDeps)
+        let newSortedFragments = Array.concat(sortedFragments, [cycleEntry])
+        if Array.length(remainingDependents) == 0 {
+          newSortedFragments
+        } else {
+          sort(
+            Array.map(remainingDependents, removeHandledDependencies(_, handledDeps)),
+            ~sortedFragments=newSortedFragments,
+          )
+        }
+      }
+    | (independent, []) => Array.concat(sortedFragments, Array.map(independent, mapSingle))
     | (independent, dependent) =>
       sort(
-        Array.map(dependent, fragment => updateValue(fragment, independent)),
-        ~sortedFragments=Array.concat(sortedFragments, independent),
+        Array.map(dependent, removeHandledDependencies(_, Array.map(independent, i => i.name))),
+        ~sortedFragments=Array.concat(sortedFragments, Array.map(independent, mapSingle)),
       )
     }
   }
@@ -86,11 +141,6 @@ let topologicalSort = (input, getValue, updateValue, mapOut) => {
   }
 }
 
-type fragmentWithDeps = {
-  name: string,
-  node: AST.FragmentDefinitionNode.t,
-  dependsOn: array<string>,
-}
 let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.t>) => {
   open AST
   let rec extractDependsFromSelections = (selections, ~fragmentNames=[]) => {
@@ -126,23 +176,13 @@ let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.
       ->extractDependsFromSelections,
     }
   })
-  topologicalSort(
-    withDepends,
-    f => f.dependsOn->Array.length,
-    (f, is) => {
-      ...f,
-      dependsOn: Array.filter(f.dependsOn, dependency => Array.some(is, i => i.name == dependency)),
-    },
-    f => f.node,
-  )
+  topologicalSort(~input=withDepends, ~mapSingle=f => f.node)
 }
 
-type ioWithDeps = {
-  name: string,
-  node: Schema.InputObject.t,
-  dependsOn: array<string>,
-}
-// TODO?: Handle dependency cycles
+type inputObjectSortResult =
+  | NonRec(Schema.InputObject.t)
+  | Rec(array<Schema.InputObject.t>)
+
 let sortInputObjectsTopologically = (definitions: array<Schema.InputObject.t>) => {
   let withDepends = Array.map(definitions, node => {
     name: Schema.InputObject.name(node),
@@ -166,14 +206,10 @@ let sortInputObjectsTopologically = (definitions: array<Schema.InputObject.t>) =
     }),
   })
   topologicalSort(
-    withDepends,
-    io => io.dependsOn->Array.length,
-    (io, is) => {
-      ...io,
-      dependsOn: Array.filter(io.dependsOn, dependency =>
-        Array.some(is, i => i.name == dependency)
-      ),
+    ~input=withDepends,
+    ~mapSingle=f => NonRec(f.node),
+    ~mapCycle=fs => {
+      Rec(Array.map(fs, f => f.node))
     },
-    f => f.node,
   )
 }

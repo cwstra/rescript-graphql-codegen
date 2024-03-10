@@ -336,7 +336,7 @@ let process = (
           | Interface(i) => Schema.Interface.getFields(i)
           }
           Dict.toArray(fields)->Array.map(((rawKey, v)) => {
-            let (key, alias) = sanitizeFieldName(rawKey, fields)
+            let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
             let fieldType =
               Dict.get(lookup, rawKey)
               ->Option.getOrExn(Unknown_field(rawKey))
@@ -429,7 +429,7 @@ let process = (
           [
             ["  let variables = {"],
             Dict.toArray(fields)->Array.map(((rawKey, inputType)) => {
-              let (key, alias) = sanitizeFieldName(rawKey, fields)
+              let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
               let value = InputType.traverse(
                 inputType,
                 ~onScalar=s => `${scalarModule}.${s}.t`,

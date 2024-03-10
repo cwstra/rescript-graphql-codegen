@@ -219,6 +219,7 @@ module Array = {
     | (Some(e), es) => Some(e, es)
     | (None, _) => None
     }
+  @send external flatMapWithIndex: (array<'a>, ('a, int) => array<'b>) => array<'b> = "flatMap"
 }
 module Console = RescriptCore.Console
 module DataView = RescriptCore.DataView

@@ -7,6 +7,7 @@ var Core__List = require("@rescript/core/src/Core__List.mjs");
 var AST$Graphql = require("@re-graphql-codegen/graphql/src/AST.mjs");
 var Schema$Graphql = require("@re-graphql-codegen/graphql/src/Schema.mjs");
 var Caml_exceptions = require("rescript/lib/js/caml_exceptions.js");
+var Helpers$GraphqlCodegen = require("@re-graphql-codegen/graphql-codegen/src/Helpers.mjs");
 
 var Unknown_type = /* @__PURE__ */Caml_exceptions.create("WorkItem-GraphqlCodegenOperations.Unknown_type");
 
@@ -35,58 +36,6 @@ var Composite_type_without_fields = /* @__PURE__ */Caml_exceptions.create("WorkI
 var Simple_type_with_fields = /* @__PURE__ */Caml_exceptions.create("WorkItem-GraphqlCodegenOperations.Simple_type_with_fields");
 
 var Invalid_type_name = /* @__PURE__ */Caml_exceptions.create("WorkItem-GraphqlCodegenOperations.Invalid_type_name");
-
-var keywords = [
-  "await",
-  "open",
-  "true",
-  "false",
-  "let",
-  "and",
-  "rec",
-  "as",
-  "exception",
-  "assert",
-  "lazy",
-  "if",
-  "else",
-  "for",
-  "in",
-  "while",
-  "switch",
-  "when",
-  "external",
-  "type",
-  "private",
-  "constraint",
-  "mutable",
-  "include",
-  "module",
-  "try"
-];
-
-function sanitizeFieldName(original, fields) {
-  if (!keywords.includes(original)) {
-    return [
-            original,
-            undefined
-          ];
-  }
-  var _fieldName = original;
-  while(true) {
-    var fieldName = _fieldName;
-    var newName = fieldName + "_";
-    var match = fields[newName];
-    if (match === undefined) {
-      return [
-              newName,
-              original
-            ];
-    }
-    _fieldName = newName;
-    continue ;
-  };
-}
 
 function WithGqlWrappers(Base) {
   return {};
@@ -698,7 +647,7 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
             lookup = type_.TAG === "Object" ? Schema$Graphql.$$Object.getFields(type_._0) : Schema$Graphql.Interface.getFields(type_._0);
             return Object.entries(fields).map(function (param) {
                         var rawKey = param[0];
-                        var match = sanitizeFieldName(rawKey, fields);
+                        var match = Helpers$GraphqlCodegen.sanitizeFieldName(rawKey, fields);
                         var alias = match[1];
                         var fieldType = Schema$Graphql.Field.type_(CorePlus.$$Option.getOrExn(lookup[rawKey], {
                                   RE_EXN_ID: Unknown_field,
@@ -824,7 +773,7 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
           return [
                   /* [] */0,
                   [].concat(["  let variables = {"], Object.entries(fields).map(function (param) {
-                            var match = sanitizeFieldName(param[0], fields);
+                            var match = Helpers$GraphqlCodegen.sanitizeFieldName(param[0], fields);
                             var alias = match[1];
                             var value = traverse(param[1], (function (s) {
                                     return scalarModule + "." + s + ".t";
@@ -973,8 +922,6 @@ exports.Unknown_field = Unknown_field;
 exports.Composite_type_without_fields = Composite_type_without_fields;
 exports.Simple_type_with_fields = Simple_type_with_fields;
 exports.Invalid_type_name = Invalid_type_name;
-exports.keywords = keywords;
-exports.sanitizeFieldName = sanitizeFieldName;
 exports.WithGqlWrappers = WithGqlWrappers;
 exports.BaseInput = BaseInput;
 exports.InputType = InputType;

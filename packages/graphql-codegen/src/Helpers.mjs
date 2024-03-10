@@ -80,7 +80,89 @@ function sanitizeFieldName(original, fields) {
 
 var Cyclic_topology = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Cyclic_topology");
 
-function topologicalSort(input, getValue, updateValue, mapOut) {
+var Empty_argument = /* @__PURE__ */Caml_exceptions.create("Helpers-GraphqlCodegen.Empty_argument");
+
+function topologicalSort(input, mapSingle, mapCycle) {
+  var removeHandledDependencies = function (node, names) {
+    return {
+            name: node.name,
+            node: node.node,
+            dependsOn: node.dependsOn.filter(function (dependency) {
+                  return !names.includes(dependency);
+                })
+          };
+  };
+  var handleCycle = mapCycle !== undefined ? (function (param) {
+        var _collected = [];
+        var _border = [param[0]];
+        var _untouched = param[1];
+        var _dependencies = [];
+        while(true) {
+          var dependencies = _dependencies;
+          var untouched = _untouched;
+          var border = _border;
+          var collected = _collected;
+          var newDepNames = CorePlus.$$Array.uniqBy(border.flatMap(function (b) {
+                    return b.dependsOn;
+                  }), (function (v) {
+                  return v;
+                }));
+          if (newDepNames.length === 0) {
+            return [
+                    mapCycle(collected.concat(border)),
+                    untouched,
+                    dependencies
+                  ];
+          }
+          var remove = (function(newDepNames){
+          return function remove(__x) {
+            return removeHandledDependencies(__x, newDepNames);
+          }
+          }(newDepNames));
+          var newCollected = collected.concat(border.map(remove));
+          var match = CorePlus.Either.partitionMap(untouched.map(remove), (function(newDepNames){
+              return function (n) {
+                if (newDepNames.includes(n.name)) {
+                  return {
+                          TAG: "Left",
+                          _0: n
+                        };
+                } else {
+                  return {
+                          TAG: "Right",
+                          _0: n
+                        };
+                }
+              }
+              }(newDepNames)));
+          _dependencies = dependencies.concat(newDepNames);
+          _untouched = match[1];
+          _border = match[0];
+          _collected = newCollected;
+          continue ;
+        };
+      }) : (function (param) {
+        throw {
+              RE_EXN_ID: Cyclic_topology,
+              Error: new Error()
+            };
+      });
+  var trace = function (param) {
+    var b = param[1];
+    var a = param[0];
+    console.log("independent");
+    console.log(a.map(function (n) {
+              return n.name;
+            }));
+    console.log("dependent");
+    console.log(b.map(function (n) {
+              return n.name + ": " + n.dependsOn.join(", ");
+            }));
+    return [
+            a,
+            b
+          ];
+  };
   if (input.length !== 0) {
     var _unsortedFragments = input;
     var _sortedFragmentsOpt;
@@ -89,29 +171,45 @@ function topologicalSort(input, getValue, updateValue, mapOut) {
       var unsortedFragments = _unsortedFragments;
       var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
       unsortedFragments.sort(function (f1, f2) {
-            return CorePlus.Ordering.compare(getValue(f1), getValue(f2));
+            return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
           });
-      var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
-              return getValue(f) === 0;
-            }));
+      var match = trace(CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
+                  return f.dependsOn.length === 0;
+                })));
       var independent = match[0];
       if (independent.length !== 0) {
         var dependent = match[1];
         if (dependent.length === 0) {
-          return sortedFragments.concat(independent).map(mapOut);
+          return sortedFragments.concat(independent.map(mapSingle));
         }
-        _sortedFragmentsOpt = sortedFragments.concat(independent);
+        _sortedFragmentsOpt = sortedFragments.concat(independent.map(mapSingle));
         _unsortedFragments = dependent.map((function(independent){
-            return function (fragment) {
-              return updateValue(fragment, independent);
+            return function (__x) {
+              return removeHandledDependencies(__x, independent.map(function (i) {
+                              return i.name;
+                            }));
             }
             }(independent)));
         continue ;
       }
-      throw {
-            RE_EXN_ID: Cyclic_topology,
-            Error: new Error()
-          };
+      var match$1 = handleCycle(CorePlus.$$Option.getOrExn(CorePlus.$$Array.headTail(match[1]), {
+                RE_EXN_ID: Empty_argument
+              }));
+      var handledDeps = match$1[2];
+      var remainingDependents = match$1[1];
+      var cycleEntry = match$1[0];
+      console.log(cycleEntry, remainingDependents, handledDeps);
+      var newSortedFragments = sortedFragments.concat([cycleEntry]);
+      if (remainingDependents.length === 0) {
+        return newSortedFragments;
+      }
+      _sortedFragmentsOpt = newSortedFragments;
+      _unsortedFragments = remainingDependents.map((function(handledDeps){
+          return function (__x) {
+            return removeHandledDependencies(__x, handledDeps);
+          }
+          }(handledDeps)));
+      continue ;
     };
   } else {
     return [];
@@ -166,20 +264,8 @@ function sortFragmentsTopologically(definitions) {
               };
       });
   return topologicalSort(withDepends, (function (f) {
-                return f.dependsOn.length;
-              }), (function (f, is) {
-                return {
-                        name: f.name,
-                        node: f.node,
-                        dependsOn: f.dependsOn.filter(function (dependency) {
-                              return is.some(function (i) {
-                                          return i.name === dependency;
-                                        });
-                            })
-                      };
-              }), (function (f) {
                 return f.node;
-              }));
+              }), undefined);
 }
 
 function sortInputObjectsTopologically(definitions) {
@@ -220,20 +306,18 @@ function sortInputObjectsTopologically(definitions) {
                       }))
               };
       });
-  return topologicalSort(withDepends, (function (io) {
-                return io.dependsOn.length;
-              }), (function (io, is) {
+  return topologicalSort(withDepends, (function (f) {
                 return {
-                        name: io.name,
-                        node: io.node,
-                        dependsOn: io.dependsOn.filter(function (dependency) {
-                              return is.some(function (i) {
-                                          return i.name === dependency;
-                                        });
+                        TAG: "NonRec",
+                        _0: f.node
+                      };
+              }), (function (fs) {
+                return {
+                        TAG: "Rec",
+                        _0: fs.map(function (f) {
+                              return f.node;
                             })
                       };
-              }), (function (f) {
-                return f.node;
               }));
 }
 
@@ -242,6 +326,7 @@ exports.getFieldType = getFieldType;
 exports.keywords = keywords;
 exports.sanitizeFieldName = sanitizeFieldName;
 exports.Cyclic_topology = Cyclic_topology;
+exports.Empty_argument = Empty_argument;
 exports.topologicalSort = topologicalSort;
 exports.sortFragmentsTopologically = sortFragmentsTopologically;
 exports.sortInputObjectsTopologically = sortInputObjectsTopologically;
