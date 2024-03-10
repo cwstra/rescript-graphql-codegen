@@ -22,13 +22,124 @@ let getFieldType = (baseType: Schema.ValidForField.t, fieldName) => {
   }
 }
 
-type fragmentWithDeps = {
+let keywords = [
+  "await",
+  "open",
+  "true",
+  "false",
+  "let",
+  "and",
+  "rec",
+  "as",
+  "exception",
+  "assert",
+  "lazy",
+  "if",
+  "else",
+  "for",
+  "in",
+  "while",
+  "switch",
+  "when",
+  "external",
+  "type",
+  "private",
+  "constraint",
+  "mutable",
+  "include",
+  "module",
+  "try",
+]
+
+let sanitizeFieldName = (original, fields: Dict.t<_>) =>
+  if Array.includes(keywords, original) {
+    let rec wrapField = fieldName => {
+      let newName = `${fieldName}_`
+      switch Dict.get(fields, newName) {
+      | Some(_) => wrapField(newName)
+      | None => (newName, Some(original))
+      }
+    }
+    wrapField(original)
+  } else {
+    (original, None)
+  }
+
+exception Cyclic_topology
+exception Empty_argument
+
+type topologyNode<'value> = {
   name: string,
-  node: AST.FragmentDefinitionNode.t,
+  node: 'value,
   dependsOn: array<string>,
 }
 
-exception Cyclic_fragments
+let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
+  let rateNode = n => Array.length(n.dependsOn)
+  let removeHandledDependencies = (node, names) => {
+    ...node,
+    dependsOn: Array.filter(node.dependsOn, dependency => !Array.includes(names, dependency)),
+  }
+  let handleCycle = switch mapCycle {
+  | None => _ => raise(Cyclic_topology)
+  | Some(mapCycle) =>
+    ((n, ns)) => {
+      let rec go = (collected, border, untouched, dependencies) =>
+        switch Array.flatMap(border, b => b.dependsOn)->Array.uniqBy(v => v) {
+        | [] => (mapCycle(Array.concat(collected, border)), untouched, dependencies)
+        | newDepNames => {
+            let remove = removeHandledDependencies(_, newDepNames)
+            let newCollected = Array.concat(collected, Array.map(border, remove))
+            let (newBorder, newUntouched) = Array.map(untouched, remove)->Either.partitionMap(n =>
+              if Array.includes(newDepNames, n.name) {
+                Either.Left(n)
+              } else {
+                Either.Right(n)
+              }
+            )
+            go(newCollected, newBorder, newUntouched, Array.concat(dependencies, newDepNames))
+          }
+        }
+      go([], [n], ns, [])
+    }
+  }
+  let trace = ((a, b)) => {
+    Console.log("independent")
+    (Array.map(a, n => n.name))->Console.log
+    Console.log("dependent")
+    (Array.map(b, n => `${n.name}: ${Array.joinWith(n.dependsOn, ", ")}`))->Console.log
+    (a, b)
+  }
+  let rec sort = (unsortedFragments, ~sortedFragments=[]) => {
+    Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(rateNode(f1), rateNode(f2)))
+    switch Array.takeDropWhile(unsortedFragments, f => rateNode(f) == 0)->trace {
+    | ([], dependent) => {
+        let (cycleEntry, remainingDependents, handledDeps) =
+          Array.headTail(dependent)->Option.getOrExn(Empty_argument)->handleCycle
+        Console.log3(cycleEntry, remainingDependents, handledDeps)
+        let newSortedFragments = Array.concat(sortedFragments, [cycleEntry])
+        if Array.length(remainingDependents) == 0 {
+          newSortedFragments
+        } else {
+          sort(
+            Array.map(remainingDependents, removeHandledDependencies(_, handledDeps)),
+            ~sortedFragments=newSortedFragments,
+          )
+        }
+      }
+    | (independent, []) => Array.concat(sortedFragments, Array.map(independent, mapSingle))
+    | (independent, dependent) =>
+      sort(
+        Array.map(dependent, removeHandledDependencies(_, Array.map(independent, i => i.name))),
+        ~sortedFragments=Array.concat(sortedFragments, Array.map(independent, mapSingle)),
+      )
+    }
+  }
+  switch input {
+  | [] => []
+  | arr => sort(arr)
+  }
+}
 
 let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.t>) => {
   open AST
@@ -65,27 +176,40 @@ let sortFragmentsTopologically = (definitions: array<AST.FragmentDefinitionNode.
       ->extractDependsFromSelections,
     }
   })
-  let rec sort = (unsortedFragments: array<fragmentWithDeps>, ~sortedFragments=[]) => {
-    Array.sort(unsortedFragments, (f1, f2) =>
-      Ordering.compare(f1.dependsOn->Array.length, f2.dependsOn->Array.length)
-    )
-    switch Array.takeDropWhile(unsortedFragments, f => f.dependsOn->Array.length == 0) {
-    | ([], _) => raise(Cyclic_fragments)
-    | (independent, []) => Array.concat(sortedFragments, independent)->Array.map(f => f.node)
-    | (independent, dependent) =>
-      sort(
-        Array.map(dependent, fragment => {
-          ...fragment,
-          dependsOn: Array.filter(fragment.dependsOn, dependency =>
-            Array.some(independent, i => i.name == dependency)
-          ),
-        }),
-        ~sortedFragments=Array.concat(sortedFragments, independent),
-      )
-    }
-  }
-  switch withDepends {
-    | [] => []
-    | arr => sort(arr)
-  }
+  topologicalSort(~input=withDepends, ~mapSingle=f => f.node)
+}
+
+type inputObjectSortResult =
+  | NonRec(Schema.InputObject.t)
+  | Rec(array<Schema.InputObject.t>)
+
+let sortInputObjectsTopologically = (definitions: array<Schema.InputObject.t>) => {
+  let withDepends = Array.map(definitions, node => {
+    name: Schema.InputObject.name(node),
+    node,
+    dependsOn: Schema.InputObject.getFields(node)
+    ->Dict.valuesToArray
+    ->Array.filterMap(field => {
+      let rec go = f =>
+        switch Schema.Input.parse(f) {
+        | InputObject(io) => Some(Schema.InputObject.name(io))
+        | List(l) => Schema.List.ofType(l)->go
+        | NonNull(nn) =>
+          switch Schema.NonNull.ofType(nn)->Schema.Input.parse_nn {
+          | InputObject(io) => Some(Schema.InputObject.name(io))
+          | List(l) => Schema.List.ofType(l)->go
+          | Scalar(_) | Enum(_) => None
+          }
+        | Scalar(_) | Enum(_) => None
+        }
+      go(Schema.InputField.type_(field))
+    }),
+  })
+  topologicalSort(
+    ~input=withDepends,
+    ~mapSingle=f => NonRec(f.node),
+    ~mapCycle=fs => {
+      Rec(Array.map(fs, f => f.node))
+    },
+  )
 }

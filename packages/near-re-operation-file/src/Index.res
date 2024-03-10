@@ -312,7 +312,7 @@ let resolveDocumentImports = (
   let {generateFilePath, schemaTypesSource, baseDir, typesImport} = importResolverOptions
   documents->Result.traverse(documentFile =>
     documentFile.location
-    ->Result.Ok
+    ->Ok
     ->Result.map(documentLocation => {
       let generatedFilePath = generateFilePath(documentLocation)
       let (externalFragments, fragmentImports) = resolveFragments(

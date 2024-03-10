@@ -91,17 +91,17 @@ module Output: {
     | List(listType<t>)
   let parse: t => parsed
   let parse_nn: t_nn => parsed_nn
-  let traverse: 
-    (t, 
-     ~onScalar: scalarType => 'r, 
-     ~onObject: objectType => 'r,
-     ~onInterface: interfaceType => 'r,
-     ~onUnion: unionType => 'r,
-     ~onEnum: enumType => 'r,
-     ~onList: 'r => 'r =?,
-     ~onNull: 'r => 'r =?,
-     ~onNonNull: 'r => 'r=?
-    ) => 'r
+  let traverse: (
+    t,
+    ~onScalar: scalarType => 'r,
+    ~onObject: objectType => 'r,
+    ~onInterface: interfaceType => 'r,
+    ~onUnion: unionType => 'r,
+    ~onEnum: enumType => 'r,
+    ~onList: 'r => 'r=?,
+    ~onNull: 'r => 'r=?,
+    ~onNonNull: 'r => 'r=?,
+  ) => 'r
 }
 
 module Argument: {
@@ -197,7 +197,7 @@ module EnumValue: {
   type t
   let name: t => string
   let description: t => option<string>
-  let value: t => unknown
+  let value: t => string
   let isDeprecated: t => option<bool>
   let deprecationReason: t => option<string>
   let astNode: t => option<AST.EnumValueDefinitionNode.t>

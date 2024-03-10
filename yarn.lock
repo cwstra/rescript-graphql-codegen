@@ -1688,11 +1688,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@re-graphql-codegen/base-types@workspace:packages/base-types":
+  version: 0.0.0-use.local
+  resolution: "@re-graphql-codegen/base-types@workspace:packages/base-types"
+  dependencies:
+    "@re-graphql-codegen/core-plus": "workspace:*"
+    "@re-graphql-codegen/graphql": "workspace:*"
+    "@re-graphql-codegen/graphql-codegen": "workspace:*"
+    rescript: "npm:^11.0.1"
+  peerDependencies:
+    graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
+  languageName: unknown
+  linkType: soft
+
 "@re-graphql-codegen/core-plus@workspace:*, @re-graphql-codegen/core-plus@workspace:packages/core-plus":
   version: 0.0.0-use.local
   resolution: "@re-graphql-codegen/core-plus@workspace:packages/core-plus"
   dependencies:
-    "@rescript/core": "npm:^0.6.0"
+    "@rescript/core": "npm:^1.1.0"
     rescript: "npm:^11.0.1"
   languageName: unknown
   linkType: soft
@@ -1773,6 +1786,15 @@ __metadata:
   peerDependencies:
     rescript: "*"
   checksum: 1976f90582d1fe368449b0c6d46d6173625f66c18ac99d02cefecf41ea05d36bf50c23e71b70ac5045376216f843e95d80d6cf22a67c9d7811f8a7bc668b8cc8
+  languageName: node
+  linkType: hard
+
+"@rescript/core@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@rescript/core@npm:1.1.0"
+  peerDependencies:
+    rescript: ">=11.0.0 || ^11.1.0-rc.2"
+  checksum: 439e4e1f35db2d5e39de1a29b98234d84f285307ed5dd5e6db682b5ede24dd8020b207620b6063d78d7818258d7ac4b29370fbcf38604b26453f9781155bf504
   languageName: node
   linkType: hard
 
@@ -2182,6 +2204,13 @@ __metadata:
   version: 5.3.1
   resolution: "camelcase@npm:5.3.1"
   checksum: 92ff9b443bfe8abb15f2b1513ca182d16126359ad4f955ebc83dc4ddcc4ef3fdd2c078bc223f2673dc223488e75c99b16cc4d056624374b799e6a1555cf61b23
+  languageName: node
+  linkType: hard
+
+"camelcase@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "camelcase@npm:8.0.0"
+  checksum: 56c5fe072f0523c9908cdaac21d4a3b3fb0f608fb2e9ba90a60e792b95dd3bb3d1f3523873ab17d86d146e94171305f73ef619e2f538bd759675bc4a14b4bff3
   languageName: node
   linkType: hard
 
@@ -4166,6 +4195,7 @@ __metadata:
   resolution: "re-graphql-codegen@workspace:."
   dependencies:
     "@rescript/core": "npm:^0.6.0"
+    camelcase: "npm:^8.0.0"
     graphql: "npm:^16.0.0"
     rescript: "npm:^11.0.1"
     rescript-nodejs: "npm:^15.0.0"

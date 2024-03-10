@@ -8,7 +8,7 @@
     "module": "commonjs",
     "in-source": true
   },
-  "suffix": ".res.js",
+  "suffix": ".mjs",
   "bsc-flags": [],
   "bs-dependencies": ["@rescript/core"]
 }

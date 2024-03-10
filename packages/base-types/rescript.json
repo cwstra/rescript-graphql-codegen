@@ -1,6 +1,6 @@
 {
-  "name": "@re-graphql-codegen/operations",
-  "namespace": "graphql-codegen-operations",
+  "name": "@re-graphql-codegen/base-types",
+  "namespace": "graphql-codegen-base-types",
   "sources": {
     "dir": "src",
     "subdirs": true

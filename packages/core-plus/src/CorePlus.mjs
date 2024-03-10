@@ -2,14 +2,15 @@
 'use strict';
 
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
-var Core__Dict = require("@rescript/core/src/Core__Dict.res.js");
+var Core__Dict = require("@rescript/core/src/Core__Dict.mjs");
 var Caml_option = require("rescript/lib/js/caml_option.js");
-var Core__Array = require("@rescript/core/src/Core__Array.res.js");
-var Core__Error = require("@rescript/core/src/Core__Error.res.js");
-var Core__Option = require("@rescript/core/src/Core__Option.res.js");
-var Core__Result = require("@rescript/core/src/Core__Result.res.js");
-var Core__String = require("@rescript/core/src/Core__String.res.js");
-var Core__Ordering = require("@rescript/core/src/Core__Ordering.res.js");
+var Core__Array = require("@rescript/core/src/Core__Array.mjs");
+var Core__Error = require("@rescript/core/src/Core__Error.mjs");
+var Core__Option = require("@rescript/core/src/Core__Option.mjs");
+var Core__Result = require("@rescript/core/src/Core__Result.mjs");
+var Core__String = require("@rescript/core/src/Core__String.mjs");
+var Core__Ordering = require("@rescript/core/src/Core__Ordering.mjs");
+var Camelcase_facade = require("./camelcase_facade");
 
 function $$setTimeout$1(prim0, prim1) {
   return setTimeout(prim0, prim1);
@@ -134,8 +135,8 @@ var merge = ((d1, d2) => ({...d1, ...d2}));
 var mergeWith = ((d1, d2, fn) => {
       const result = {...d1}
       Object.entries(d2).forEach(([k, v]) => {
-        result[k] = 
-          k in d1 
+        result[k] =
+          k in d1
             ? fn(d1[k], d2[k])
             : d2[k]
       })
@@ -263,7 +264,23 @@ var Result = {
   traverse: traverse$1
 };
 
-function partition(arr, fn) {
+function partition(arr) {
+  var lefts = [];
+  var rights = [];
+  arr.forEach(function (elem) {
+        if (elem.TAG === "Left") {
+          lefts.push(elem._0);
+          return ;
+        }
+        rights.push(elem._0);
+      });
+  return [
+          lefts,
+          rights
+        ];
+}
+
+function partitionMap(arr, fn) {
   var lefts = [];
   var rights = [];
   arr.forEach(function (elem) {
@@ -281,7 +298,8 @@ function partition(arr, fn) {
 }
 
 var Either = {
-  partition: partition
+  partition: partition,
+  partitionMap: partitionMap
 };
 
 function compare(a, b) {
@@ -307,13 +325,18 @@ function capitalize(s) {
   return s.charAt(0).toUpperCase().concat(s.slice(1));
 }
 
+function pascalCase(prim) {
+  return Camelcase_facade.pascalCase(prim);
+}
+
 var $$String = {
   equal: Core__String.equal,
   compare: Core__String.compare,
   indexOfOpt: Core__String.indexOfOpt,
   lastIndexOfOpt: Core__String.lastIndexOfOpt,
   searchOpt: Core__String.searchOpt,
-  capitalize: capitalize
+  capitalize: capitalize,
+  pascalCase: pascalCase
 };
 
 var Console;
@@ -459,4 +482,4 @@ exports.Result = Result;
 exports.Either = Either;
 exports.Ordering = Ordering;
 exports.$$String = $$String;
-/* No side effect */
+/* ./camelcase_facade Not a pure module */

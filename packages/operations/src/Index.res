@@ -9,15 +9,13 @@ type config = {
   listType?: string,
 }
 
-let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) => 
+let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
   try {
     // Need to have __typename for unions;
     // at least for now, just going to shove
-    // that onto seleciton sets at the start.
-    Console.log(config)
-    Console.log(documents)
+    // that onto selection sets at the start.
     let (internalFragments, operations) =
-      Array.flatMap(documents, d =>  AST.addTypenameToDocument(d.document).definitions)
+      Array.flatMap(documents, d => AST.addTypenameToDocument(d.document).definitions)
       ->Array.filterMap(d =>
         switch d {
         | OperationDefinition(o) =>
@@ -49,13 +47,12 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
         | _ => None
         }
       )
-      ->Either.partition(f => f)
+      ->Either.partition
 
-    let allFragments =
-      Array.concat(
-        Array.map(config.externalFragments, e => AST.addTypenameToFragment(e.node)), 
-        internalFragments
-      )
+    let allFragments = Array.concat(
+      Array.map(config.externalFragments, e => AST.addTypenameToFragment(e.node)),
+      internalFragments,
+    )
 
     let fragmentLookup =
       Array.map(allFragments, f => (
@@ -71,7 +68,6 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
     )
     let init = WorkItem.fromDefinitions(sorted)
 
-
     let res = WorkItem.process(
       ~steps=init,
       ~fragments=fragmentLookup,
@@ -79,18 +75,13 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ~baseTypesModule=config.baseTypesModule,
       ~scalarModule=config.scalarModule,
       ~listType=Option.getOr(config.listType, "array"),
-      ~nullType=Option.getOr(config.nullType, "null")
+      ~nullType=Option.getOr(config.nullType, "null"),
     )
 
-    /*
-    Console.log(res)
-
-    Console.log("\n\n\n\n\n")
-    Plugin.PluginOutput.String("Hello")
-    */
     Plugin.PluginOutput.String(res)
   } catch {
   | e => {
-    Console.log(e)
-    raise(e)
-  }}
+      Console.log(e)
+      raise(e)
+    }
+  }
