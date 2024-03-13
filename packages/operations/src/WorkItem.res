@@ -428,22 +428,26 @@ let process = (
           [],
           [
             ["  let variables = {"],
-            Dict.toArray(fields)->Array.map(((rawKey, inputType)) => {
-              let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
-              let value = InputType.traverse(
-                inputType,
-                ~onScalar=s => `${scalarModule}.${s}.t`,
-                ~onEnum=s => `${baseTypesModule}.${s}.t`,
-                ~onObject=s => `${baseTypesModule}.${s}.t`,
-                ~onList=s => `${listType}<${s}>`,
-                ~onNull=s => `${nullType}<${s}>`,
-              )
-              let mainLine = `    ${key}: ${value}`
-              switch alias {
-              | None => mainLine
-              | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
-              }
-            }),
+            [
+              Dict.toArray(fields)
+              ->Array.map(((rawKey, inputType)) => {
+                let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
+                let value = InputType.traverse(
+                  inputType,
+                  ~onScalar=s => `${scalarModule}.${s}.t`,
+                  ~onEnum=s => `${baseTypesModule}.${s}.t`,
+                  ~onObject=s => `${baseTypesModule}.${s}.t`,
+                  ~onList=s => `${listType}<${s}>`,
+                  ~onNull=s => `${nullType}<${s}>`,
+                )
+                let mainLine = `    ${key}: ${value}`
+                switch alias {
+                | None => mainLine
+                | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
+                }
+              })
+              ->Array.joinWith(",\n"),
+            ],
             ["  }"],
           ],
         ),

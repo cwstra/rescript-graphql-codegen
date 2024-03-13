@@ -103,16 +103,9 @@ let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
       go([], [n], ns, [])
     }
   }
-  let trace = ((a, b)) => {
-    Console.log("independent")
-    (Array.map(a, n => n.name))->Console.log
-    Console.log("dependent")
-    (Array.map(b, n => `${n.name}: ${Array.joinWith(n.dependsOn, ", ")}`))->Console.log
-    (a, b)
-  }
   let rec sort = (unsortedFragments, ~sortedFragments=[]) => {
     Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(rateNode(f1), rateNode(f2)))
-    switch Array.takeDropWhile(unsortedFragments, f => rateNode(f) == 0)->trace {
+    switch Array.takeDropWhile(unsortedFragments, f => rateNode(f) == 0) {
     | ([], dependent) => {
         let (cycleEntry, remainingDependents, handledDeps) =
           Array.headTail(dependent)->Option.getOrExn(Empty_argument)->handleCycle

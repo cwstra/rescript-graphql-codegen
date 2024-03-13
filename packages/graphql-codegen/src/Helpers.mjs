@@ -147,22 +147,6 @@ function topologicalSort(input, mapSingle, mapCycle) {
               Error: new Error()
             };
       });
-  var trace = function (param) {
-    var b = param[1];
-    var a = param[0];
-    console.log("independent");
-    console.log(a.map(function (n) {
-              return n.name;
-            }));
-    console.log("dependent");
-    console.log(b.map(function (n) {
-              return n.name + ": " + n.dependsOn.join(", ");
-            }));
-    return [
-            a,
-            b
-          ];
-  };
   if (input.length !== 0) {
     var _unsortedFragments = input;
     var _sortedFragmentsOpt;
@@ -173,9 +157,9 @@ function topologicalSort(input, mapSingle, mapCycle) {
       unsortedFragments.sort(function (f1, f2) {
             return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
           });
-      var match = trace(CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
-                  return f.dependsOn.length === 0;
-                })));
+      var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
+              return f.dependsOn.length === 0;
+            }));
       var independent = match[0];
       if (independent.length !== 0) {
         var dependent = match[1];

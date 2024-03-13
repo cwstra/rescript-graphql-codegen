@@ -772,30 +772,30 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
           var fields = t.fields;
           return [
                   /* [] */0,
-                  [].concat(["  let variables = {"], Object.entries(fields).map(function (param) {
-                            var match = Helpers$GraphqlCodegen.sanitizeFieldName(param[0], fields);
-                            var alias = match[1];
-                            var value = traverse(param[1], (function (s) {
-                                    return scalarModule + "." + s + ".t";
-                                  }), (function (s) {
-                                    return baseTypesModule + "." + s + ".t";
-                                  }), (function (s) {
-                                    return baseTypesModule + "." + s + ".t";
-                                  }), (function (s) {
-                                    return listType + "<" + s + ">";
-                                  }), (function (s) {
-                                    return nullType + "<" + s + ">";
-                                  }), undefined);
-                            var mainLine = "    " + match[0] + ": " + value;
-                            if (alias !== undefined) {
-                              return [
-                                        "    @as(\"" + alias + "\")",
-                                        mainLine
-                                      ].join("\n");
-                            } else {
-                              return mainLine;
-                            }
-                          }), ["  }"])
+                  [].concat(["  let variables = {"], [Object.entries(fields).map(function (param) {
+                                var match = Helpers$GraphqlCodegen.sanitizeFieldName(param[0], fields);
+                                var alias = match[1];
+                                var value = traverse(param[1], (function (s) {
+                                        return scalarModule + "." + s + ".t";
+                                      }), (function (s) {
+                                        return baseTypesModule + "." + s + ".t";
+                                      }), (function (s) {
+                                        return baseTypesModule + "." + s + ".t";
+                                      }), (function (s) {
+                                        return listType + "<" + s + ">";
+                                      }), (function (s) {
+                                        return nullType + "<" + s + ">";
+                                      }), undefined);
+                                var mainLine = "    " + match[0] + ": " + value;
+                                if (alias !== undefined) {
+                                  return [
+                                            "    @as(\"" + alias + "\")",
+                                            mainLine
+                                          ].join("\n");
+                                } else {
+                                  return mainLine;
+                                }
+                              }).join(",\n")], ["  }"])
                 ];
       case "PrintDocument" :
           return [
