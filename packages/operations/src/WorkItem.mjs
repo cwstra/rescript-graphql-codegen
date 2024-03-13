@@ -772,15 +772,15 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
           var fields = t.fields;
           return [
                   /* [] */0,
-                  [].concat(["  let variables = {"], [Object.entries(fields).map(function (param) {
+                  [].concat(["  type variables = {"], [Object.entries(fields).map(function (param) {
                                 var match = Helpers$GraphqlCodegen.sanitizeFieldName(param[0], fields);
                                 var alias = match[1];
                                 var value = traverse(param[1], (function (s) {
-                                        return scalarModule + "." + s + ".t";
+                                        return scalarModule + "." + CorePlus.$$String.pascalCase(s) + ".t";
                                       }), (function (s) {
-                                        return baseTypesModule + "." + s + ".t";
+                                        return baseTypesModule + "." + CorePlus.$$String.pascalCase(s) + ".t";
                                       }), (function (s) {
-                                        return baseTypesModule + "." + s + ".t";
+                                        return baseTypesModule + "." + CorePlus.$$String.pascalCase(s) + ".t";
                                       }), (function (s) {
                                         return listType + "<" + s + ">";
                                       }), (function (s) {
