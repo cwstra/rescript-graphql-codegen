@@ -6,7 +6,8 @@ module MissionInfo = {
       __typename
     }
   `
-  let variables = {
+  type variables = {
+
   }
   type t = {
     flight: null<GraphqlBase.Scalars.Int.t>,

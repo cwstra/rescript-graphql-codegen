@@ -160,7 +160,6 @@ module Scalar: {
   let description: t => option<string>
   let astNode: t => option<AST.ScalarTypeDefinitionNode.t>
   let extensionASTNodes: t => option<array<AST.ScalarTypeExtensionNode.t>>
-  let print: (t, string) => string
 }
 
 module Object: {
@@ -211,7 +210,6 @@ module Enum: {
   let extensionASTNodes: t => option<array<AST.EnumTypeExtensionNode.t>>
   let getValues: t => array<EnumValue.t>
   let getValue: (t, string) => option<EnumValue.t>
-  let print: (t, string) => string
 }
 
 module InputField: {

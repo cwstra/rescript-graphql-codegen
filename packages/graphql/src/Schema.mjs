@@ -400,16 +400,11 @@ function extensionASTNodes(t) {
   return Caml_option.null_to_opt(t.extensionASTNodes);
 }
 
-function print(t, prefix) {
-  return prefix + "." + t.name + ".t";
-}
-
 var Scalar = {
   name: name$4,
   description: description$3,
   astNode: astNode$3,
-  extensionASTNodes: extensionASTNodes,
-  print: print
+  extensionASTNodes: extensionASTNodes
 };
 
 function name$5(t) {
@@ -511,10 +506,6 @@ function extensionASTNodes$4(t) {
 
 function getValue(t, s) {
   return Caml_option.null_to_opt(t.getValue(s));
-}
-
-function print$1(t, prefix) {
-  return prefix + "." + t.name + ".t";
 }
 
 function name$10(t) {
@@ -632,8 +623,7 @@ var Enum = {
   astNode: astNode$8,
   extensionASTNodes: extensionASTNodes$4,
   getValues: Enum_getValues,
-  getValue: getValue,
-  print: print$1
+  getValue: getValue
 };
 
 function InputObject_getFields(prim) {

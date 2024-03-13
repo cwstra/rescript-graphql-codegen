@@ -259,7 +259,6 @@ module Scalar = {
   let description = t => Null.toOption(t.description)
   let astNode = t => Null.toOption(t.astNode)
   let extensionASTNodes = t => Null.toOption(t.extensionASTNodes)
-  let print = (t, prefix) => `${prefix}.${name(t)}.t`
 }
 
 module Object = {
@@ -318,7 +317,6 @@ module Enum = {
   @send external getValues: t => array<EnumValue.t> = "getValues"
   @send external rawGetValue: (t, string) => null<EnumValue.t> = "getValue"
   let getValue = (t, s) => Null.toOption(rawGetValue(t, s))
-  let print = (t, prefix) => `${prefix}.${name(t)}.t`
 }
 
 module InputField = {

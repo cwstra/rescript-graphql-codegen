@@ -11,13 +11,14 @@ module Union = {
       }
     }
   `
-  let variables = {
+  type variables = {
+
   }
   module Get_union = {
     @tag("__typename")
     type t =
       | MemberA({
-        id: null<GraphqlBase.Scalars.ID.t>,
+        id: null<GraphqlBase.Scalars.Id.t>,
         a: null<GraphqlBase.Scalars.String.t>,
       })
       | MemberB

@@ -14,7 +14,6 @@ const config: CodegenConfig = {
         scalarModule: "GraphqlBase.Scalars",
       },
     },
-    /*
     "src/operations": {
       preset: "near-operation-file",
       presetConfig: {
@@ -29,7 +28,7 @@ const config: CodegenConfig = {
       schema,
       documents: "src/operations/*.graphql",
       plugins: ["../operations/src/Index.mjs"],
-    },*/
+    },
   },
 };
 

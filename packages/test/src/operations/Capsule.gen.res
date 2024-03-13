@@ -6,7 +6,8 @@ module MissionInfo = {
       __typename
     }
   `
-  let variables = {
+  type variables = {
+
   }
   type t = {
     flight: null<GraphqlBase.Scalars.Int.t>,
@@ -31,15 +32,15 @@ module Capsule = {
       }
     }
   `
-  let variables = {
-    id: GraphqlBase.Scalars.ID.t
+  type variables = {
+    id: GraphqlBase.Scalars.Id.t
   }
   type t_capsule_missions = {
     flight: null<GraphqlBase.Scalars.Int.t>,
     name: null<GraphqlBase.Scalars.String.t>,
   }
   type t_capsule = {
-    id: null<GraphqlBase.Scalars.ID.t>,
+    id: null<GraphqlBase.Scalars.Id.t>,
     landings: null<GraphqlBase.Scalars.Int.t>,
     missions: null<array<null<t_capsule_missions>>>,
     original_launch: null<GraphqlBase.Scalars.Date.t>,

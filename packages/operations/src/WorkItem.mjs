@@ -535,11 +535,12 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
           var namePath = t.namePath;
           var extractNamed = function (type_) {
             return Schema$Graphql.Output.traverse(type_, (function (s) {
+                          var name = Schema$Graphql.Scalar.name(s);
                           return {
                                   TAG: "Left",
                                   _0: [
-                                    Schema$Graphql.Scalar.name(s),
-                                    Schema$Graphql.Scalar.print(s, scalarModule)
+                                    name,
+                                    scalarModule + "." + CorePlus.$$String.pascalCase(name) + ".t"
                                   ]
                                 };
                         }), (function (o) {
@@ -585,11 +586,12 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
                                   ]
                                 };
                         }), (function (e) {
+                          var name = Schema$Graphql.Enum.name(e);
                           return {
                                   TAG: "Left",
                                   _0: [
-                                    Schema$Graphql.Enum.name(e),
-                                    Schema$Graphql.Enum.print(e, baseTypesModule)
+                                    name,
+                                    baseTypesModule + "." + CorePlus.$$String.pascalCase(name) + ".t"
                                   ]
                                 };
                         }), (function (e) {

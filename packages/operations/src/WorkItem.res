@@ -302,8 +302,14 @@ let process = (
         let extractNamed = type_ =>
           Schema.Output.traverse(
             type_,
-            ~onScalar=s => Either.Left(Schema.Scalar.name(s), Schema.Scalar.print(s, scalarModule)),
-            ~onEnum=e => Either.Left(Schema.Enum.name(e), Schema.Enum.print(e, baseTypesModule)),
+            ~onScalar=s => {
+              let name = Schema.Scalar.name(s)
+              Either.Left(name, `${scalarModule}.${String.pascalCase(name)}.t`)
+            },
+            ~onEnum=e => {
+              let name = Schema.Enum.name(e)
+              Either.Left(name, `${baseTypesModule}.${String.pascalCase(name)}.t`)
+            },
             ~onObject=o => Either.Right(
               Schema.Object.name(o),
               Schema.ValidForTypeCondition.Object(o),
