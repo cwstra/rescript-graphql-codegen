@@ -1,6 +1,6 @@
 {
   "main": "src/Index.res.js",
-  "name": "@re-graphql-codegen/operations",
+  "name": "@re-graphql-codegen/operations-cli",
   "version": "0.0.1",
   "keywords": [
     "rescript"
@@ -9,15 +9,16 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "operations:build": "build",
+    "operations-cli:build": "build",
     "clean": "rescript clean",
-    "operations:clean": "clean",
+    "operations-cli:clean": "clean",
     "fmt": "rescript format",
-    "operations:fmt": "fmt",
+    "operations-cli:fmt": "fmt",
     "dev": "rescript build -w",
-    "operations:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
+    "operations-cli:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
   },
   "dependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
     "@re-graphql-codegen/core-plus": "workspace:*",
     "@re-graphql-codegen/graphql": "workspace:*",
     "@re-graphql-codegen/graphql-codegen": "workspace:*",

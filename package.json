@@ -12,31 +12,11 @@
     "@rescript/core": "^0.6.0",
     "camelcase": "^8.0.0",
     "rescript": "^11.0.1",
-    "rescript-nodejs": "^15.0.0"
+    "rescript-nodejs": "^16.0.0"
   },
   "packageManager": "yarn@4.0.2",
   "scripts": {
-    "core-plus:build": "cd packages/core-plus; yarn build",
-    "graphql:build": "cd packages/graphql; yarn build",
-    "graphql-codegen:build": "cd packages/graphql-codegen; yarn build",
-    "near-re-operation-file:build": "cd packages/near-re-operation-file; yarn build",
-    "operations:build": "cd packages/operations; yarn build",
     "project:build": "yarn workspaces foreach -At run build",
-    "core-plus:clean": "cd packages/core-plus; yarn clean",
-    "graphql:clean": "cd packages/graphql; yarn clean",
-    "graphql-codegen:clean": "cd packages/graphql-codegen; yarn clean",
-    "near-re-operation-file:clean": "cd packages/near-re-operation-file; yarn clean",
-    "operations:clean": "cd packages/operations; yarn clean",
-    "project:clean": "yarn workspaces foreach -At run fmt",
-    "core-plus:fmt": "cd packages/core-plus; yarn fmt",
-    "graphql:fmt": "cd packages/graphql; yarn fmt",
-    "graphql-codegen:fmt": "cd packages/graphql-codegen; yarn fmt",
-    "near-re-operation-file:fmt": "cd packages/near-re-operation-file; yarn fmt",
-    "operations:fmt": "cd packages/operations; yarn fmt",
-    "core-plus:dev": "cd packages/core-plus; yarn dev",
-    "graphql:dev": "yarn core-plus:build; cd packages/graphql; yarn dev",
-    "graphql-codegen:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql run build; cd packages/graphql-codegen; yarn dev",
-    "near-re-operation-file:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; cd packages/near-re-operation-file; yarn dev",
-    "operations:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; cd packages/operations; yarn dev"
+    "project:clean": "yarn workspaces foreach -At run fmt"
   }
 }

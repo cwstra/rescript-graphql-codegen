@@ -8,9 +8,13 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "core-plus:build": "build",
     "clean": "rescript clean",
+    "core-plus:clean": "clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "core-plus:fmt": "fmt",
+    "dev": "rescript build -w",
+    "core-plus:dev": "dev"
   },
   "dependencies": {
     "@rescript/core": "^1.1.0",

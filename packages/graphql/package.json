@@ -9,9 +9,13 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "graphql:build": "build",
     "clean": "rescript clean",
+    "graphql:clean": "clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "graphql:fmt": "fmt",
+    "dev": "rescript build -w",
+    "graphql:dev": "yarn core-plus:build; dev"
   },
   "dependencies": {
     "@re-graphql-codegen/core-plus": "workspace:*",

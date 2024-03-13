@@ -8,9 +8,13 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "graphql-codegen:build": "build",
     "clean": "rescript clean",
+    "graphql-codegen:clean": "clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "graphql-codegen:fmt": "fmt",
+    "dev": "rescript build -w",
+    "graphql-codegen:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql run build; yarn dev"
   },
   "dependencies": {
     "@re-graphql-codegen/core-plus": "workspace:*",

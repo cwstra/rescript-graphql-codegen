@@ -9,9 +9,13 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "base-types:build": "build",
     "clean": "rescript clean",
+    "base-types:clean": "clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "base-types:fmt": "fmt",
+    "dev": "rescript build -w",
+    "base-types:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/base-types run build; yarn dev"
   },
   "dependencies": {
     "@re-graphql-codegen/core-plus": "workspace:*",

@@ -122,7 +122,6 @@ var $$Array = {
   toShuffled: Core__Array.toShuffled,
   shuffle: Core__Array.shuffle,
   findMap: Core__Array.findMap,
-  last: Core__Array.last,
   takeDropWhile: takeDropWhile,
   groupBy: groupBy,
   uniqBy: uniqBy,
@@ -148,9 +147,6 @@ var update = ((dict, key, fn) => ({...dict, [key]: fn(dict[key])}));
 
 var Dict = {
   $$delete: Core__Dict.$$delete,
-  forEach: Core__Dict.forEach,
-  forEachWithKey: Core__Dict.forEachWithKey,
-  mapValues: Core__Dict.mapValues,
   put: put,
   merge: merge,
   mergeWith: mergeWith,
