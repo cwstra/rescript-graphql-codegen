@@ -496,17 +496,19 @@ let process = (
           }
         }
         let (variableDefs, selectionSet) = switch definition {
-        | OperationDefinition(o) => (o.variableDefinitions, o.selectionSet)
+        | OperationDefinition(o) => (Option.getOr(o.variableDefinitions, [])->Some, o.selectionSet)
         | FragmentDefinition(f) => (f.variableDefinitions, f.selectionSet)
         }
-        let variables = Array.map(Option.getOr(variableDefs, []), a => {
-          (
-            VariableDefinitionNode.variable(a)
-            ->VariableNode.name
-            ->NameNode.value,
-            VariableDefinitionNode.type_(a)->extractInputType,
-          )
-        })->Dict.fromArray
+        let variables = Option.map(variableDefs, vds =>
+          Array.map(vds, a => {
+            (
+              VariableDefinitionNode.variable(a)
+              ->VariableNode.name
+              ->NameNode.value,
+              VariableDefinitionNode.type_(a)->extractInputType,
+            )
+          })->Dict.fromArray
+        )
         let selectionSteps =
           selectionSet
           ->nonTypenameSelections
@@ -518,13 +520,12 @@ let process = (
           list{
             PrintType({
               namePath: ["t"],
-              // Top-level GQL types are implicitly non-null
               type_: selectionSteps,
-            }),
-            PrintVariables({fields: variables}),
-            PrintDocument(definition),
-            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`),
-          },
+            })->Some,
+            Option.map(variables, v => PrintVariables({fields: v})),
+            PrintDocument(definition)->Some,
+            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some,
+          }->List.filterMap(e => e),
           ["}"],
         )
       }

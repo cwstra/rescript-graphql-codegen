@@ -845,18 +845,20 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
           }
           var match$2;
           match$2 = definition.kind === "OperationDefinition" ? [
-              definition.variableDefinitions,
+              CorePlus.$$Option.getOr(definition.variableDefinitions, []),
               definition.selectionSet
             ] : [
               definition.variableDefinitions,
               definition.selectionSet
             ];
-          var variables = Object.fromEntries(CorePlus.$$Option.getOr(match$2[0], []).map(function (a) {
-                    return [
-                            AST$Graphql.NameNode.value(AST$Graphql.VariableNode.name(AST$Graphql.VariableDefinitionNode.variable(a))),
-                            extractInputType(AST$Graphql.VariableDefinitionNode.type_(a))
-                          ];
-                  }));
+          var variables = CorePlus.$$Option.map(match$2[0], (function (vds) {
+                  return Object.fromEntries(vds.map(function (a) {
+                                  return [
+                                          AST$Graphql.NameNode.value(AST$Graphql.VariableNode.name(AST$Graphql.VariableDefinitionNode.variable(a))),
+                                          extractInputType(AST$Graphql.VariableDefinitionNode.type_(a))
+                                        ];
+                                }));
+                }));
           var selectionSteps = (function (__x) {
                 return extractSelectionType(baseType, __x);
               })(CorePlus.$$Option.getOrExn(CorePlus.$$Array.headTail(nonTypenameSelections(match$2[1])), {
@@ -864,32 +866,36 @@ function $$process(steps, fragments, schema, baseTypesModule, scalarModule, null
                     _1: CorePlus.$$Option.getOr(definitionName, "<unnamed operation>")
                   }));
           return [
-                  {
-                    hd: {
-                      TAG: "PrintType",
-                      namePath: ["t"],
-                      type_: selectionSteps
-                    },
-                    tl: {
-                      hd: {
-                        TAG: "PrintVariables",
-                        fields: variables
-                      },
-                      tl: {
+                  Core__List.filterMap({
                         hd: {
-                          TAG: "PrintDocument",
-                          _0: definition
+                          TAG: "PrintType",
+                          namePath: ["t"],
+                          type_: selectionSteps
                         },
                         tl: {
-                          hd: {
-                            TAG: "PrintString",
-                            _0: "module " + CorePlus.$$Option.getOr(definitionName, "Operation") + " = {"
-                          },
-                          tl: /* [] */0
+                          hd: CorePlus.$$Option.map(variables, (function (v) {
+                                  return {
+                                          TAG: "PrintVariables",
+                                          fields: v
+                                        };
+                                })),
+                          tl: {
+                            hd: {
+                              TAG: "PrintDocument",
+                              _0: definition
+                            },
+                            tl: {
+                              hd: {
+                                TAG: "PrintString",
+                                _0: "module " + CorePlus.$$Option.getOr(definitionName, "Operation") + " = {"
+                              },
+                              tl: /* [] */0
+                            }
+                          }
                         }
-                      }
-                    }
-                  },
+                      }, (function (e) {
+                          return e;
+                        })),
                   ["}"]
                 ];
       
