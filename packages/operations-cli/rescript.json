@@ -18,6 +18,7 @@
     "@re-graphql-codegen/core-plus",
     "@re-graphql-codegen/graphql",
     "@re-graphql-codegen/graphql-codegen",
-    "rescript-embed-lang"
+    "rescript-embed-lang",
+    "rescript-nodejs"
   ]
 }

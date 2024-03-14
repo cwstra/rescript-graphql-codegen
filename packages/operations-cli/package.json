@@ -1,5 +1,6 @@
 {
-  "main": "src/Index.res.js",
+  "main": "src/Index.mjs",
+  "type": "module",
   "name": "@re-graphql-codegen/operations-cli",
   "version": "0.0.1",
   "keywords": [
