@@ -355,6 +355,11 @@ module Option = {
     | Some(o) => o
     | None => raise(e)
     }
+  let getOrPanic = (o: option<'t>, msg: string): 't =>
+    switch o {
+    | Some(o) => o
+    | None => panic(msg)
+    }
 }
 module Result = {
   include RescriptCore.Result
@@ -412,6 +417,6 @@ module Ordering = {
 module String = {
   include RescriptCore.String
   let capitalize = s => concat(charAt(s, 0)->toUpperCase, sliceToEnd(s, ~start=1))
-  @module("./camelcase_facade")
+  @module("./camelcase_facade.mjs")
   external pascalCase: string => string = "pascalCase"
 }

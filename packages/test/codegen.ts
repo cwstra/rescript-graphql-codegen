@@ -4,14 +4,14 @@ const schema = "src/schema.graphql"
 
 const config: CodegenConfig = {
   pluginLoader: (mod) =>
-    mod.includes("@re-graphql-codegen") ? import(mod) : require(mod),
+    mod.includes("../") ? import(mod) : require(mod),
   generates: {
-    "src/GraphqlBase__Types.gen.res": {
+    "src/GraphqlBase__Types.res": {
       schema,
       plugins: ["../base-types/src/Index.mjs"],
       config: {
         //globalNamespace: true,
-        scalarModule: "GraphqlBase.Scalars",
+        scalarModule: "GraphqlBase__Scalars",
       },
     },
     "src/operations": {

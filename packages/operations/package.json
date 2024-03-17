@@ -1,5 +1,5 @@
 {
-  "main": "src/Index.res.js",
+  "main": "src/Index.mjs",
   "name": "@re-graphql-codegen/operations",
   "version": "0.0.1",
   "keywords": [
@@ -9,11 +9,11 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "operations:build": "build",
+    "operations:build": "yarn build",
     "clean": "rescript clean",
-    "operations:clean": "clean",
+    "operations:clean": "yarn clean",
     "fmt": "rescript format",
-    "operations:fmt": "fmt",
+    "operations:fmt": "yarn fmt",
     "dev": "rescript build -w",
     "operations:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
   },

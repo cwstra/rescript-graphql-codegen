@@ -2,7 +2,8 @@
 module Path = NodeJs.Path
 
 let usage = `Usage:
-  generate                                                | Generates all EdgeDB code.
+  generate                                                | Generates all GraphQL code.
+    [--schema <path>]                                     | Filepath to your graphql schema.
     [--output <path>]                                     | Where to emit all generated files.
     [--src <path>]                                        | The source folder for where to look for ReScript files.
     [--watch]                                             | Runs this command in watch mode.
@@ -13,7 +14,7 @@ let usage = `Usage:
   extract <filePath>                                      | Extract all %edgeql tags in file at <filePath>.`
 
 type config = {
-  run: (~inputSdl: string, ~filePath: string) => array<Codegen.fileOutput>,
+  run: (~inputSdl: string, ~filePath: string) => promise<array<Codegen.fileOutput>>,
   schemaPath: string,
 }
 
@@ -41,6 +42,9 @@ let isInConfigDir = async () => {
     }
   }
 }
+
+let example =
+      {run: Codegen.run(~schema="", ~pluginName="", ~scalarModule="", ~baseTypesModule="", ...), schemaPath: ""}
 
 let main = async () => {
   let errors = Map.make()
@@ -82,22 +86,38 @@ let main = async () => {
     }
 
   let emitter = RescriptEmbedLang.make(
-    ~extensionPattern=FirstClass("graphql"),
+    ~extensionPattern= Generic("graphql"),
     ~cliHelpText=usage,
     ~setup=async ({args}) => {
       let schema =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["-S", "--schema"])->Option.getOrPanic(
+        RescriptEmbedLang.CliArgs.getArgValue(args, ["--schema"])->Option.getOrPanic(
           "--schema argument required",
         )
       let pluginName =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["-P", "--plugin"])->Option.getOrPanic(
+        RescriptEmbedLang.CliArgs.getArgValue(args, ["--plugin"])->Option.getOrPanic(
           "--plugin argument required",
         )
+      let scalarModule =
+        RescriptEmbedLang.CliArgs.getArgValue(args, ["--scalar-module"])->Option.getOrPanic(
+          "--scalar-module argument required",
+        )
+      let baseTypesModule =
+        RescriptEmbedLang.CliArgs.getArgValue(args, ["--base-types-module"])->Option.getOrPanic(
+          "---base-types-module argument required",
+        )
 
-      {run: Codegen.run(~schema, ~pluginName, ...), schemaPath: schema}
+      {run: Codegen.run(~schema, ~pluginName, ~scalarModule, ~baseTypesModule, ...), schemaPath: schema}
     },
     ~generate=async ({config, content, path, location}) => {
-      Ok(RescriptEmbedLang.WithModuleName({content, moduleName: "Test"}))
+      Console.log2("gen", content)
+      let results = await config.run(~inputSdl=content, ~filePath=path)
+      Console.log2("results", results)
+/*, moduleName: "Test"*/
+      Ok(RescriptEmbedLang.NoModuleName({content: switch results {
+        | [] => panic("No results returned")
+        | [val] => val.content
+        | _ => panic("Multiple results returned")
+      }}))
     },
     ~onWatch=async ({config, runGeneration, debug}) => {
       // TODO: watch schema file
@@ -110,4 +130,8 @@ let main = async () => {
       ()
     },
   )
+
+  RescriptEmbedLang.runCli(emitter)
 }
+
+main()->ignore

@@ -4,7 +4,7 @@ open GraphqlCodegen
 type config = {
   scalarModule: string,
   baseTypesModule: string,
-  externalFragments: array<Base.resolvedFragment>,
+  externalFragments?: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
 }
@@ -50,7 +50,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ->Either.partition
 
     let allFragments = Array.concat(
-      Array.map(config.externalFragments, e => AST.addTypenameToFragment(e.node)),
+      config.externalFragments->Option.getOr([])->Array.map(e => AST.addTypenameToFragment(e.node)),
       internalFragments,
     )
 

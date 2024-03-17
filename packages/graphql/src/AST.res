@@ -642,8 +642,8 @@ module DocumentNode = {
   external print: t => string = "print"
 }
 
-@module("./graphql_facade")
+@module("./graphql_facade.mjs")
 external addTypenameToDocument: (DocumentNode.t) => DocumentNode.t = "addTypenameToDocument"
 
-@module("./graphql_facade")
+@module("./graphql_facade.mjs")
 external addTypenameToFragment: (FragmentDefinitionNode.t) => FragmentDefinitionNode.t = "addTypenameToDocument"

@@ -10,11 +10,11 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "operations-cli:build": "build",
+    "operations-cli:build": "yarn build",
     "clean": "rescript clean",
-    "operations-cli:clean": "clean",
+    "operations-cli:clean": "yarn clean",
     "fmt": "rescript format",
-    "operations-cli:fmt": "fmt",
+    "operations-cli:fmt": "yarn fmt",
     "dev": "rescript build -w",
     "operations-cli:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
   },
@@ -23,6 +23,7 @@
     "@re-graphql-codegen/core-plus": "workspace:*",
     "@re-graphql-codegen/graphql": "workspace:*",
     "@re-graphql-codegen/graphql-codegen": "workspace:*",
+    "chokidar": "^3.6.0",
     "rescript": "^11.0.1",
     "rescript-embed-lang": "^0.4.0"
   },

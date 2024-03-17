@@ -9,11 +9,11 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "graphql:build": "build",
+    "graphql:build": "yarn build",
     "clean": "rescript clean",
-    "graphql:clean": "clean",
+    "graphql:clean": "yarn clean",
     "fmt": "rescript format",
-    "graphql:fmt": "fmt",
+    "graphql:fmt": "yarn fmt",
     "dev": "rescript build -w",
     "graphql:dev": "yarn core-plus:build; dev"
   },

@@ -1,5 +1,12 @@
-type configuredOutput = {plugins?: array<string>}
+type configuredOutput = {
+  plugins: array<string>,
+  documents: string
+}
 
+type operationsConfig = {
+  baseTypesModule: string,
+  scalarModule: string
+}
 type config<'innerConfig> = {
   schema?: string,
   documents?: string,
@@ -7,22 +14,21 @@ type config<'innerConfig> = {
   generates: Js.Dict.t<configuredOutput>,
 }
 
-type fileOutput = {
-  filename: string,
+type fileOutput = {filename: string,
   content: string,
 }
 
 @module("@graphql-codegen/cli")
-external generate: (config<'innerConfig>, bool) => array<fileOutput> = "generate"
+external generate: (config<'innerConfig>, bool) => promise<array<fileOutput>> = "generate"
 
-let fn = (~a, ~b) => a + b
-
-let run = (~schema, ~pluginName, ~inputSdl, ~filePath) =>
-  generate(
-    {
+let run = (~schema, ~pluginName, ~scalarModule, ~baseTypesModule, ~inputSdl, ~filePath) =>
+  generate({
       schema,
-      documents: inputSdl,
-      generates: Js.Dict.fromArray([(filePath, {plugins: [pluginName]})]),
+      config: {
+        baseTypesModule,
+        scalarModule
+      },
+      generates: Js.Dict.fromArray([(filePath, {plugins: [pluginName], documents: inputSdl})]),
     },
-    true,
+    false,
   )

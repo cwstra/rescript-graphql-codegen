@@ -8,11 +8,11 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "near-re-operation-file:build": "build",
+    "near-re-operation-file:build": "yarn build",
     "clean": "rescript clean",
-    "near-re-operation-file:clean": "clean",
+    "near-re-operation-file:clean": "yarn clean",
     "fmt": "rescript format",
-    "near-re-operation-file:fmt": "fmt",
+    "near-re-operation-file:fmt": "yarn fmt",
     "dev": "rescript build -w",
     "near-re-operation-file:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
   },

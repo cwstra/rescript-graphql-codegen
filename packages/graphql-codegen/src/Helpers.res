@@ -109,7 +109,6 @@ let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
     | ([], dependent) => {
         let (cycleEntry, remainingDependents, handledDeps) =
           Array.headTail(dependent)->Option.getOrExn(Empty_argument)->handleCycle
-        Console.log3(cycleEntry, remainingDependents, handledDeps)
         let newSortedFragments = Array.concat(sortedFragments, [cycleEntry])
         if Array.length(remainingDependents) == 0 {
           newSortedFragments

@@ -103,18 +103,16 @@ async function plugin(schema, _documents, config) {
                             }), ["}"]).join("\n");
           }).join("\n\n");
     var inputObjectResult = Helpers$GraphqlCodegen.sortInputObjectsTopologically(match[1]).map(function (ior) {
-            if (ior.TAG === "NonRec") {
-              var io = ior._0;
-              return ["module " + CorePlus.$$String.pascalCase(Schema$Graphql.InputObject.name(io)) + " = {"].concat(printInputObjectType(io), ["}"]).join("\n");
+            if (ior.TAG !== "NonRec") {
+              return ior._0.map(function (io, ind) {
+                            var moduleName = CorePlus.$$String.pascalCase(Schema$Graphql.InputObject.name(io));
+                            return [(
+                                          ind === 0 ? "module rec" : "and"
+                                        ) + " " + moduleName + ": {"].concat(printInputObjectType(io), ["} = " + moduleName]).join("\n");
+                          }).join("\n\n");
             }
-            var cycle = ior._0;
-            console.log("cycle", cycle);
-            return cycle.map(function (io, ind) {
-                          var moduleName = CorePlus.$$String.pascalCase(Schema$Graphql.InputObject.name(io));
-                          return [(
-                                        ind === 0 ? "module rec" : "and"
-                                      ) + " " + moduleName + ": {"].concat(printInputObjectType(io), ["} = " + moduleName]).join("\n");
-                        }).join("\n\n");
+            var io = ior._0;
+            return ["module " + CorePlus.$$String.pascalCase(Schema$Graphql.InputObject.name(io)) + " = {"].concat(printInputObjectType(io), ["}"]).join("\n");
           }).join("\n\n");
     var res = [
         enumResult,
