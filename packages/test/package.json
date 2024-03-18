@@ -10,7 +10,7 @@
   "scripts": {
     "codegen": "graphql-codegen -o",
     "build": "rescript",
-    "generic-ppx-codegen": "node ../operations-cli/src/Index.mjs generate --schema src/schema.graphql --plugin ../operations/src/Index.mjs --output src/cli-output --src src --scalar-module GraphqlBase.Scalars --base-types-module GraphqlBase.Types --watch"
+    "generic-ppx-codegen": "node ../graphql-codegen-embed-lang/src/Index.mjs generate --config ./codegen.ts --output src/cli-output --src src/"
   },
   "dependencies": {
     "@graphql-codegen/add": "^5.0.0",

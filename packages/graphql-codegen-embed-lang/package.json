@@ -1,0 +1,42 @@
+{
+  "main": "src/Index.mjs",
+  "type": "module",
+  "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
+  "version": "0.0.1",
+  "keywords": [
+    "rescript"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "build": "rescript",
+    "graphql-codegen-embed-lang:build": "yarn build",
+    "clean": "rescript clean",
+    "graphql-codegen-embed-lang:clean": "yarn clean",
+    "fmt": "rescript format",
+    "graphql-codegen-embed-lang:fmt": "yarn fmt",
+    "dev": "rescript build -w",
+    "graphql-codegen-embed-lang:dev": "yarn dev"
+  },
+  "dependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/plugin-helpers": "^5.0.3",
+    "@graphql-tools/utils": "^10.1.2",
+    "@rescript/core": "^1.1.0",
+    "chokidar": "^3.6.0",
+    "debounce": "^2.0.0",
+    "is-glob": "^4.0.3",
+    "micromatch": "^4.0.5",
+    "rescript": "^11.0.1",
+    "rescript-embed-lang": "^0.4.0"
+  },
+  "peerDependencies": {
+    "@parcel/watcher": "^2.1.0",
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@parcel/watcher": {
+      "optional": true
+    }
+  }
+}

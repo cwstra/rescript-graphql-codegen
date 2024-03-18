@@ -215,9 +215,9 @@ module Array = {
   `)
   type nonEmpty<'t> = ('t, array<'t>)
   let headTail = (arr): option<nonEmpty<_>> =>
-    switch (at(arr, 0), sliceToEnd(arr, ~start=1)) {
-    | (Some(e), es) => Some(e, es)
-    | (None, _) => None
+    switch at(arr, 0) {
+    | Some(e) => Some(e, sliceToEnd(arr, ~start=1))
+    | None => None
     }
   @send external flatMapWithIndex: (array<'a>, ('a, int) => array<'b>) => array<'b> = "flatMap"
 }

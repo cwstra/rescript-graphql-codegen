@@ -93,12 +93,11 @@ var uniqBy = ((arr, fn) => {
     });
 
 function headTail(arr) {
-  var match = arr.at(0);
-  var match$1 = arr.slice(1);
-  if (match !== undefined) {
+  var e = arr.at(0);
+  if (e !== undefined) {
     return [
-            Caml_option.valFromOption(match),
-            match$1
+            Caml_option.valFromOption(e),
+            arr.slice(1)
           ];
   }
   
@@ -121,6 +120,7 @@ var $$Array = {
   toShuffled: Core__Array.toShuffled,
   shuffle: Core__Array.shuffle,
   findMap: Core__Array.findMap,
+  last: Core__Array.last,
   takeDropWhile: takeDropWhile,
   groupBy: groupBy,
   uniqBy: uniqBy,
@@ -146,6 +146,9 @@ var update = ((dict, key, fn) => ({...dict, [key]: fn(dict[key])}));
 
 var Dict = {
   $$delete: Core__Dict.$$delete,
+  forEach: Core__Dict.forEach,
+  forEachWithKey: Core__Dict.forEachWithKey,
+  mapValues: Core__Dict.mapValues,
   put: put,
   merge: merge,
   mergeWith: mergeWith,

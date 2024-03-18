@@ -9,7 +9,7 @@
     "graphql": "^16.0.0"
   },
   "dependencies": {
-    "@rescript/core": "^0.6.0",
+    "@rescript/core": "^1.1.0",
     "camelcase": "^8.0.0",
     "rescript": "^11.0.1",
     "rescript-nodejs": "^16.0.0"

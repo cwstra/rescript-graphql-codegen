@@ -11,6 +11,7 @@ type config = {
 
 let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
   try {
+    Console.log(config)
     // Need to have __typename for unions;
     // at least for now, just going to shove
     // that onto selection sets at the start.

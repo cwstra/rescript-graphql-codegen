@@ -3,20 +3,15 @@ module Path = NodeJs.Path
 
 let usage = `Usage:
   generate                                                | Generates all GraphQL code.
-    [--schema <path>]                                     | Filepath to your graphql schema.
-    [--output <path>]                                     | Where to emit all generated files.
+    [--config <path>]                                     | Filepath to GraphQL config.
     [--src <path>]                                        | The source folder for where to look for ReScript files.
+    [--output <path>]                                     | Where to emit all generated files.
     [--watch]                                             | Runs this command in watch mode.
 
-  unused-selections                                       | Check if we there are unused selections in your EdgeQL queries.
+  unused-selections                                       | Check if we there are unused selections in your GraphQL queries.
     [--ci]                                                | Run in CI mode.
 
-  extract <filePath>                                      | Extract all %edgeql tags in file at <filePath>.`
-
-type config = {
-  run: (~inputSdl: string, ~filePath: string) => promise<array<Codegen.fileOutput>>,
-  schemaPath: string,
-}
+  extract <filePath>                                      | Extract all %graphql tags in file at <filePath>.`
 
 type errorInFile = {
   startLoc: RescriptEmbedLang.loc,
@@ -43,8 +38,11 @@ let isInConfigDir = async () => {
   }
 }
 
-let example =
-      {run: Codegen.run(~schema="", ~pluginName="", ~scalarModule="", ~baseTypesModule="", ...), schemaPath: ""}
+type config = {
+  ppxConfigRef: ref<Codegen.ppxConfig>,
+  mainConfigPath: string,
+  outDir: string
+}
 
 let main = async () => {
   let errors = Map.make()
@@ -89,44 +87,21 @@ let main = async () => {
     ~extensionPattern= Generic("graphql"),
     ~cliHelpText=usage,
     ~setup=async ({args}) => {
-      let schema =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["--schema"])->Option.getOrPanic(
-          "--schema argument required",
-        )
-      let pluginName =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["--plugin"])->Option.getOrPanic(
-          "--plugin argument required",
-        )
-      let scalarModule =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["--scalar-module"])->Option.getOrPanic(
-          "--scalar-module argument required",
-        )
-      let baseTypesModule =
-        RescriptEmbedLang.CliArgs.getArgValue(args, ["--base-types-module"])->Option.getOrPanic(
-          "---base-types-module argument required",
-        )
-
-      {run: Codegen.run(~schema, ~pluginName, ~scalarModule, ~baseTypesModule, ...), schemaPath: schema}
+      let configPath = RescriptEmbedLang.CliArgs.getArgValue(args, ["--config"])
+      let outDir = RescriptEmbedLang.CliArgs.getArgValue(args, ["--output"])->OptionPlus.getOrPanic("Missing output file")
+      let (config, mainConfigPath) = await Codegen.getConfig(configPath)
+      { ppxConfigRef: ref(config), mainConfigPath, outDir }
     },
     ~generate=async ({config, content, path, location}) => {
-      Console.log2("gen", content)
-      let results = await config.run(~inputSdl=content, ~filePath=path)
-      Console.log2("results", results)
-/*, moduleName: "Test"*/
-      Ok(RescriptEmbedLang.NoModuleName({content: switch results {
+      switch await Codegen.run(config.ppxConfigRef.contents, path, content) {
         | [] => panic("No results returned")
-        | [val] => val.content
+        | [val] => Ok(RescriptEmbedLang.NoModuleName({content: val.content}))
         | _ => panic("Multiple results returned")
-      }}))
+      }
     },
     ~onWatch=async ({config, runGeneration, debug}) => {
-      // TODO: watch schema file
-      //let checkForSchemaChanges = async () => {
-      //  try {
-      //    NodeJs.Fs.PromiseAPI.
-      //    debug("[schemma change detection] Polling for schema changes...")
-      //  }
-      //}
+      //Codegen.createWatcher(config.mainConfigPath, config.outDir, config.ppxConfigRef, () => runGeneration())
+      //->ignore
       ()
     },
   )

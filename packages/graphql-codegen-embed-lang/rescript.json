@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/operations",
+  "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
   "namespace": "graphql-codegen-operations",
   "sources": {
     "dir": "src",
@@ -11,13 +11,10 @@
   },
   "suffix": ".mjs",
   "bsc-flags": [
-    "-open CorePlus"
+    "-open RescriptCore"
   ],
   "bs-dependencies": [
     "@rescript/core",
-    "@re-graphql-codegen/core-plus",
-    "@re-graphql-codegen/graphql",
-    "@re-graphql-codegen/graphql-codegen",
     "rescript-embed-lang",
     "rescript-nodejs"
   ]
