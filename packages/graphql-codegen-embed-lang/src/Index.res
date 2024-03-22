@@ -89,20 +89,36 @@ let main = async () => {
     ~setup=async ({args}) => {
       let configPath = RescriptEmbedLang.CliArgs.getArgValue(args, ["--config"])
       let outDir = RescriptEmbedLang.CliArgs.getArgValue(args, ["--output"])->OptionPlus.getOrPanic("Missing output file")
-      let (config, mainConfigPath) = await Codegen.getConfig(configPath)
-      { ppxConfigRef: ref(config), mainConfigPath, outDir }
+      let (config, mainConfigPath, schemaPatterns) = await Codegen.getConfig(configPath)
+      (await Codegen.runBase(config.mainConfig))->ignore
+      let (schemaFilePatterns, additionalIgnorePatterns) = switch schemaPatterns {
+        | {affirmative: []} => ([], [])
+        | { affirmative, negated} => (affirmative, negated)
+      }
+      let ppxConfigRef = ref(config)
+      let additionalFileWatchers = {
+        open RescriptEmbedLang
+        let onChange = async (c: RescriptEmbedLang.watcherOnChangeConfig) => {
+          (await Codegen.runBase(ppxConfigRef.contents.mainConfig))->ignore
+          await c.runGeneration()
+        }
+        Array.concat(
+          [{RescriptEmbedLang.filePattern: mainConfigPath, onChange}],
+          Array.map(schemaFilePatterns, filePattern => {filePattern, onChange})
+        )
+      }
+      RescriptEmbedLang.SetupResult({
+        config: { ppxConfigRef, mainConfigPath, outDir },
+        additionalFileWatchers,
+        additionalIgnorePatterns
+      })
     },
-    ~generate=async ({config, content, path, location}) => {
-      switch await Codegen.run(config.ppxConfigRef.contents, path, content) {
+    ~generate=async ({config, content, path}) => {
+      switch await Codegen.runDocument(config.ppxConfigRef.contents, path, content) {
         | [] => panic("No results returned")
         | [val] => Ok(RescriptEmbedLang.NoModuleName({content: val.content}))
         | _ => panic("Multiple results returned")
       }
-    },
-    ~onWatch=async ({config, runGeneration, debug}) => {
-      //Codegen.createWatcher(config.mainConfigPath, config.outDir, config.ppxConfigRef, () => runGeneration())
-      //->ignore
-      ()
     },
   )
 

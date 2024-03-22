@@ -3,6 +3,9 @@
   "type": "module",
   "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
   "version": "0.0.1",
+  "bin": {
+    "graphql-codegen-embed-lang": "./src/Index.mjs"
+  },
   "keywords": [
     "rescript"
   ],
@@ -28,7 +31,7 @@
     "is-glob": "^4.0.3",
     "micromatch": "^4.0.5",
     "rescript": "^11.0.1",
-    "rescript-embed-lang": "^0.4.0"
+    "rescript-embed-lang": "git+https://github.com/cwstra/rescript-embed-lang#c2273f74df0927978092f8bed1647ec5de3e93c2"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

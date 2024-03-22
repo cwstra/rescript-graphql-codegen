@@ -53,6 +53,8 @@ var UsersArrRelInsertInput = {};
 
 var UsersObjRelInsertInput = {};
 
+var Tester = {};
+
 var UsersBoolExp;
 
 export {
@@ -83,5 +85,6 @@ export {
   UsersArrRelInsertInput ,
   UsersObjRelInsertInput ,
   UsersBoolExp ,
+  Tester ,
 }
 /* No side effect */

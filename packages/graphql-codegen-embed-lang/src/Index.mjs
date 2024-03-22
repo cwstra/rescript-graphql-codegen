@@ -6,7 +6,7 @@ import * as Nodefs from "node:fs";
 import * as Process from "process";
 import * as Nodepath from "node:path";
 import * as RescriptCore from "../../../node_modules/@rescript/core/src/RescriptCore.mjs";
-import * as RescriptEmbedLang from "../../../node_modules/rescript-embed-lang/src/RescriptEmbedLang.mjs";
+import * as RescriptEmbedLang from "../node_modules/rescript-embed-lang/src/RescriptEmbedLang.mjs";
 import * as Caml_js_exceptions from "../../../node_modules/rescript/lib/es6/caml_js_exceptions.js";
 import * as Codegen$GraphqlCodegenOperations from "./Codegen.mjs";
 import * as OptionPlus$GraphqlCodegenOperations from "./OptionPlus.mjs";
@@ -51,15 +51,46 @@ async function main() {
           var configPath = RescriptEmbedLang.CliArgs.getArgValue(args, ["--config"]);
           var outDir = OptionPlus$GraphqlCodegenOperations.getOrPanic(RescriptEmbedLang.CliArgs.getArgValue(args, ["--output"]), "Missing output file");
           var match = await Codegen$GraphqlCodegenOperations.getConfig(configPath);
+          var schemaPatterns = match[2];
+          var mainConfigPath = match[1];
+          var config = match[0];
+          await Codegen$GraphqlCodegenOperations.runBase(config.mainConfig);
+          var affirmative = schemaPatterns.affirmative;
+          var match$1 = affirmative.length !== 0 ? [
+              affirmative,
+              schemaPatterns.negated
+            ] : [
+              [],
+              []
+            ];
+          var ppxConfigRef = {
+            contents: config
+          };
+          var onChange = async function (c) {
+            await Codegen$GraphqlCodegenOperations.runBase(ppxConfigRef.contents.mainConfig);
+            return await c.runGeneration(undefined);
+          };
+          var additionalFileWatchers = [{
+                filePattern: mainConfigPath,
+                onChange: onChange
+              }].concat(match$1[0].map(function (filePattern) {
+                    return {
+                            filePattern: filePattern,
+                            onChange: onChange
+                          };
+                  }));
           return {
-                  ppxConfigRef: {
-                    contents: match[0]
+                  TAG: "SetupResult",
+                  config: {
+                    ppxConfigRef: ppxConfigRef,
+                    mainConfigPath: mainConfigPath,
+                    outDir: outDir
                   },
-                  mainConfigPath: match[1],
-                  outDir: outDir
+                  additionalFileWatchers: additionalFileWatchers,
+                  additionalIgnorePatterns: match$1[1]
                 };
         }), (async function (param) {
-          var match = await Codegen$GraphqlCodegenOperations.run(param.config.ppxConfigRef.contents, param.path, param.content);
+          var match = await Codegen$GraphqlCodegenOperations.runDocument(param.config.ppxConfigRef.contents, param.path, param.content);
           var len = match.length;
           if (len !== 1) {
             if (len !== 0) {
@@ -76,9 +107,7 @@ async function main() {
                     content: val.content
                   }
                 };
-        }), usage, undefined, (async function (param) {
-          
-        }));
+        }), usage, undefined, undefined);
   return RescriptEmbedLang.runCli(emitter, undefined);
 }
 

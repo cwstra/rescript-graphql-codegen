@@ -1054,3 +1054,7 @@ type Volume {
   cubic_feet: Int
   cubic_meters: Int
 }
+
+input tester {
+  _value: users_bool_exp
+}

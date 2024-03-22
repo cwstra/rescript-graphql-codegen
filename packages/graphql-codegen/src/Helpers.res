@@ -75,7 +75,6 @@ type topologyNode<'value> = {
 }
 
 let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
-  let rateNode = n => Array.length(n.dependsOn)
   let removeHandledDependencies = (node, names) => {
     ...node,
     dependsOn: Array.filter(node.dependsOn, dependency => !Array.includes(names, dependency)),
@@ -84,7 +83,7 @@ let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
   | None => _ => raise(Cyclic_topology)
   | Some(mapCycle) =>
     ((n, ns)) => {
-      let rec go = (collected, border, untouched, dependencies) =>
+      let rec go = (collected, border, untouched, dependencies) => {
         switch Array.flatMap(border, b => b.dependsOn)->Array.uniqBy(v => v) {
         | [] => (mapCycle(Array.concat(collected, border)), untouched, dependencies)
         | newDepNames => {
@@ -100,12 +99,19 @@ let topologicalSort = (~input, ~mapSingle, ~mapCycle=?) => {
             go(newCollected, newBorder, newUntouched, Array.concat(dependencies, newDepNames))
           }
         }
+      }
       go([], [n], ns, [])
     }
   }
+  let rateNode = n =>
+      Array.length(n.dependsOn)->Int.toFloat -.
+      // Nodes with a self-dependency should come _after_ nodes with no dependency,
+      // but _before_ nodes with a proper dependency, so we rate a self dependency as
+      // 0.5, rather than a full 1
+      (Array.includes(n.dependsOn, n.name) ? 0.5 : 0.0)
   let rec sort = (unsortedFragments, ~sortedFragments=[]) => {
     Array.sort(unsortedFragments, (f1, f2) => Ordering.compare(rateNode(f1), rateNode(f2)))
-    switch Array.takeDropWhile(unsortedFragments, f => rateNode(f) == 0) {
+    switch Array.takeDropWhile(unsortedFragments, f => Array.length(f.dependsOn) == 0) {
     | ([], dependent) => {
         let (cycleEntry, remainingDependents, handledDeps) =
           Array.headTail(dependent)->Option.getOrExn(Empty_argument)->handleCycle
@@ -195,7 +201,7 @@ let sortInputObjectsTopologically = (definitions: array<Schema.InputObject.t>) =
         | Scalar(_) | Enum(_) => None
         }
       go(Schema.InputField.type_(field))
-    }),
+    })->Array.uniqBy(t => t),
   })
   topologicalSort(
     ~input=withDepends,

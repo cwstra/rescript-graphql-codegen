@@ -8,7 +8,6 @@ import * as WorkItem$GraphqlCodegenOperations from "./WorkItem.mjs";
 
 async function plugin(schema, documents, config) {
   try {
-    console.log(config);
     var match = CorePlus.Either.partition(CorePlus.$$Array.filterMap(documents.flatMap(function (d) {
                   return AST$Graphql.addTypenameToDocument(d.document).definitions;
                 }), (function (d) {

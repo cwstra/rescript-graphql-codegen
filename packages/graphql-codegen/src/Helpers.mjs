@@ -146,6 +146,11 @@ function topologicalSort(input, mapSingle, mapCycle) {
               Error: new Error()
             };
       });
+  var rateNode = function (n) {
+    return n.dependsOn.length - (
+            n.dependsOn.includes(n.name) ? 0.5 : 0.0
+          );
+  };
   if (input.length !== 0) {
     var _unsortedFragments = input;
     var _sortedFragmentsOpt;
@@ -154,7 +159,7 @@ function topologicalSort(input, mapSingle, mapCycle) {
       var unsortedFragments = _unsortedFragments;
       var sortedFragments = sortedFragmentsOpt !== undefined ? sortedFragmentsOpt : [];
       unsortedFragments.sort(function (f1, f2) {
-            return CorePlus.Ordering.compare(f1.dependsOn.length, f2.dependsOn.length);
+            return CorePlus.Ordering.compare(rateNode(f1), rateNode(f2));
           });
       var match = CorePlus.$$Array.takeDropWhile(unsortedFragments, (function (f) {
               return f.dependsOn.length === 0;
@@ -254,36 +259,38 @@ function sortInputObjectsTopologically(definitions) {
         return {
                 name: Schema$Graphql.InputObject.name(node),
                 node: node,
-                dependsOn: CorePlus.$$Array.filterMap(Object.values(Schema$Graphql.InputObject.getFields(node)), (function (field) {
-                        var _f = Schema$Graphql.InputField.type_(field);
-                        while(true) {
-                          var f = _f;
-                          var io = Schema$Graphql.Input.parse(f);
-                          switch (io.TAG) {
-                            case "Scalar" :
-                            case "Enum" :
-                                return ;
-                            case "InputObject" :
-                                return Schema$Graphql.InputObject.name(io._0);
-                            case "List" :
-                                _f = Schema$Graphql.List.ofType(io._0);
-                                continue ;
-                            case "NonNull" :
-                                var io$1 = Schema$Graphql.Input.parse_nn(Schema$Graphql.NonNull.ofType(io._0));
-                                switch (io$1.TAG) {
-                                  case "Scalar" :
-                                  case "Enum" :
-                                      return ;
-                                  case "InputObject" :
-                                      return Schema$Graphql.InputObject.name(io$1._0);
-                                  case "List" :
-                                      _f = Schema$Graphql.List.ofType(io$1._0);
-                                      continue ;
-                                  
-                                }
-                            
-                          }
-                        };
+                dependsOn: CorePlus.$$Array.uniqBy(CorePlus.$$Array.filterMap(Object.values(Schema$Graphql.InputObject.getFields(node)), (function (field) {
+                            var _f = Schema$Graphql.InputField.type_(field);
+                            while(true) {
+                              var f = _f;
+                              var io = Schema$Graphql.Input.parse(f);
+                              switch (io.TAG) {
+                                case "Scalar" :
+                                case "Enum" :
+                                    return ;
+                                case "InputObject" :
+                                    return Schema$Graphql.InputObject.name(io._0);
+                                case "List" :
+                                    _f = Schema$Graphql.List.ofType(io._0);
+                                    continue ;
+                                case "NonNull" :
+                                    var io$1 = Schema$Graphql.Input.parse_nn(Schema$Graphql.NonNull.ofType(io._0));
+                                    switch (io$1.TAG) {
+                                      case "Scalar" :
+                                      case "Enum" :
+                                          return ;
+                                      case "InputObject" :
+                                          return Schema$Graphql.InputObject.name(io$1._0);
+                                      case "List" :
+                                          _f = Schema$Graphql.List.ofType(io$1._0);
+                                          continue ;
+                                      
+                                    }
+                                
+                              }
+                            };
+                          })), (function (t) {
+                        return t;
                       }))
               };
       });

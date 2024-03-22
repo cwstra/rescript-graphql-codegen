@@ -38,15 +38,21 @@ export const getGeneratesEntry = mainConfig => mainConfig.config?.ppxGenerates;
 
 // RUN
 
-const traceMsg = (msg,t) => {console.log(msg,t); return t}
+export const runBase = (
+  mainConfig,
+) =>
+  generate(
+    mainConfig,
+    true,
+  );
 
-export const run = (
+export const runDocument = (
   { mainConfig, generatesEntry },
   sourceFilePath,
   documents,
 ) =>
   generate(
-    traceMsg("mjs",{
+    {
       ...mainConfig,
       generates: {
         [sourceFilePath]: {
@@ -54,23 +60,6 @@ export const run = (
           documents,
         },
       },
-    }),
+    },
     false,
   );
-
-// WATCH
-
-export const getPathBase = patterned => mm.scan(patterned).base
-
-export const getParcel = () => import("@parcel/watcher")
-
-export const startWatcher = ({ patterns, affirmative, negated }) => {
-  const shouldRebuild = (absolutePath) => {
-    const relativePath = relative(process.cwd(), absolutePath);
-    return !mm.isMatch(relativePath, invertedNegated) &&
-            mm.isMatch(relativePath, affirmative);
-  }
-  const runWatcher = async abortSignal => {
-    const watchDirectory = await findHighestCommonDirectory(affirmative)
-  }
-};
