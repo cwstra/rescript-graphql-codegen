@@ -436,9 +436,3 @@ module rec UsersBoolExp: {
     twitter: null<StringComparisonExp.t>,
   }
 } = UsersBoolExp
-
-module Tester = {
-  type t = {
-    _value: null<UsersBoolExp.t>,
-  }
-}
