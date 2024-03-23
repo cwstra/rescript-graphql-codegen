@@ -53,8 +53,8 @@ export const getWatchedPatterns = (config) => {
   const baseDocuments = config.documents && getFilePatterns(config.documents)
   const subEntries = Object.entries(config.generates).map(([k, v]) => {
     if (Array.isArray(v)) return;
-    const generatesSchemaPatterns = config.schema && getFilePatterns(config.schema)
-    const generatesBaseDocuments = config.documents && getFilePatterns(config.documents)
+    const generatesSchemaPatterns = v.schema && getFilePatterns(v.schema)
+    const generatesBaseDocuments = v.documents && getFilePatterns(v.documents)
     const watched = [generatesSchemaPatterns, generatesBaseDocuments].filter(p => p?.affirmative?.length)
     return watched.length && [k, watched]
   }).filter(Boolean)
