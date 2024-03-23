@@ -5,6 +5,7 @@ import * as Js_exn from "rescript/lib/es6/js_exn.js";
 import * as Nodefs from "node:fs";
 import * as Process from "process";
 import * as Nodepath from "node:path";
+import Micromatch from "micromatch";
 import * as RescriptCore from "@rescript/core/src/RescriptCore.mjs";
 import * as RescriptEmbedLang from "rescript-embed-lang/src/RescriptEmbedLang.mjs";
 import * as Caml_js_exceptions from "rescript/lib/es6/caml_js_exceptions.js";
@@ -12,6 +13,8 @@ import * as Codegen$GraphqlCodegenOperations from "./Codegen.mjs";
 import * as OptionPlus$GraphqlCodegenOperations from "./OptionPlus.mjs";
 
 var usage = "Usage:\n  generate                                                | Generates all GraphQL code.\n    [--config <path>]                                     | Filepath to GraphQL config.\n    [--src <path>]                                        | The source folder for where to look for ReScript files.\n    [--output <path>]                                     | Where to emit all generated files.\n    [--watch]                                             | Runs this command in watch mode.\n\n  unused-selections                                       | Check if we there are unused selections in your GraphQL queries.\n    [--ci]                                                | Run in CI mode.\n\n  extract <filePath>                                      | Extract all %graphql tags in file at <filePath>.";
+
+var MicroMatch = {};
 
 async function isInConfigDir() {
   var cwd = Process.cwd();
@@ -51,34 +54,62 @@ async function main() {
           var configPath = RescriptEmbedLang.CliArgs.getArgValue(args, ["--config"]);
           var outDir = OptionPlus$GraphqlCodegenOperations.getOrPanic(RescriptEmbedLang.CliArgs.getArgValue(args, ["--output"]), "Missing output file");
           var match = await Codegen$GraphqlCodegenOperations.getConfig(configPath);
-          var schemaPatterns = match[2];
+          var watchPatterns = match[2];
           var mainConfigPath = match[1];
           var config = match[0];
-          await Codegen$GraphqlCodegenOperations.runBase(config.mainConfig);
-          var affirmative = schemaPatterns.affirmative;
-          var match$1 = affirmative.length !== 0 ? [
-              affirmative,
-              schemaPatterns.negated
-            ] : [
-              [],
-              []
-            ];
+          await Codegen$GraphqlCodegenOperations.runBase(config.mainConfig, undefined);
           var ppxConfigRef = {
             contents: config
           };
+          var baseWatchers = watchPatterns.sharedEntries.flatMap(function (param) {
+                var negatedRegexes = param.negated.map(Micromatch.makeRe);
+                var onChange = async function (param) {
+                  var file = param.file;
+                  if (!negatedRegexes.some(function (re) {
+                          return re.test(file);
+                        })) {
+                    await Codegen$GraphqlCodegenOperations.runBase(ppxConfigRef.contents.mainConfig, undefined);
+                    return await param.runGeneration(undefined);
+                  }
+                  
+                };
+                return param.affirmative.map(function (filePattern) {
+                            return {
+                                    filePattern: filePattern,
+                                    onChange: onChange
+                                  };
+                          });
+              });
+          var generatedWatchers = watchPatterns.subEntries.flatMap(function (param) {
+                var key = param[0];
+                return param[1].flatMap(function (param) {
+                            var negatedRegexes = param.negated.map(Micromatch.makeRe);
+                            var onChange = async function (param) {
+                              var file = param.file;
+                              if (!negatedRegexes.some(function (re) {
+                                      return re.test(file);
+                                    })) {
+                                await Codegen$GraphqlCodegenOperations.runBase(ppxConfigRef.contents.mainConfig, key);
+                                return await param.runGeneration(undefined);
+                              }
+                              
+                            };
+                            return param.affirmative.map(function (filePattern) {
+                                        return {
+                                                filePattern: filePattern,
+                                                onChange: onChange
+                                              };
+                                      });
+                          });
+              });
           var onChange = async function (c) {
-            await Codegen$GraphqlCodegenOperations.runBase(ppxConfigRef.contents.mainConfig);
+            await Codegen$GraphqlCodegenOperations.runBase(ppxConfigRef.contents.mainConfig, undefined);
             return await c.runGeneration(undefined);
           };
           var additionalFileWatchers = [{
                 filePattern: mainConfigPath,
                 onChange: onChange
-              }].concat(match$1[0].map(function (filePattern) {
-                    return {
-                            filePattern: filePattern,
-                            onChange: onChange
-                          };
-                  }));
+              }].concat(baseWatchers, generatedWatchers);
           return {
                   TAG: "SetupResult",
                   config: {
@@ -86,8 +117,7 @@ async function main() {
                     mainConfigPath: mainConfigPath,
                     outDir: outDir
                   },
-                  additionalFileWatchers: additionalFileWatchers,
-                  additionalIgnorePatterns: match$1[1]
+                  additionalFileWatchers: additionalFileWatchers
                 };
         }), (async function (param) {
           var match = await Codegen$GraphqlCodegenOperations.runDocument(param.config.ppxConfigRef.contents, param.path, param.content);
@@ -118,6 +148,7 @@ var Path;
 export {
   Path ,
   usage ,
+  MicroMatch ,
   isInConfigDir ,
   main ,
 }

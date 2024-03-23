@@ -19,6 +19,14 @@ type errorInFile = {
   errorMessage: string,
 }
 
+module MicroMatch = {
+  type mm = {
+    makeRe: string => RegExp.t
+  }
+  @module("micromatch")
+  external mm: mm = "default"
+}
+
 let isInConfigDir = async () => {
   let cwd = NodeJs.Process.process->NodeJs.Process.cwd
   let bsconfig = Path.resolve([cwd, "bsconfig.json"])
@@ -89,28 +97,45 @@ let main = async () => {
     ~setup=async ({args}) => {
       let configPath = RescriptEmbedLang.CliArgs.getArgValue(args, ["--config"])
       let outDir = RescriptEmbedLang.CliArgs.getArgValue(args, ["--output"])->OptionPlus.getOrPanic("Missing output file")
-      let (config, mainConfigPath, schemaPatterns) = await Codegen.getConfig(configPath)
+      let (config, mainConfigPath, watchPatterns) = await Codegen.getConfig(configPath)
       (await Codegen.runBase(config.mainConfig))->ignore
-      let (schemaFilePatterns, additionalIgnorePatterns) = switch schemaPatterns {
-        | {affirmative: []} => ([], [])
-        | { affirmative, negated} => (affirmative, negated)
-      }
       let ppxConfigRef = ref(config)
+      let baseWatchers = Array.flatMap(watchPatterns.sharedEntries, ({affirmative, negated}) =>{
+        open RescriptEmbedLang
+        let negatedRegexes = Array.map(negated, MicroMatch.mm.makeRe)
+        let onChange = async ({file, runGeneration}) =>
+            if !Array.some(negatedRegexes, re => RegExp.test(re, file)) {
+              (await Codegen.runBase(ppxConfigRef.contents.mainConfig))->ignore
+              await runGeneration()
+            }
+        Array.map(affirmative, filePattern => ({filePattern, onChange}))
+      })
+      let generatedWatchers = Array.flatMap(watchPatterns.subEntries, ((key, values)) => {
+        open RescriptEmbedLang
+        Array.flatMap(values, ({affirmative, negated}) => {
+          let negatedRegexes = Array.map(negated, MicroMatch.mm.makeRe)
+          let onChange = async ({file, runGeneration}) =>
+              if !Array.some(negatedRegexes, re => RegExp.test(re, file)) {
+                (await Codegen.runBase(ppxConfigRef.contents.mainConfig, ~generatesKey=key))->ignore
+                await runGeneration()
+              }
+          Array.map(affirmative, filePattern => ({filePattern, onChange}))
+        })
+      })
       let additionalFileWatchers = {
         open RescriptEmbedLang
-        let onChange = async (c: RescriptEmbedLang.watcherOnChangeConfig) => {
+        let onChange = async (c: watcherOnChangeConfig) => {
           (await Codegen.runBase(ppxConfigRef.contents.mainConfig))->ignore
           await c.runGeneration()
         }
-        Array.concat(
+        Array.concatMany(
           [{RescriptEmbedLang.filePattern: mainConfigPath, onChange}],
-          Array.map(schemaFilePatterns, filePattern => {filePattern, onChange})
+          [baseWatchers, generatedWatchers]
         )
       }
       RescriptEmbedLang.SetupResult({
         config: { ppxConfigRef, mainConfigPath, outDir },
         additionalFileWatchers,
-        additionalIgnorePatterns
       })
     },
     ~generate=async ({config, content, path}) => {

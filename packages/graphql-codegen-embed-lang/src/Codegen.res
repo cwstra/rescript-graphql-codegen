@@ -2,7 +2,7 @@ type ppxGenerates
 type filePath = string
 type gqlDocument = string
 
-module SchemaPatterns = {
+module WatchPatterns = {
   type pattern = string
   @module("./wrapper.mjs")
   external filePathMatchesPatterns: (filePath, array<pattern>) => bool = "testPattern"
@@ -16,8 +16,12 @@ module CodegenConfig = {
   type t
   @module("./wrapper.mjs")
   external getGeneratesEntry: t => option<ppxGenerates> = "getGeneratesEntry"
+  type schemaWatchedFiles = {
+    sharedEntries: array<WatchPatterns.t>,
+    subEntries: array<(string, array<WatchPatterns.t>)>
+  }
   @module("./wrapper.mjs")
-  external getSchemaPatterns: t => SchemaPatterns.t = "getSchemaPatterns"
+  external getWatchedPatterns: t => schemaWatchedFiles = "getWatchedPatterns"
 }
 
 type ppxConfig = {
@@ -35,7 +39,7 @@ let getConfig = async (configFilePath) => {
   let generatesEntry =
     CodegenConfig.getGeneratesEntry(mainConfig)
     ->OptionPlus.getOrPanic("Missing ppxGenerates property in codegen config")
-  ({mainConfig, generatesEntry}, mainConfigPath, CodegenConfig.getSchemaPatterns(mainConfig))
+  ({mainConfig, generatesEntry}, mainConfigPath, CodegenConfig.getWatchedPatterns(mainConfig))
 }
 
 type fileOutput = {
@@ -44,7 +48,7 @@ type fileOutput = {
 }
 
 @module("./wrapper.mjs")
-external runBase: CodegenConfig.t => promise<array<fileOutput>> = "runBase"
+external runBase: (CodegenConfig.t, ~generatesKey: string=?) => promise<array<fileOutput>> = "runBase"
 
 @module("./wrapper.mjs")
 external runDocument: (ppxConfig, filePath, gqlDocument) => promise<array<fileOutput>> = "runDocument"
