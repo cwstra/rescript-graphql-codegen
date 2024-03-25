@@ -1,5 +1,5 @@
 {
-  "main": "src/Index.res.js",
+  "main": "src/Index.mjs",
   "name": "@re-graphql-codegen/base-types",
   "version": "0.0.1",
   "keywords": [

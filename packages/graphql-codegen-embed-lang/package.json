@@ -3,9 +3,7 @@
   "type": "module",
   "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
   "version": "0.0.1",
-  "bin": {
-    "graphql-codegen-embed-lang": "./src/Index.mjs"
-  },
+  "bin": "./src/Index.mjs",
   "keywords": [
     "rescript"
   ],

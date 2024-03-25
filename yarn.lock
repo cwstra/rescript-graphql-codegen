@@ -1956,6 +1956,8 @@ __metadata:
   peerDependenciesMeta:
     "@parcel/watcher":
       optional: true
+  bin:
+    graphql-codegen-embed-lang: ./src/Index.mjs
   languageName: unknown
   linkType: soft
 
