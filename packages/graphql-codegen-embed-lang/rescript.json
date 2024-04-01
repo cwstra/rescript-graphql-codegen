@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
+  "name": "@rescript-graphql-codegen/graphql-codegen-embed-lang",
   "namespace": "graphql-codegen-operations",
   "sources": {
     "dir": "src",

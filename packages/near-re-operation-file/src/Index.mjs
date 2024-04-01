@@ -2,11 +2,11 @@
 
 import * as Graphql from "graphql";
 import * as Process from "process";
-import * as CorePlus from "@re-graphql-codegen/core-plus/src/CorePlus.mjs";
+import * as CorePlus from "@rescript-graphql-codegen/core-plus/src/CorePlus.mjs";
 import * as Nodepath from "node:path";
-import * as AST$Graphql from "@re-graphql-codegen/graphql/src/AST.mjs";
+import * as AST$Graphql from "@rescript-graphql-codegen/graphql/src/AST.mjs";
 import * as Caml_option from "rescript/lib/es6/caml_option.js";
-import * as Schema$Graphql from "@re-graphql-codegen/graphql/src/Schema.mjs";
+import * as Schema$Graphql from "@rescript-graphql-codegen/graphql/src/Schema.mjs";
 import * as Caml_exceptions from "rescript/lib/es6/caml_exceptions.js";
 import * as Caml_splice_call from "rescript/lib/es6/caml_splice_call.js";
 

@@ -1,5 +1,5 @@
 {
-  "name": "re-graphql-codegen",
+  "name": "rescript-graphql-codegen",
   "private": true,
   "license": "MIT",
   "workspaces": [

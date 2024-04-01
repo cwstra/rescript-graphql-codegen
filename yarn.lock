@@ -1914,31 +1914,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@re-graphql-codegen/base-types@workspace:packages/base-types":
+"@repeaterjs/repeater@npm:^3.0.4":
+  version: 3.0.5
+  resolution: "@repeaterjs/repeater@npm:3.0.5"
+  checksum: e6e1aca2bbfe0b8e974bc5185a6839f9e78ec8acb96b6d6911a9dfc958443689f9bc38bcc6d554e6c8598f597f0151841aafbd1ee3ef16262ee93d18b2c1d4b5
+  languageName: node
+  linkType: hard
+
+"@rescript-graphql-codegen/base-types@workspace:packages/base-types":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/base-types@workspace:packages/base-types"
+  resolution: "@rescript-graphql-codegen/base-types@workspace:packages/base-types"
   dependencies:
-    "@re-graphql-codegen/core-plus": "workspace:*"
-    "@re-graphql-codegen/graphql": "workspace:*"
-    "@re-graphql-codegen/graphql-codegen": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/graphql": "workspace:*"
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*"
     rescript: "npm:^11.0.1"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/core-plus@workspace:*, @re-graphql-codegen/core-plus@workspace:packages/core-plus":
+"@rescript-graphql-codegen/core-plus@workspace:*, @rescript-graphql-codegen/core-plus@workspace:packages/core-plus":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/core-plus@workspace:packages/core-plus"
+  resolution: "@rescript-graphql-codegen/core-plus@workspace:packages/core-plus"
   dependencies:
     "@rescript/core": "npm:^1.1.0"
     rescript: "npm:^11.0.1"
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/graphql-codegen-embed-lang@workspace:packages/graphql-codegen-embed-lang":
+"@rescript-graphql-codegen/graphql-codegen-embed-lang@workspace:packages/graphql-codegen-embed-lang":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/graphql-codegen-embed-lang@workspace:packages/graphql-codegen-embed-lang"
+  resolution: "@rescript-graphql-codegen/graphql-codegen-embed-lang@workspace:packages/graphql-codegen-embed-lang"
   dependencies:
     "@graphql-codegen/cli": "npm:^5.0.2"
     "@graphql-codegen/plugin-helpers": "npm:^5.0.3"
@@ -1961,49 +1968,49 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/graphql-codegen@workspace:*, @re-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen":
+"@rescript-graphql-codegen/graphql-codegen@workspace:*, @rescript-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen"
+  resolution: "@rescript-graphql-codegen/graphql-codegen@workspace:packages/graphql-codegen"
   dependencies:
-    "@re-graphql-codegen/core-plus": "workspace:*"
-    "@re-graphql-codegen/graphql": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/graphql": "workspace:*"
     rescript: "npm:^11.0.1"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/graphql@workspace:*, @re-graphql-codegen/graphql@workspace:packages/graphql":
+"@rescript-graphql-codegen/graphql@workspace:*, @rescript-graphql-codegen/graphql@workspace:packages/graphql":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/graphql@workspace:packages/graphql"
+  resolution: "@rescript-graphql-codegen/graphql@workspace:packages/graphql"
   dependencies:
-    "@re-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
     rescript: "npm:^11.0.1"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/near-re-operation-file@workspace:packages/near-re-operation-file":
+"@rescript-graphql-codegen/near-re-operation-file@workspace:packages/near-re-operation-file":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/near-re-operation-file@workspace:packages/near-re-operation-file"
+  resolution: "@rescript-graphql-codegen/near-re-operation-file@workspace:packages/near-re-operation-file"
   dependencies:
-    "@re-graphql-codegen/core-plus": "workspace:*"
-    "@re-graphql-codegen/graphql": "workspace:*"
-    "@re-graphql-codegen/graphql-codegen": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/graphql": "workspace:*"
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*"
     rescript: "npm:^11.0.1"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/operations@workspace:packages/operations":
+"@rescript-graphql-codegen/operations@workspace:packages/operations":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/operations@workspace:packages/operations"
+  resolution: "@rescript-graphql-codegen/operations@workspace:packages/operations"
   dependencies:
-    "@re-graphql-codegen/core-plus": "workspace:*"
-    "@re-graphql-codegen/graphql": "workspace:*"
-    "@re-graphql-codegen/graphql-codegen": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/graphql": "workspace:*"
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*"
     rescript: "npm:^11.0.1"
     rescript-embed-lang: "npm:^0.4.0"
   peerDependencies:
@@ -2011,29 +2018,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@re-graphql-codegen/test@workspace:packages/test":
+"@rescript-graphql-codegen/test@workspace:packages/test":
   version: 0.0.0-use.local
-  resolution: "@re-graphql-codegen/test@workspace:packages/test"
+  resolution: "@rescript-graphql-codegen/test@workspace:packages/test"
   dependencies:
     "@graphql-codegen/add": "npm:^5.0.0"
     "@graphql-codegen/cli": "npm:^5.0.0"
     "@graphql-codegen/near-operation-file-preset": "npm:^3.0.0"
     "@graphql-codegen/typescript": "npm:^4.0.1"
     "@parcel/watcher": "npm:^2.3.0"
-    "@re-graphql-codegen/core-plus": "workspace:*"
+    "@rescript-graphql-codegen/core-plus": "workspace:*"
     graphql: "npm:^16.8.1"
     rescript: "npm:^11.0.1"
     rescript-embed-lang: "npm:^0.4.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
-
-"@repeaterjs/repeater@npm:^3.0.4":
-  version: 3.0.5
-  resolution: "@repeaterjs/repeater@npm:3.0.5"
-  checksum: e6e1aca2bbfe0b8e974bc5185a6839f9e78ec8acb96b6d6911a9dfc958443689f9bc38bcc6d554e6c8598f597f0151841aafbd1ee3ef16262ee93d18b2c1d4b5
-  languageName: node
-  linkType: hard
 
 "@rescript/core@npm:^1.1.0":
   version: 1.1.0
@@ -4514,18 +4514,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"re-graphql-codegen@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "re-graphql-codegen@workspace:."
-  dependencies:
-    "@rescript/core": "npm:^1.1.0"
-    camelcase: "npm:^8.0.0"
-    graphql: "npm:^16.0.0"
-    rescript: "npm:^11.0.1"
-    rescript-nodejs: "npm:^16.0.0"
-  languageName: unknown
-  linkType: soft
-
 "readable-stream@npm:^3.4.0":
   version: 3.6.2
   resolution: "readable-stream@npm:3.6.2"
@@ -4615,6 +4603,18 @@ __metadata:
   checksum: 4ffde61414be50ffa8d09dde2d4d5f531ebcad1836e3f5f930c9afe10221d5c41c20fb5f0e492826bd9e4585531729829bb01cf7d5aaba44c3adfa49f8de8bf9
   languageName: node
   linkType: hard
+
+"rescript-graphql-codegen@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "rescript-graphql-codegen@workspace:."
+  dependencies:
+    "@rescript/core": "npm:^1.1.0"
+    camelcase: "npm:^8.0.0"
+    graphql: "npm:^16.0.0"
+    rescript: "npm:^11.0.1"
+    rescript-nodejs: "npm:^16.0.0"
+  languageName: unknown
+  linkType: soft
 
 "rescript-nodejs@npm:^16.0.0":
   version: 16.1.0

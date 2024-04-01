@@ -1,7 +1,7 @@
 {
   "main": "src/Index.mjs",
   "type": "module",
-  "name": "@re-graphql-codegen/graphql-codegen-embed-lang",
+  "name": "@rescript-graphql-codegen/graphql-codegen-embed-lang",
   "version": "0.0.1",
   "bin": "./src/Index.mjs",
   "keywords": [

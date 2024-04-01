@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/graphql-codegen",
+  "name": "@rescript-graphql-codegen/graphql-codegen",
   "namespace": "graphql-codegen",
   "sources": {
     "dir": "src",
@@ -11,5 +11,5 @@
   },
   "suffix": ".mjs",
   "bsc-flags": ["-open CorePlus"],
-  "bs-dependencies": ["@rescript/core", "@re-graphql-codegen/core-plus", "@re-graphql-codegen/graphql"]
+  "bs-dependencies": ["@rescript/core", "@rescript-graphql-codegen/core-plus", "@rescript-graphql-codegen/graphql"]
 }

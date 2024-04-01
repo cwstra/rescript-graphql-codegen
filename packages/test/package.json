@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/test",
+  "name": "@rescript-graphql-codegen/test",
   "version": "0.0.1",
   "keywords": [
     "rescript",
@@ -16,7 +16,7 @@
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/near-operation-file-preset": "^3.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
-    "@re-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
     "graphql": "^16.8.1",
     "rescript-embed-lang": "^0.4.0"
   },

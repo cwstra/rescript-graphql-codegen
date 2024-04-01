@@ -1,6 +1,6 @@
 {
   "main": "src/Index.mjs",
-  "name": "@re-graphql-codegen/base-types",
+  "name": "@rescript-graphql-codegen/base-types",
   "version": "0.0.1",
   "keywords": [
     "rescript"
@@ -15,12 +15,12 @@
     "fmt": "rescript format",
     "base-types:fmt": "yarn fmt",
     "dev": "rescript build -w",
-    "base-types:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/base-types run build; yarn dev"
+    "base-types:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/base-types run build; yarn dev"
   },
   "dependencies": {
-    "@re-graphql-codegen/core-plus": "workspace:*",
-    "@re-graphql-codegen/graphql": "workspace:*",
-    "@re-graphql-codegen/graphql-codegen": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/graphql": "workspace:*",
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
     "rescript": "^11.0.1"
   },
   "peerDependencies": {

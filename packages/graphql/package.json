@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/graphql",
+  "name": "@rescript-graphql-codegen/graphql",
   "version": "0.0.1",
   "keywords": [
     "rescript",
@@ -18,7 +18,7 @@
     "graphql:dev": "yarn core-plus:build; dev"
   },
   "dependencies": {
-    "@re-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
     "rescript": "^11.0.1"
   },
   "peerDependencies": {

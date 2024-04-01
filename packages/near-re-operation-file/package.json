@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/near-re-operation-file",
+  "name": "@rescript-graphql-codegen/near-re-operation-file",
   "version": "0.0.1",
   "keywords": [
     "rescript"
@@ -14,12 +14,12 @@
     "fmt": "rescript format",
     "near-re-operation-file:fmt": "yarn fmt",
     "dev": "rescript build -w",
-    "near-re-operation-file:dev": "yarn workspaces foreach -R --from @re-graphql-codegen/graphql-codegen run build; yarn dev"
+    "near-re-operation-file:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/graphql-codegen run build; yarn dev"
   },
   "dependencies": {
-    "@re-graphql-codegen/core-plus": "workspace:*",
-    "@re-graphql-codegen/graphql": "workspace:*",
-    "@re-graphql-codegen/graphql-codegen": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/graphql": "workspace:*",
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
     "rescript": "^11.0.1"
   },
   "peerDependencies": {

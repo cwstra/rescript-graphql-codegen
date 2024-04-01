@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/operations",
+  "name": "@rescript-graphql-codegen/operations",
   "namespace": "graphql-codegen-operations",
   "sources": {
     "dir": "src",
@@ -14,7 +14,7 @@
     "-open CorePlus"
   ],
   "bs-dependencies": [
-    "@rescript/core", "@re-graphql-codegen/core-plus"
+    "@rescript/core", "@rescript-graphql-codegen/core-plus"
   ],
   "ppx-flags": [["rescript-embed-lang/ppx", "-enable-generic-transform"]]
 }

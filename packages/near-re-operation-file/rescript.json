@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/operations",
+  "name": "@rescript-graphql-codegen/operations",
   "namespace": "graphql-codegen-operations",
   "sources": {
     "dir": "src",
@@ -13,9 +13,9 @@
   "bsc-flags": ["-open CorePlus"],
   "bs-dependencies": [
     "@rescript/core",
-    "@re-graphql-codegen/core-plus",
-    "@re-graphql-codegen/graphql",
-    "@re-graphql-codegen/graphql-codegen",
+    "@rescript-graphql-codegen/core-plus",
+    "@rescript-graphql-codegen/graphql",
+    "@rescript-graphql-codegen/graphql-codegen",
     "rescript-nodejs"
   ]
 }
