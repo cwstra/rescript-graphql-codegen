@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "esbuild": "^0.20.2",
     "graphql": "^16.0.0"
   },
   "dependencies": {

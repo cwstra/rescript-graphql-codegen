@@ -9,7 +9,7 @@
     "module": "es6",
     "in-source": true
   },
-  "suffix": ".mjs",
+  "suffix": ".gitignored.mjs",
   "bsc-flags": [
     "-open RescriptCore"
   ],

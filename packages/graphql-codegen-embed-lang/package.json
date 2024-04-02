@@ -12,6 +12,8 @@
   "scripts": {
     "build": "rescript",
     "graphql-codegen-embed-lang:build": "yarn build",
+    "build-standalone": "yarn build; node ./esbuild.mjs",
+    "graphql-codegen-embed-lang:build-standalone": "yarn build-standalone",
     "clean": "rescript clean",
     "graphql-codegen-embed-lang:clean": "yarn clean",
     "fmt": "rescript format",
@@ -20,24 +22,24 @@
     "graphql-codegen-embed-lang:dev": "yarn dev"
   },
   "dependencies": {
-    "@graphql-codegen/cli": "^5.0.2",
-    "@graphql-codegen/plugin-helpers": "^5.0.3",
-    "@graphql-tools/utils": "^10.1.2",
-    "@rescript/core": "^1.1.0",
     "chokidar": "^3.6.0",
-    "debounce": "^2.0.0",
-    "is-glob": "^4.0.3",
     "micromatch": "^4.0.5",
-    "rescript": "^11.0.1",
     "rescript-embed-lang": "git+https://github.com/cwstra/rescript-embed-lang#c2273f74df0927978092f8bed1647ec5de3e93c2"
   },
   "peerDependencies": {
-    "@parcel/watcher": "^2.1.0",
-    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
+    "@graphql-codegen/cli": "^4.0.0 || ^5.0.0",
+    "@graphql-codegen/plugin-helpers": "^5.0.3",
+    "@graphql-tools/utils": "^10.1.2",
+    "@rescript/core": ">= 1.0.0",
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0",
+    "rescript": "^11.0.0"
   },
-  "peerDependenciesMeta": {
-    "@parcel/watcher": {
-      "optional": true
-    }
+  "devDependencies": {
+    "@graphql-codegen/plugin-helpers": "^5.0.3",
+    "@graphql-tools/utils": "^10.1.2",
+    "@rescript/core": "^1.1.0",
+    "is-glob": "^4.0.3",
+    "esbuild": "^0.20.2",
+    "rescript": "^11.0.1"
   }
 }
