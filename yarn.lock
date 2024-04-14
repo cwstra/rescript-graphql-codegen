@@ -1929,7 +1929,7 @@ __metadata:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
     rescript: ^11.0.0
   bin:
-    graphql-codegen-embed-lang: ./src/Index.mjs
+    graphql-codegen-embed-lang: ./dist/Index.js
   languageName: unknown
   linkType: soft
 

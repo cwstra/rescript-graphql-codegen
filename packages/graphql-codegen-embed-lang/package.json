@@ -1,11 +1,13 @@
 {
   "main": "src/Index.mjs",
-  "type": "module",
   "name": "@rescript-graphql-codegen/graphql-codegen-embed-lang",
-  "version": "0.0.1",
-  "bin": "./src/Index.mjs",
+  "version": "0.0.2",
+  "bin": "./dist/Index.js",
   "keywords": [
     "rescript"
+  ],
+  "files": [
+    "./dist/Index.js"
   ],
   "license": "MIT",
   "author": "cwstra",
@@ -38,8 +40,8 @@
     "@graphql-codegen/plugin-helpers": "^5.0.3",
     "@graphql-tools/utils": "^10.1.2",
     "@rescript/core": "^1.1.0",
-    "is-glob": "^4.0.3",
     "esbuild": "^0.20.2",
+    "is-glob": "^4.0.3",
     "rescript": "^11.0.1"
   }
 }
