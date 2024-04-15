@@ -1,8 +1,14 @@
 {
   "name": "@rescript-graphql-codegen/core-plus",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "rescript"
+  ],
+  "files": [
+    "./rescript.json",
+    "./src/shims/*.mjs",
+    "./src/*.res",
+    "./src/*.resi"
   ],
   "license": "MIT",
   "author": "cwstra",

@@ -5,6 +5,12 @@
     "rescript",
     "graphql"
   ],
+  "files": [
+    "./rescript.json",
+    "./src/shims/*.mjs",
+    "./src/*.res",
+    "./src/*.resi"
+  ],
   "license": "MIT",
   "author": "cwstra",
   "scripts": {
@@ -18,7 +24,7 @@
     "graphql:dev": "yarn core-plus:build; dev"
   },
   "dependencies": {
-    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "0.0.1",
     "rescript": "^11.0.1"
   },
   "peerDependencies": {

@@ -9,9 +9,9 @@
     "module": "es6",
     "in-source": true
   },
-  "suffix": ".mjs",
+  "suffix": ".gitignored.mjs",
   "bsc-flags": [
-    "-open CorePlus"
+   "-open CorePlus"
   ],
   "bs-dependencies": [
     "@rescript/core",

@@ -417,6 +417,6 @@ module Ordering = {
 module String = {
   include RescriptCore.String
   let capitalize = s => concat(charAt(s, 0)->toUpperCase, sliceToEnd(s, ~start=1))
-  @module("./camelcase_facade.mjs")
+  @module("./shims/camelcase.mjs")
   external pascalCase: string => string = "pascalCase"
 }

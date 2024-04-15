@@ -1,9 +1,13 @@
 {
   "main": "src/Index.mjs",
   "name": "@rescript-graphql-codegen/operations",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "bin": "./dist/Index.js",
   "keywords": [
     "rescript"
+  ],
+  "files": [
+    "./dist/Index.js"
   ],
   "license": "MIT",
   "author": "cwstra",
