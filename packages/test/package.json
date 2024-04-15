@@ -1,5 +1,5 @@
 {
-  "name": "@re-graphql-codegen/test",
+  "name": "@rescript-graphql-codegen/test",
   "version": "0.0.1",
   "keywords": [
     "rescript",
@@ -8,17 +8,22 @@
   "license": "MIT",
   "author": "cwstra",
   "scripts": {
-    "codegen": "graphql-codegen -o"
+    "codegen": "graphql-codegen -o",
+    "build": "rescript",
+    "generic-ppx-codegen": "node ../graphql-codegen-embed-lang/src/Index.mjs generate --config ./codegen.ts --output src/cli-output --src src/"
   },
   "dependencies": {
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/near-operation-file-preset": "^3.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
-    "graphql": "^16.8.1"
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "graphql": "^16.8.1",
+    "rescript-embed-lang": "^0.4.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
     "@parcel/watcher": "^2.3.0",
+    "rescript": "^11.0.1",
     "typescript": "^5.3.3"
   }
 }

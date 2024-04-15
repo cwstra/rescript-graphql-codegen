@@ -1,4 +1,4 @@
-const { 
+import {
     isScalarType, 
     isObjectType, 
     isInterfaceType, 
@@ -9,9 +9,9 @@ const {
     isNonNullType, 
     Kind,
     visit
-} = require("graphql")
+} from "graphql"
 
-exports.wrapClassType = classType => {
+export const wrapClassType = classType => {
     switch (true) {
         case isScalarType(classType):
             return { TAG: "Scalar", _0: classType }
@@ -32,7 +32,7 @@ exports.wrapClassType = classType => {
     }
 }
 
-exports.match = (value, acc, record) => {
+export const match = (value, acc, record) => {
     let result = acc;
     visit(value, {
       enter(node) {
@@ -50,7 +50,7 @@ const TYPENAME_FIELD = {
     value: "__typename"
   }
 }
-exports.addTypenameToDocument = (document) =>
+export const addTypenameToDocument = (document) =>
   visit(document, {
       SelectionSet: {
         enter(node, _key, parent) {

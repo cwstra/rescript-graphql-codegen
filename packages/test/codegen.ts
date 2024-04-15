@@ -1,17 +1,25 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
-const schema = "src/schema.graphql"
-
 const config: CodegenConfig = {
   pluginLoader: (mod) =>
-    mod.includes("@re-graphql-codegen") ? import(mod) : require(mod),
+    mod.includes("../") ? import(mod) : require(mod),
+  schema: "src/schema.graphql",
+  config: {
+    ppxGenerates: {
+      plugins: ["../operations/src/Index.mjs"],
+      config: {
+        baseTypesModule: "GraphqlBase.Types",
+        globalNamespace: true,
+        scalarModule: "GraphqlBase.Scalars",
+      }
+    },
+  },
   generates: {
-    "src/GraphqlBase__Types.gen.res": {
-      schema,
+    "src/GraphqlBase__Types.res": {
       plugins: ["../base-types/src/Index.mjs"],
       config: {
         //globalNamespace: true,
-        scalarModule: "GraphqlBase.Scalars",
+        scalarModule: "GraphqlBase__Scalars",
       },
     },
     "src/operations": {
@@ -25,7 +33,6 @@ const config: CodegenConfig = {
         globalNamespace: true,
         scalarModule: "GraphqlBase.Scalars",
       },
-      schema,
       documents: "src/operations/*.graphql",
       plugins: ["../operations/src/Index.mjs"],
     },

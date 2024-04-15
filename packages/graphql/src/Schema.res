@@ -46,7 +46,7 @@ module Named = {
     | ...UnionMembers.union
     | ...UnionMembers.enum
     | ...UnionMembers.inputObject
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse: t => parsed = "wrapClassType"
 }
 
@@ -93,7 +93,7 @@ module Abstract = {
   type parsed =
     | ...UnionMembers.interface
     | ...UnionMembers.union
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse: t => parsed = "wrapClassType"
 }
 
@@ -111,9 +111,9 @@ module Input = {
     | ...UnionMembers.enum
     | ...UnionMembers.inputObject
     | List(listType<t>)
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse: t => parsed = "wrapClassType"
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse_nn: t_nn => parsed_nn = "wrapClassType"
 }
 
@@ -135,9 +135,9 @@ module Output = {
     | ...UnionMembers.union
     | ...UnionMembers.enum
     | List(listType<t>)
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse: t => parsed = "wrapClassType"
-  @module("./graphql_facade")
+  @module("./shims/graphql.mjs")
   external parse_nn: t_nn => parsed_nn = "wrapClassType"
   let traverse = (
     base,

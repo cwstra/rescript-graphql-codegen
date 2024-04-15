@@ -95,7 +95,6 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
             )->Array.joinWith("\n")
           }
           | Rec(cycle) => {
-            Console.log2("cycle", cycle)
             Array.mapWithIndex(cycle, (io, ind) => {
               let moduleName = Schema.InputObject.name(io)->String.pascalCase
               Array.concatMany(

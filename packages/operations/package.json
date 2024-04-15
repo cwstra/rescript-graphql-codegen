@@ -1,23 +1,32 @@
 {
-  "main": "src/Index.res.js",
-  "name": "@re-graphql-codegen/operations",
-  "version": "0.0.1",
+  "main": "src/Index.mjs",
+  "name": "@rescript-graphql-codegen/operations",
+  "version": "0.0.2",
+  "bin": "./dist/Index.js",
   "keywords": [
     "rescript"
+  ],
+  "files": [
+    "./dist/Index.js"
   ],
   "license": "MIT",
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "operations:build": "yarn build",
     "clean": "rescript clean",
+    "operations:clean": "yarn clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "operations:fmt": "yarn fmt",
+    "dev": "rescript build -w",
+    "operations:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/graphql-codegen run build; yarn dev"
   },
   "dependencies": {
-    "@re-graphql-codegen/core-plus": "workspace:*",
-    "@re-graphql-codegen/graphql": "workspace:*",
-    "@re-graphql-codegen/graphql-codegen": "workspace:*",
-    "rescript": "^11.0.1"
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/graphql": "workspace:*",
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
+    "rescript": "^11.0.1",
+    "rescript-embed-lang": "^0.4.0"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"

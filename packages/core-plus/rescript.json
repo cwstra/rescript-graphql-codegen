@@ -1,14 +1,14 @@
 {
-  "name": "@re-graphql-codegen/core-plus",
+  "name": "@rescript-graphql-codegen/core-plus",
   "sources": {
     "dir": "src",
     "subdirs": true
   },
   "package-specs": {
-    "module": "commonjs",
+    "module": "es6",
     "in-source": true
   },
-  "suffix": ".mjs",
+  "suffix": ".gitignored.mjs",
   "bsc-flags": [],
   "bs-dependencies": ["@rescript/core"]
 }

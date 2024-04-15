@@ -1,20 +1,30 @@
 {
-  "name": "@re-graphql-codegen/graphql",
+  "name": "@rescript-graphql-codegen/graphql",
   "version": "0.0.1",
   "keywords": [
     "rescript",
     "graphql"
   ],
+  "files": [
+    "./rescript.json",
+    "./src/shims/*.mjs",
+    "./src/*.res",
+    "./src/*.resi"
+  ],
   "license": "MIT",
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
+    "graphql:build": "yarn build",
     "clean": "rescript clean",
+    "graphql:clean": "yarn clean",
     "fmt": "rescript format",
-    "dev": "rescript build -w"
+    "graphql:fmt": "yarn fmt",
+    "dev": "rescript build -w",
+    "graphql:dev": "yarn core-plus:build; dev"
   },
   "dependencies": {
-    "@re-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/core-plus": "0.0.1",
     "rescript": "^11.0.1"
   },
   "peerDependencies": {

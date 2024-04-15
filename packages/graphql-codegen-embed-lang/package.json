@@ -1,0 +1,47 @@
+{
+  "main": "src/Index.mjs",
+  "name": "@rescript-graphql-codegen/graphql-codegen-embed-lang",
+  "version": "0.0.2",
+  "bin": "./dist/Index.js",
+  "keywords": [
+    "rescript"
+  ],
+  "files": [
+    "./dist/Index.js"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "build": "rescript",
+    "graphql-codegen-embed-lang:build": "yarn build",
+    "build-standalone": "yarn build; node ./esbuild.mjs",
+    "graphql-codegen-embed-lang:build-standalone": "yarn build-standalone",
+    "clean": "rescript clean",
+    "graphql-codegen-embed-lang:clean": "yarn clean",
+    "fmt": "rescript format",
+    "graphql-codegen-embed-lang:fmt": "yarn fmt",
+    "dev": "rescript build -w",
+    "graphql-codegen-embed-lang:dev": "yarn dev"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "micromatch": "^4.0.5",
+    "rescript-embed-lang": "git+https://github.com/cwstra/rescript-embed-lang#c2273f74df0927978092f8bed1647ec5de3e93c2"
+  },
+  "peerDependencies": {
+    "@graphql-codegen/cli": "^4.0.0 || ^5.0.0",
+    "@graphql-codegen/plugin-helpers": "^5.0.3",
+    "@graphql-tools/utils": "^10.1.2",
+    "@rescript/core": ">= 1.0.0",
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0",
+    "rescript": "^11.0.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/plugin-helpers": "^5.0.3",
+    "@graphql-tools/utils": "^10.1.2",
+    "@rescript/core": "^1.1.0",
+    "esbuild": "^0.20.2",
+    "is-glob": "^4.0.3",
+    "rescript": "^11.0.1"
+  }
+}
