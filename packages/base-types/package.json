@@ -1,8 +1,7 @@
 {
-  "main": "src/Index.mjs",
+  "main": "./dist/Index.js",
   "name": "@rescript-graphql-codegen/base-types",
-  "version": "0.0.2",
-  "bin": "./dist/Index.js",
+  "version": "0.0.5",
   "keywords": [
     "rescript"
   ],
@@ -21,16 +20,14 @@
     "dev": "rescript build -w",
     "base-types:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/base-types run build; yarn dev"
   },
-  "dependencies": {
-    "@rescript-graphql-codegen/core-plus": "workspace:*",
-    "@rescript-graphql-codegen/graphql": "workspace:*",
-    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
-    "rescript": "^11.0.1"
-  },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
   },
   "devDependencies": {
-    "esbuild": "^0.20.2"
+    "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/graphql": "workspace:*",
+    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
+    "esbuild": "^0.20.2",
+    "rescript": "^11.0.1"
   }
 }
