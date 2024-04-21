@@ -6,7 +6,7 @@
     "subdirs": true
   },
   "package-specs": {
-    "module": "es6",
+    "module": "esmodule",
     "in-source": true
   },
   "suffix": ".gitignored.mjs",
@@ -17,7 +17,6 @@
     "@rescript/core",
     "@rescript-graphql-codegen/core-plus",
     "@rescript-graphql-codegen/graphql",
-    "@rescript-graphql-codegen/graphql-codegen",
-    "rescript-embed-lang"
+    "@rescript-graphql-codegen/graphql-codegen"
   ]
 }

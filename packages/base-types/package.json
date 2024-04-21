@@ -1,7 +1,7 @@
 {
   "main": "./dist/Index.js",
   "name": "@rescript-graphql-codegen/base-types",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "keywords": [
     "rescript"
   ],
@@ -28,6 +28,6 @@
     "@rescript-graphql-codegen/graphql": "workspace:*",
     "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
     "esbuild": "^0.20.2",
-    "rescript": "^11.0.1"
+    "rescript": "^11.1.0"
   }
 }

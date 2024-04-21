@@ -151,7 +151,7 @@ let joinPath = path => {
   // TODO: Make sure the separator doesn't
   //       show up in the path
   let sep = "_"
-  Array.joinWith(path, sep)
+  Array.join(path, sep)
 }
 
 let nonTypenameSelections = selections =>
@@ -170,15 +170,19 @@ let process = (
   ~scalarModule,
   ~nullType,
   ~listType,
+  ~appendToFragments,
+  ~appendToQueries,
+  ~appendToMutations,
+  ~appendToSubscriptions,
 ) => {
   let formatModuleName = path => {
     let ls = switch Array.slice(path, ~start=0, ~end=2) {
     | ["t"] => ["t"]
     | ["t", _] => Array.sliceToEnd(path, ~start=1)
-    | ["inner", "t"] => Array.concat(["inner"], Array.sliceToEnd(path, ~start=2))
+    | ["inner", "t"] => ["inner", ...Array.sliceToEnd(path, ~start=2)]
     | _ => raise(Invalid_type_name(path))
     }
-    Array.map(ls, String.capitalize)->Array.joinWith("")
+    Array.map(ls, String.capitalize)->Array.join("")
   }
   let extractInputType = (typeNode: TypeNode.t): InputType.t => {
     open Schema
@@ -273,7 +277,7 @@ let process = (
                 ))
               Union({
                 type_: validatedBase,
-                members: Array.concat([basePair], memberPairs)->Dict.fromArray,
+                members: [basePair, ...memberPairs]->Dict.fromArray,
               })
             }
           | Union(u) => Union(u)
@@ -352,8 +356,8 @@ let process = (
             | (None, Left(_, str)) => (str, None)
             | (Some(fst, rst), Right(_, selections, wrapper)) => {
                 let res = extractSelectionType(selections, (fst, rst))
-                let fieldPath = Option.mapOr(midfix, Array.concat(namePath, [rawKey]), m =>
-                  Array.concat(namePath, [m, rawKey])
+                let fieldPath = Option.mapOr(midfix, [...namePath, rawKey], m =>
+                  [...namePath, m, rawKey]
                 )
                 (wrapper(joinPath(fieldPath)), Some(PrintType({namePath: fieldPath, type_: res})))
               }
@@ -364,7 +368,7 @@ let process = (
             (
               switch alias {
               | None => mainLine
-              | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
+              | Some(a) => Array.join([`    @as("${a}")`, mainLine], "\n")
               },
               neededType,
             )
@@ -376,7 +380,7 @@ let process = (
             let lines = Array.map(results, ((s, _)) => s)
             let bases = Array.filterMap(results, ((_, o)) => o)
             let name = joinPath(namePath)
-            (Array.concatMany([], [[`  type ${name} = {`], lines, [`  }`]]), bases)
+            ([`  type ${name} = {`, ...lines, `  }`], bases)
           }
         | Union({type_, ?base, members}) => {
             let possibleTypes = Schema.getPossibleTypes(schema, type_)
@@ -396,14 +400,11 @@ let process = (
                   let lines = Array.map(fields, ((s, _)) => s)
                   let bases = Array.filterMap(fields, ((_, o)) => o)
                   (
-                    Array.concatMany(
-                      [],
-                      [
-                        [`      | ${String.capitalize(typeConditionName)}({`],
-                        Array.map(lines, l => `    ${l}`),
-                        ["      })"],
-                      ],
-                    ),
+                    [
+                      `      | ${String.capitalize(typeConditionName)}({`,
+                      ...Array.map(lines, l => `    ${l}`),
+                      "      })",
+                    ],
                     bases,
                   )
                 },
@@ -411,17 +412,14 @@ let process = (
             })
             let moduleName = formatModuleName(namePath)
             (
-              Array.concatMany(
-                [],
-                [
-                  [`  module ${moduleName} = {`],
-                  [`    @tag("__typename")`],
-                  [`    type t =`],
-                  Array.flatMap(results, ((l, _)) => l),
-                  ["  }"],
-                  [`  type ${joinPath(namePath)} = ${moduleName}.t`],
-                ],
-              ),
+              [
+                `  module ${moduleName} = {`,
+                `    @tag("__typename")`,
+                `    type t =`,
+                ...Array.flatMap(results, ((l, _)) => l),
+                "  }",
+                `  type ${joinPath(namePath)} = ${moduleName}.t`,
+              ],
               Array.flatMap(results, ((_, t)) => t),
             )
           }
@@ -430,46 +428,38 @@ let process = (
       }
     | PrintVariables({fields}) => (
         list{},
-        Array.concatMany(
-          [],
-          [
-            ["  type variables = {"],
-            [
-              Dict.toArray(fields)
-              ->Array.map(((rawKey, inputType)) => {
-                let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
-                let value = InputType.traverse(
-                  inputType,
-                  ~onScalar=s => `${scalarModule}.${String.pascalCase(s)}.t`,
-                  ~onEnum=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
-                  ~onObject=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
-                  ~onList=s => `${listType}<${s}>`,
-                  ~onNull=s => `${nullType}<${s}>`,
-                )
-                let mainLine = `    ${key}: ${value}`
-                switch alias {
-                | None => mainLine
-                | Some(a) => Array.joinWith([`    @as("${a}")`, mainLine], "\n")
-                }
-              })
-              ->Array.joinWith(",\n"),
-            ],
-            ["  }"],
-          ],
-        ),
+        [
+          "  type variables = {",
+          Dict.toArray(fields)
+          ->Array.map(((rawKey, inputType)) => {
+            let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
+            let value = InputType.traverse(
+              inputType,
+              ~onScalar=s => `${scalarModule}.${String.pascalCase(s)}.t`,
+              ~onEnum=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
+              ~onObject=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
+              ~onList=s => `${listType}<${s}>`,
+              ~onNull=s => `${nullType}<${s}>`,
+            )
+            let mainLine = `    ${key}: ${value}`
+            switch alias {
+            | None => mainLine
+            | Some(a) => Array.join([`    @as("${a}")`, mainLine], "\n")
+            }
+          })
+          ->Array.join(",\n"),
+          "  }",
+        ],
       )
     | PrintDocument(document) => (
         list{},
-        Array.concatMany(
-          [],
-          [
-            ["  let document = `"],
-            AST.ExecutableDefinitionNode.print(document)
-            ->String.split("\n")
-            ->Array.map(l => `    ${l}`),
-            ["  `"],
-          ],
-        ),
+        [
+          "  let document = `",
+          ...AST.ExecutableDefinitionNode.print(document)
+          ->String.split("\n")
+          ->Array.map(l => `    ${l}`),
+          "  `",
+        ],
       )
     | PrintDefinition(definition) => {
         let definitionName = switch definition {
@@ -526,7 +516,15 @@ let process = (
             PrintDocument(definition)->Some,
             PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some,
           }->List.filterMap(e => e),
-          ["}"],
+          Array.keepSome([
+            switch definition {
+              | FragmentDefinition(_) => appendToFragments
+              | OperationDefinition({operation: Query}) => appendToQueries
+              | OperationDefinition({operation: Mutation}) => appendToMutations
+              | OperationDefinition({operation: Subscription}) => appendToSubscriptions
+            },
+            Some("}")
+          ]),
         )
       }
     }
@@ -535,7 +533,7 @@ let process = (
     | list{} => output
     | list{nxt, ...rst} => {
         let (newSteps, newLines) = processStep(nxt)
-        main(List.concat(newSteps, rst), Array.joinWith(Array.concat(newLines, [output]), "\n"))
+        main(List.concat(newSteps, rst), Array.join([...newLines, output], "\n"))
       }
     }
   }
