@@ -1,7 +1,7 @@
 {
   "main": "./dist/Index.js",
   "name": "@rescript-graphql-codegen/operations",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "keywords": [
     "rescript"
   ],

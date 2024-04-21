@@ -4,6 +4,7 @@ open GraphqlCodegen
 type config = {
   scalarModule: string,
   baseTypesModule: string,
+  gqlTagModule?: string,
   externalFragments?: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
@@ -78,6 +79,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ~schema,
       ~baseTypesModule=config.baseTypesModule,
       ~scalarModule=config.scalarModule,
+      ~gqlTagModule=Option.getOr(config.gqlTagModule, "GraphqlTag"),
       ~listType=Option.getOr(config.listType, "array"),
       ~nullType=Option.getOr(config.nullType, "null"),
       ~appendToFragments=config.appendToFragments,

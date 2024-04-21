@@ -168,6 +168,7 @@ let process = (
   ~schema,
   ~baseTypesModule,
   ~scalarModule,
+  ~gqlTagModule,
   ~nullType,
   ~listType,
   ~appendToFragments,
@@ -454,7 +455,7 @@ let process = (
     | PrintDocument(document) => (
         list{},
         [
-          "  let document = `",
+          "  let document = gql`",
           ...AST.ExecutableDefinitionNode.print(document)
           ->String.split("\n")
           ->Array.map(l => `    ${l}`),
@@ -537,5 +538,5 @@ let process = (
       }
     }
   }
-  main(steps, "")
+  main(steps, `let gql = ${gqlTagModule}.gql`)
 }

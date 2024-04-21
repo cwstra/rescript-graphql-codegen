@@ -1,0 +1,14 @@
+{
+  "name": "@rescript-graphql-codegen/graphql-tag",
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  },
+  "package-specs": {
+    "module": "esmodule",
+    "in-source": true
+  },
+  "suffix": ".gitignored.mjs",
+  "bsc-flags": [],
+  "bs-dependencies": ["@rescript-graphql-codegen/graphql"]
+}

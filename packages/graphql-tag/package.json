@@ -1,0 +1,33 @@
+{
+  "name": "@rescript-graphql-codegen/graphql-tag",
+  "version": "0.0.1",
+  "keywords": [
+    "rescript",
+    "graphql"
+  ],
+  "files": [
+    "./rescript.json",
+    "./src/*.res",
+    "./src/*.resi"
+  ],
+  "license": "MIT",
+  "author": "cwstra",
+  "scripts": {
+    "build": "rescript",
+    "graphql-tag:build": "yarn build",
+    "clean": "rescript clean",
+    "graphql-tag:clean": "yarn clean",
+    "fmt": "rescript format",
+    "graphql-tag:fmt": "yarn fmt",
+    "dev": "rescript build -w",
+    "graphql-tag:dev": "yarn core-plus:build; yarn graphql:build; dev"
+  },
+  "dependencies": {
+    "@rescript-graphql-codegen/graphql": "0.0.2",
+    "graphql-tag": "^2.12.6",
+    "rescript": "^11.1.0"
+  },
+  "peerDependencies": {
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
+  }
+}

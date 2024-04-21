@@ -1928,7 +1928,6 @@ __metadata:
     "@graphql-tools/utils": ^10.1.2
     "@rescript/core": ">= 1.0.0"
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
-    rescript: ^11.0.0
   bin:
     graphql-codegen-embed-lang: ./dist/Index.js
   languageName: unknown
@@ -1940,6 +1939,18 @@ __metadata:
   dependencies:
     "@rescript-graphql-codegen/core-plus": "npm:0.0.3"
     "@rescript-graphql-codegen/graphql": "npm:0.0.2"
+    rescript: "npm:^11.1.0"
+  peerDependencies:
+    graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rescript-graphql-codegen/graphql-tag@workspace:packages/graphql-tag":
+  version: 0.0.0-use.local
+  resolution: "@rescript-graphql-codegen/graphql-tag@workspace:packages/graphql-tag"
+  dependencies:
+    "@rescript-graphql-codegen/graphql": "npm:0.0.2"
+    graphql-tag: "npm:^2.12.6"
     rescript: "npm:^11.1.0"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
@@ -1980,8 +1991,6 @@ __metadata:
     rescript: "npm:^11.1.0"
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0
-  bin:
-    operations: ./dist/Index.js
   languageName: unknown
   linkType: soft
 
@@ -1996,7 +2005,7 @@ __metadata:
     "@parcel/watcher": "npm:^2.3.0"
     "@rescript-graphql-codegen/core-plus": "workspace:*"
     graphql: "npm:^16.8.1"
-    rescript: "npm:^11.0.1"
+    rescript: "npm:^11.1.0"
     rescript-embed-lang: "npm:^0.4.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -3360,7 +3369,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.11.0":
+"graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -4670,17 +4679,6 @@ __metadata:
   version: 16.1.0
   resolution: "rescript-nodejs@npm:16.1.0"
   checksum: 2ea271dbddebdceec79bf5ee6089c15474f2c014cb22c1cc39d43ef27fd363fcb1cd8e1244d0cb998cd6b426d7474e3055e41277951fb01ee1eeecf68bbe01ab
-  languageName: node
-  linkType: hard
-
-"rescript@npm:^11.0.1":
-  version: 11.0.1
-  resolution: "rescript@npm:11.0.1"
-  bin:
-    bsc: bsc
-    bstracing: lib/bstracing
-    rescript: rescript
-  checksum: a37dc757a14c57a15fe75a12df52f3d564cc6ef5cacc8356fe70a7d4ab9692736c0fbb56456dff090d8b5b18935a09aed066c623e6764f4c76bed61187e611b7
   languageName: node
   linkType: hard
 

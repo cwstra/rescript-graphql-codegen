@@ -6,6 +6,7 @@ type config = {
   externalFragments: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
+  futureAddedValueName?: string,
 }
 
 let makePrintInputObjectType = config => {
@@ -68,11 +69,13 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
       let values = Schema.Enum.getValues(enum)
       [
         `module ${Schema.Enum.name(enum)->String.pascalCase} = {`,
+        "  @unboxed",
         "  type t = ",
         ...Array.flatMap(values, v => [
             `    | @as("${Schema.EnumValue.value(v)}")`,
             `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
         ]),
+        ...Option.mapOr(config.futureAddedValueName, [], n => [`    | ${n}(string)`]),
         "}"
       ]->Array.join("\n")
     })->Array.join("\n\n")
