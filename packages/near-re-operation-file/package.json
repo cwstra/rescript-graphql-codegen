@@ -20,7 +20,7 @@
     "@rescript-graphql-codegen/core-plus": "workspace:*",
     "@rescript-graphql-codegen/graphql": "workspace:*",
     "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
-    "rescript": "^11.0.1"
+    "rescript": "^11.1.0"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"

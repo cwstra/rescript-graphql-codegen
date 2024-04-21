@@ -7,6 +7,10 @@ type config = {
   externalFragments?: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
+  appendToFragments?: string,
+  appendToQueries?: string,
+  appendToMutations?: string,
+  appendToSubscriptions?: string,
 }
 
 let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
@@ -49,10 +53,10 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       )
       ->Either.partition
 
-    let allFragments = Array.concat(
-      config.externalFragments->Option.getOr([])->Array.map(e => AST.addTypenameToFragment(e.node)),
-      internalFragments,
-    )
+    let allFragments = [
+      ...config.externalFragments->Option.getOr([])->Array.map(e => AST.addTypenameToFragment(e.node)),
+      ...internalFragments
+    ]
 
     let fragmentLookup =
       Array.map(allFragments, f => (
@@ -60,12 +64,12 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
         f,
       ))->Dict.fromArray
 
-    let sorted = Array.concat(
-      Helpers.sortFragmentsTopologically(allFragments)->Array.map(
+    let sorted = [
+      ...Helpers.sortFragmentsTopologically(allFragments)->Array.map(
         AST.ExecutableDefinitionNode.fromFragmentDefinition,
       ),
-      operations->Array.map(AST.ExecutableDefinitionNode.fromOperationDefinition),
-    )
+      ...operations->Array.map(AST.ExecutableDefinitionNode.fromOperationDefinition),
+    ]
     let init = WorkItem.fromDefinitions(sorted)
 
     let res = WorkItem.process(
@@ -76,6 +80,10 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ~scalarModule=config.scalarModule,
       ~listType=Option.getOr(config.listType, "array"),
       ~nullType=Option.getOr(config.nullType, "null"),
+      ~appendToFragments=config.appendToFragments,
+      ~appendToQueries=config.appendToQueries,
+      ~appendToMutations=config.appendToMutations,
+      ~appendToSubscriptions=config.appendToSubscriptions,
     )
 
     Plugin.PluginOutput.String(res)

@@ -6,7 +6,7 @@ const config: CodegenConfig = {
   schema: "src/schema.graphql",
   config: {
     ppxGenerates: {
-      plugins: ["../operations/src/Index.mjs"],
+      plugins: ["../operations/src/Index.gitignored.mjs"],
       config: {
         baseTypesModule: "GraphqlBase.Types",
         globalNamespace: true,
@@ -16,7 +16,7 @@ const config: CodegenConfig = {
   },
   generates: {
     "src/GraphqlBase__Types.res": {
-      plugins: ["../base-types/src/Index.mjs"],
+      plugins: ["../base-types/src/Index.gitignored.mjs"],
       config: {
         //globalNamespace: true,
         scalarModule: "GraphqlBase__Scalars",
@@ -34,7 +34,7 @@ const config: CodegenConfig = {
         scalarModule: "GraphqlBase.Scalars",
       },
       documents: "src/operations/*.graphql",
-      plugins: ["../operations/src/Index.mjs"],
+      plugins: ["../operations/src/Index.gitignored.mjs"],
     },
   },
 };

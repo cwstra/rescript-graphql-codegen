@@ -14,10 +14,9 @@ let makePrintInputObjectType = config => {
   let nullType = Option.getOr(rawNullType, "null")
   inputObject => {
     let fields = Schema.InputObject.getFields(inputObject)
-    Array.concatMany(
-      ["  type t = {"],
-      [
-        Dict.toArray(fields)->Array.flatMap(((rawKey, t)) => {
+    [
+      "  type t = {",
+      ...Dict.toArray(fields)->Array.flatMap(((rawKey, t)) => {
           let (key, alias) = Helpers.sanitizeFieldName(rawKey, fields)
           let rec printInput = (i, w) =>
             switch Schema.Input.parse(i) {
@@ -42,9 +41,8 @@ let makePrintInputObjectType = config => {
           | Some(a) => [`    @as("${a}")`, mainLine]
           }
         }),
-        ["  }"]
-      ]
-    )
+      "  }"
+    ]
 }}
 
 let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =>
@@ -68,50 +66,44 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
 
     let enumResult = Array.map(enums, enum => {
       let values = Schema.Enum.getValues(enum)
-      Array.concatMany(
-        [`module ${Schema.Enum.name(enum)->String.pascalCase} = {`],
-        [
-          ["  type t = "],
-          Array.flatMap(values, v => [
+      [
+        `module ${Schema.Enum.name(enum)->String.pascalCase} = {`,
+        "  type t = ",
+        ...Array.flatMap(values, v => [
             `    | @as("${Schema.EnumValue.value(v)}")`,
             `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
-          ]),
-          ["}"],
-        ],
-      )->Array.joinWith("\n")
-    })->Array.joinWith("\n\n")
+        ]),
+        "}"
+      ]->Array.join("\n")
+    })->Array.join("\n\n")
 
     let inputObjectResult =
       Helpers.sortInputObjectsTopologically(inputObjects)
       ->Array.map(ior =>
         switch ior {
         | NonRec(io) => {
-            Array.concatMany(
-              [`module ${Schema.InputObject.name(io)->String.pascalCase} = {`],
-              [
-                printInputObjectType(io),
-                ["}"],
-              ],
-            )->Array.joinWith("\n")
+            [
+              `module ${Schema.InputObject.name(io)->String.pascalCase} = {`,
+              ...printInputObjectType(io),
+              "}"
+            ]->Array.join("\n")
           }
           | Rec(cycle) => {
             Array.mapWithIndex(cycle, (io, ind) => {
               let moduleName = Schema.InputObject.name(io)->String.pascalCase
-              Array.concatMany(
-                [`${ind == 0 ? "module rec" : "and"} ${moduleName}: {`],
-                [
-                  printInputObjectType(io),
-                  [`} = ${moduleName}`]
-                ]
-              )->Array.joinWith("\n")
+              [
+                `${ind == 0 ? "module rec" : "and"} ${moduleName}: {`,
+                ...printInputObjectType(io),
+                `} = ${moduleName}`
+              ]->Array.join("\n")
             }
-            )->Array.joinWith("\n\n")
+            )->Array.join("\n\n")
           }
         }
       )
-      ->Array.joinWith("\n\n")
+      ->Array.join("\n\n")
 
-    let res = Array.joinWith([enumResult, inputObjectResult], "\n\n")
+    let res = Array.join([enumResult, inputObjectResult], "\n\n")
 
     Plugin.PluginOutput.String(res)
   } catch {

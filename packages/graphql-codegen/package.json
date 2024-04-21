@@ -1,6 +1,6 @@
 {
   "name": "@rescript-graphql-codegen/graphql-codegen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "rescript"
   ],
@@ -23,9 +23,9 @@
     "graphql-codegen:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/graphql run build; yarn dev"
   },
   "dependencies": {
-    "@rescript-graphql-codegen/core-plus": "0.0.1",
-    "@rescript-graphql-codegen/graphql": "0.0.1",
-    "rescript": "^11.0.1"
+    "@rescript-graphql-codegen/core-plus": "0.0.3",
+    "@rescript-graphql-codegen/graphql": "0.0.2",
+    "rescript": "^11.1.0"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"

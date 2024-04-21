@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild'
 
 await esbuild.build({
-  entryPoints: ['src/Index.mjs'],
+  entryPoints: ['src/Index.gitignored.mjs'],
   bundle: true,
   outfile: "dist/Index.js",
   platform: "node",
