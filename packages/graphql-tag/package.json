@@ -1,6 +1,6 @@
 {
   "name": "@rescript-graphql-codegen/graphql-tag",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "rescript",
     "graphql"
@@ -23,7 +23,7 @@
     "graphql-tag:dev": "yarn core-plus:build; yarn graphql:build; dev"
   },
   "dependencies": {
-    "@rescript-graphql-codegen/graphql": "0.0.2",
+    "@rescript-graphql-codegen/graphql": "0.0.3",
     "graphql-tag": "^2.12.6",
     "rescript": "^11.1.0"
   },

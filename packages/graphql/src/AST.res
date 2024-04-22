@@ -634,12 +634,60 @@ module DefinitionNode = {
 }
 
 module DocumentNode = {
-  type t = {
-    loc?: location,
-    definitions: array<DefinitionNode.t>,
-  }
+  @tag("kind")
+  type t =
+    Document({
+      loc?: location,
+      definitions: array<DefinitionNode.t>,
+    })
   @module("graphql")
   external print: t => string = "print"
+}
+
+module ASTNode = {
+  @tag("kind")
+  type t =
+    | ...NameNode.t
+    | ...DocumentNode.t
+    | ...OperationDefinitionNode.t
+    | ...VariableDefinitionNode.t
+    | ...SelectionSetNode.t
+    | ...SelectionSetNode.selectionNode
+    | ...ArgumentNode.t
+    | ...FragmentDefinitionNode.t
+    | ...ValueNode.t
+    //| ...VariableNode.t
+    //| ...IntValueNode.t
+    //| ...FloatValueNode.t
+    //| ...StringValueNode.t
+    //| ...BooleanValueNode.t
+    //| ...NullValueNode.t
+    //| ...EnumValueNode.t
+    | ...ValueNode.objectFieldNode
+    | ...DirectiveNode.t
+    | ...TypeNode.t
+    //| ...NamedTypeNode.t
+    //| ...ListTypeNode.t
+    //| ...NonNullTypeNode.t
+    | ...SchemaDefinitionNode.t
+    | ...OperationTypeDefinitionNode.t
+    | ...ScalarTypeDefinitionNode.t
+    | ...ObjectTypeDefinitionNode.t
+    | ...FieldDefinitionNode.t
+    | ...InputValueDefinitionNode.t
+    | ...InterfaceTypeDefinitionNode.t
+    | ...UnionTypeDefinitionNode.t
+    | ...EnumTypeDefinitionNode.t
+    | ...EnumValueDefinitionNode.t
+    | ...InputObjectTypeDefinitionNode.t
+    | ...DirectiveDefinitionNode.t
+    | ...SchemaExtensionNode.t
+    | ...ScalarTypeExtensionNode.t
+    | ...ObjectTypeExtensionNode.t
+    | ...InterfaceTypeExtensionNode.t
+    | ...UnionTypeExtensionNode.t
+    | ...EnumTypeExtensionNode.t
+    | ...InputObjectTypeExtensionNode.t
 }
 
 @module("./shims/graphql.mjs")

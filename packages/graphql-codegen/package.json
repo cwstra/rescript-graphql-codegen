@@ -1,6 +1,6 @@
 {
   "name": "@rescript-graphql-codegen/graphql-codegen",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "keywords": [
     "rescript"
   ],
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@rescript-graphql-codegen/core-plus": "0.0.3",
-    "@rescript-graphql-codegen/graphql": "0.0.2",
+    "@rescript-graphql-codegen/graphql": "0.0.3",
     "rescript": "^11.1.0"
   },
   "peerDependencies": {

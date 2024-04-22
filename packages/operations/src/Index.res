@@ -71,7 +71,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ),
       ...operations->Array.map(AST.ExecutableDefinitionNode.fromOperationDefinition),
     ]
-    let init = WorkItem.fromDefinitions(sorted)
+    let init = WorkItem.fromDefinitions(sorted, Option.getOr(config.gqlTagModule, "GraphqlTag"))
 
     let res = WorkItem.process(
       ~steps=init,
@@ -79,7 +79,6 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ~schema,
       ~baseTypesModule=config.baseTypesModule,
       ~scalarModule=config.scalarModule,
-      ~gqlTagModule=Option.getOr(config.gqlTagModule, "GraphqlTag"),
       ~listType=Option.getOr(config.listType, "array"),
       ~nullType=Option.getOr(config.nullType, "null"),
       ~appendToFragments=config.appendToFragments,

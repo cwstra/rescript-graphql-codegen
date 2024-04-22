@@ -139,12 +139,16 @@ type t =
   | PrintDocument(ExecutableDefinitionNode.t)
   | PrintDefinition(ExecutableDefinitionNode.t)
 
-let fromDefinitions = definitions => {
+let fromDefinitions = (definitions, gqlTagModule) => {
   let res = Array.copy(definitions)
   Array.reverse(res)
-  res
-  ->Array.map(d => PrintDefinition(d))
+
+  [
+    ...Array.map(res, d => PrintDefinition(d)),
+    PrintString(`let gql = ${gqlTagModule}.gql`)
+  ]
   ->List.fromArray
+
 }
 
 let joinPath = path => {
@@ -168,7 +172,6 @@ let process = (
   ~schema,
   ~baseTypesModule,
   ~scalarModule,
-  ~gqlTagModule,
   ~nullType,
   ~listType,
   ~appendToFragments,
@@ -538,5 +541,5 @@ let process = (
       }
     }
   }
-  main(steps, `let gql = ${gqlTagModule}.gql`)
+  main(steps, ``)
 }
