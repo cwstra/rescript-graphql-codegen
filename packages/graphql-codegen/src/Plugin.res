@@ -6,10 +6,13 @@ module PluginOutput = {
 }
 
 module AddToSchemaResult = {
-  @unboxed
-  type t =
+  type t
+  type parsed =
     | String(string)
     | DocumentNode(Graphql.AST.DocumentNode.t)
+  let parse: t => parsed = %raw(`
+    raw => typeof raw === 'string' ? {TAG: "String", _0: raw} : {TAG: "DocumentNode", _0: raw}
+  `)
 }
 
 type pluginFunction<'config> = (

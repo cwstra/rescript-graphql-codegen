@@ -7,6 +7,7 @@ type config = {
   nullType?: string,
   listType?: string,
   futureAddedValueName?: string,
+  appendToEnum?: string
 }
 
 let makePrintInputObjectType = config => {
@@ -76,6 +77,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
             `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
         ]),
         ...Option.mapOr(config.futureAddedValueName, [], n => [`    | ${n}(string)`]),
+        ...Option.mapOr(config.appendToEnum, [], str => [str]),
         "}"
       ]->Array.join("\n")
     })->Array.join("\n\n")
