@@ -7,6 +7,7 @@ type config = {
   nullType?: string,
   listType?: string,
   futureAddedValueName?: string,
+  includeEnumAllValuesArray?: bool,
   appendToEnums?: string
 }
 
@@ -77,6 +78,13 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
             `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
         ]),
         ...Option.mapOr(config.futureAddedValueName, [], n => [`    | ${n}(string)`]),
+        ...(if config.includeEnumAllValuesArray == Some(true) {
+          [
+            "  let allValues = [",
+            ...Array.map(values, v => `    ${Schema.EnumValue.name(v)->String.pascalCase},`),
+            "  ]"
+          ]
+        } else {[]}),
         ...Option.mapOr(config.appendToEnums, [], str => [str]),
         "}"
       ]->Array.join("\n")

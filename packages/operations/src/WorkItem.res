@@ -134,21 +134,40 @@ module UnresolvedOutputType = {
 
 type t =
   | PrintString(string)
-  | PrintType({namePath: array<string>, type_: BaseUnresolvedOutput.t})
-  | PrintVariables({fields: Dict.t<InputType.t>})
-  | PrintDocument(ExecutableDefinitionNode.t)
-  | PrintDefinition(ExecutableDefinitionNode.t)
+  | PrintType({namePath: array<string>, type_: BaseUnresolvedOutput.t, indent: int})
+  | PrintVariables({fields: Dict.t<InputType.t>, indent: int})
+  | PrintDocument({document: ExecutableDefinitionNode.t, indent: int})
+  | PrintDefinition({definition: ExecutableDefinitionNode.t, encloseInModule: bool})
 
-let fromDefinitions = (definitions, gqlTagModule) => {
+let fromDefinitions = (definitions: array<AST.ExecutableDefinitionNode.t>, gqlTagModule) => {
   let res = Array.copy(definitions)
   Array.reverse(res)
 
-  [
-    ...Array.map(res, d => PrintDefinition(d)),
-    PrintString(`let gql = ${gqlTagModule}.gql`)
-  ]
-  ->List.fromArray
+  let operations =
+    Array.filter(definitions, e => switch e {
+      | OperationDefinition(_) => true
+      | _ => false
+    })
+  let (encloseFragmentInModule, encloseOperationInModule) =
+    switch (Array.length(definitions) == 1, Array.length(operations) == 1) {
+      | (true, _) => (false, false)
+      | (_, true) => (true, false)
+      | _ => (true, true)
+    }
 
+  [
+    ...Array.map(res, d =>
+      PrintDefinition({
+        definition: d,
+        encloseInModule:
+          switch d {
+            | OperationDefinition(_) => encloseOperationInModule
+            | FragmentDefinition(_) => encloseFragmentInModule
+          }
+      })
+    ),
+    PrintString(`let gql = ${gqlTagModule}.gql`),
+  ]->List.fromArray
 }
 
 let joinPath = path => {
@@ -306,7 +325,7 @@ let process = (
   let processStep = (t): (list<t>, array<string>) =>
     switch t {
     | PrintString(str) => (list{}, [str])
-    | PrintType({namePath, type_}) => {
+    | PrintType({namePath, type_, indent}) => {
         let extractNamed = type_ =>
           Schema.Output.traverse(
             type_,
@@ -363,16 +382,16 @@ let process = (
                 let fieldPath = Option.mapOr(midfix, [...namePath, rawKey], m =>
                   [...namePath, m, rawKey]
                 )
-                (wrapper(joinPath(fieldPath)), Some(PrintType({namePath: fieldPath, type_: res})))
+                (wrapper(joinPath(fieldPath)), Some(PrintType({namePath: fieldPath, type_: res, indent})))
               }
             | (Some(_), Left(n, _)) => raise(Composite_type_without_fields(n))
             | (None, Right(n, _, _)) => raise(Simple_type_with_fields(n))
             }
-            let mainLine = `    ${key}: ${value},`
+            let mainLine = `  ${key}: ${value},`
             (
               switch alias {
               | None => mainLine
-              | Some(a) => Array.join([`    @as("${a}")`, mainLine], "\n")
+              | Some(a) => Array.join([`  @as("${a}")`, mainLine], "\n")
               },
               neededType,
             )
@@ -384,7 +403,7 @@ let process = (
             let lines = Array.map(results, ((s, _)) => s)
             let bases = Array.filterMap(results, ((_, o)) => o)
             let name = joinPath(namePath)
-            ([`  type ${name} = {`, ...lines, `  }`], bases)
+            ([`type ${name} = {`, ...lines, `}`], bases)
           }
         | Union({type_, ?base, members}) => {
             let possibleTypes = Schema.getPossibleTypes(schema, type_)
@@ -398,16 +417,16 @@ let process = (
               }
               Option.mapOr(
                 selectionSet,
-                ([`      | ${String.capitalize(typeConditionName)}`], []),
+                ([`    | ${String.capitalize(typeConditionName)}`], []),
                 ss => {
                   let fields = parseSelectionSet(ss, ~midfix=typeConditionName)
                   let lines = Array.map(fields, ((s, _)) => s)
                   let bases = Array.filterMap(fields, ((_, o)) => o)
                   (
                     [
-                      `      | ${String.capitalize(typeConditionName)}({`,
-                      ...Array.map(lines, l => `    ${l}`),
-                      "      })",
+                      `    | ${String.capitalize(typeConditionName)}({`,
+                      ...Array.map(lines, l => `  ${l}`),
+                      "    })",
                     ],
                     bases,
                   )
@@ -417,23 +436,23 @@ let process = (
             let moduleName = formatModuleName(namePath)
             (
               [
-                `  module ${moduleName} = {`,
-                `    @tag("__typename")`,
-                `    type t =`,
+                `module ${moduleName} = {`,
+                `  @tag("__typename")`,
+                `  type t =`,
                 ...Array.flatMap(results, ((l, _)) => l),
-                "  }",
-                `  type ${joinPath(namePath)} = ${moduleName}.t`,
+                "}",
+                `type ${joinPath(namePath)} = ${moduleName}.t`,
               ],
               Array.flatMap(results, ((_, t)) => t),
             )
           }
         }
-        (List.fromArray(bases), lines)
+        (List.fromArray(bases), Array.map(lines, l => `${String.repeat(" ", indent)}${l}`))
       }
-    | PrintVariables({fields}) => (
+    | PrintVariables({fields, indent}) => (
         list{},
         [
-          "  type variables = {",
+          "type variables = {",
           Dict.toArray(fields)
           ->Array.map(((rawKey, inputType)) => {
             let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
@@ -445,27 +464,27 @@ let process = (
               ~onList=s => `${listType}<${s}>`,
               ~onNull=s => `${nullType}<${s}>`,
             )
-            let mainLine = `    ${key}: ${value}`
+            let mainLine = `  ${key}: ${value}`
             switch alias {
             | None => mainLine
-            | Some(a) => Array.join([`    @as("${a}")`, mainLine], "\n")
+            | Some(a) => Array.join([`  @as("${a}")`, mainLine], "\n")
             }
           })
           ->Array.join(",\n"),
-          "  }",
-        ],
+          "}",
+        ]->Array.map(l => `${String.repeat(" ", indent)}${l}`),
       )
-    | PrintDocument(document) => (
+    | PrintDocument({document, indent}) => (
         list{},
         [
-          "  let document = gql`",
+          "let document = gql`",
           ...AST.ExecutableDefinitionNode.print(document)
           ->String.split("\n")
-          ->Array.map(l => `    ${l}`),
-          "  `",
-        ],
+          ->Array.map(l => `  ${l}`),
+          "`",
+        ]->Array.map(l => `${String.repeat(" ", indent)}${l}`),
       )
-    | PrintDefinition(definition) => {
+    | PrintDefinition({definition, encloseInModule}) => {
         let definitionName = switch definition {
         | OperationDefinition(o) => Option.map(o.name, NameNode.value)
         | FragmentDefinition(f) => Some(NameNode.value(f.name))
@@ -510,24 +529,32 @@ let process = (
           ->Option.getOrExn(Empty_definition(Option.getOr(definitionName, "<unnamed operation>")))
           ->extractSelectionType(baseType, _)
 
+        let indent = encloseInModule ? 2 : 0
+
         (
           list{
             PrintType({
               namePath: ["t"],
               type_: selectionSteps,
+              indent
             })->Some,
-            Option.map(variables, v => PrintVariables({fields: v})),
-            PrintDocument(definition)->Some,
-            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some,
+            Option.map(variables, v => PrintVariables({fields: v, indent})),
+            PrintDocument({document: definition, indent})->Some,
+            encloseInModule ? PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some : None,
           }->List.filterMap(e => e),
           Array.keepSome([
             switch definition {
-              | FragmentDefinition(_) => appendToFragments
-              | OperationDefinition({operation: Query}) => appendToQueries
-              | OperationDefinition({operation: Mutation}) => appendToMutations
-              | OperationDefinition({operation: Subscription}) => appendToSubscriptions
-            },
-            Some("}")
+            | FragmentDefinition(_) => appendToFragments
+            | OperationDefinition({operation: Query}) => appendToQueries
+            | OperationDefinition({operation: Mutation}) => appendToMutations
+            | OperationDefinition({operation: Subscription}) => appendToSubscriptions
+            }->Option.map(section =>
+              section
+              ->String.split("\n")
+              ->Array.map(l => `${String.repeat(" ", indent)}${l}`)
+              ->Array.join("\n")
+            ),
+            encloseInModule ? Some("}") : None,
           ]),
         )
       }

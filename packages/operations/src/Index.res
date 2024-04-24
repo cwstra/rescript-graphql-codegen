@@ -20,7 +20,9 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
     // at least for now, just going to shove
     // that onto selection sets at the start.
     let (internalFragments, operations) =
-      Array.flatMap(documents, d => AST.addTypenameToDocument(d.document).definitions)
+      Array.flatMap(documents, d => switch AST.addTypenameToDocument(d.document) {
+          | Document({definitions}) => definitions
+      })
       ->Array.filterMap(d =>
         switch d {
         | OperationDefinition(o) =>

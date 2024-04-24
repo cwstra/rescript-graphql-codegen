@@ -1,7 +1,7 @@
 {
   "main": "./dist/Index.js",
   "name": "@rescript-graphql-codegen/base-types",
-  "version": "0.0.7",
+  "version": "0.0.10",
   "keywords": [
     "rescript"
   ],
