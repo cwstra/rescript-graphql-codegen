@@ -6,16 +6,14 @@
     "subdirs": true
   },
   "package-specs": {
-    "module": "es6",
+    "module": "esmodule",
     "in-source": true
   },
   "suffix": ".gitignored.mjs",
-  "bsc-flags": ["-open CorePlus"],
+  "bsc-flags": ["-open RescriptGraphqlCodegenLib -open CorePlus"],
   "bs-dependencies": [
     "@rescript/core",
-    "@rescript-graphql-codegen/core-plus",
-    "@rescript-graphql-codegen/graphql",
-    "@rescript-graphql-codegen/graphql-codegen",
+    "@rescript-graphql-codegen/lib",
     "rescript-nodejs"
   ]
 }

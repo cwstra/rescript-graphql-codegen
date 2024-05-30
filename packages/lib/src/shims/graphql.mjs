@@ -1,12 +1,12 @@
 import {
-    isScalarType, 
-    isObjectType, 
-    isInterfaceType, 
-    isUnionType, 
-    isEnumType, 
-    isInputObjectType, 
-    isListType, 
-    isNonNullType, 
+    isScalarType,
+    isObjectType,
+    isInterfaceType,
+    isUnionType,
+    isEnumType,
+    isInputObjectType,
+    isListType,
+    isNonNullType,
     Kind,
     visit
 } from "graphql"

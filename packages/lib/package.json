@@ -1,6 +1,6 @@
 {
-  "name": "@rescript-graphql-codegen/graphql",
-  "version": "0.0.3",
+  "name": "@rescript-graphql-codegen/lib",
+  "version": "0.0.1",
   "keywords": [
     "rescript",
     "graphql"
@@ -15,16 +15,16 @@
   "author": "cwstra",
   "scripts": {
     "build": "rescript",
-    "graphql:build": "yarn build",
+    "lib:build": "yarn build",
     "clean": "rescript clean",
-    "graphql:clean": "yarn clean",
+    "lib:clean": "yarn clean",
     "fmt": "rescript format",
-    "graphql:fmt": "yarn fmt",
+    "lib:fmt": "yarn fmt",
     "dev": "rescript build -w",
-    "graphql:dev": "yarn core-plus:build; dev"
+    "lib:dev": "yarn dev"
   },
   "dependencies": {
-    "@rescript-graphql-codegen/core-plus": "0.0.3",
+    "@rescript/core": "^1.3.0",
     "rescript": "^11.1.0"
   },
   "peerDependencies": {
