@@ -11,10 +11,10 @@
   },
   "suffix": ".gitignored.mjs",
   "bsc-flags": [
-    "-open CorePlus"
+    "-open RescriptGraphqlCodegenLib -open CorePlus"
   ],
   "bs-dependencies": [
-    "@rescript/core", "@rescript-graphql-codegen/core-plus", "@rescript-graphql-codegen/graphql-tag"
+    "@rescript/core", "@rescript-graphql-codegen/lib", "@rescript-graphql-codegen/graphql-tag"
   ],
   "ppx-flags": [["rescript-embed-lang/ppx", "-enable-generic-transform"]]
 }

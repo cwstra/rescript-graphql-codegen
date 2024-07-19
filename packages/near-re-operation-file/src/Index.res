@@ -53,7 +53,8 @@ module FragmentRegistry = {
       (duplicateNames, registry),
       document,
     ) => {
-      let fragments = document.document.definitions->Array.filterMap(d =>
+      let AST.DocumentNode.Document({definitions}) = document.document
+      let fragments = Array.filterMap(definitions, d =>
         switch d {
         | FragmentDefinition({
             loc,
@@ -140,15 +141,13 @@ let extractExternalFragmentsInUse = (
   registry: FragmentRegistry.t,
 ): Dict.t<int> => {
   open AST
-  let ignored =
-    documentNode.definitions
-    ->Array.filterMap(d =>
-      switch d {
-      | FragmentDefinition(f) => Some(f.name->NameNode.value)
-      | _ => None
-      }
-    )
-    ->Set.fromArray
+  let DocumentNode.Document({definitions}) = documentNode
+  let ignored = Array.filterMap(definitions, d =>
+    switch d {
+    | FragmentDefinition(f) => Some(f.name->NameNode.value)
+    | _ => None
+    }
+  )->Set.fromArray
   let rec extract = (selections, result, level) =>
     switch selections {
     | SelectionSetNode.Field(f) =>
@@ -174,7 +173,7 @@ let extractExternalFragmentsInUse = (
         )
       }
     }
-  documentNode.definitions->Array.reduce(Dict.make(), (acc, d) =>
+  Array.reduce(definitions, Dict.make(), (acc, d) =>
     switch d {
     | FragmentDefinition(f) => f.selectionSet->SelectionSetNode.selections
     | OperationDefinition(f) => f.selectionSet->SelectionSetNode.selections
@@ -235,10 +234,12 @@ let buildFragmentResolver = (
           if (
             fragment.filePath !== generatedFilePath &&
               (level == 0 ||
-                (dedupeFragments &&
-                switch documentFileContent.definitions->Array.get(0) {
-                | Some(OperationDefinition(_)) | Some(FragmentDefinition(_)) => true
-                | _ => false
+                (dedupeFragments && {
+                  let AST.DocumentNode.Document({definitions}) = documentFileContent
+                  switch definitions[0] {
+                  | Some(OperationDefinition(_)) | Some(FragmentDefinition(_)) => true
+                  | _ => false
+                  }
                 }))
           ) {
             Dict.update(
@@ -270,14 +271,14 @@ let buildFragmentResolver = (
 
 let needsScalarImport = (definitions: array<AST.DefinitionNode.t>, schema: Schema.t) => {
   open AST
-  let rec hasFieldSelection = (s) => 
+  let rec hasFieldSelection = s =>
     switch s {
     | SelectionSetNode.Field({name}) if NameNode.value(name)->String.startsWith("__") => false
-    | Field({selectionSet}) => 
-      Array.some(selectionSet -> SelectionSetNode.selections, hasFieldSelection)
+    | Field({selectionSet}) =>
+      Array.some(selectionSet->SelectionSetNode.selections, hasFieldSelection)
     | Field(_) => true
     | InlineFragment(i) =>
-      Array.some(i.selectionSet -> SelectionSetNode.selections, hasFieldSelection)
+      Array.some(i.selectionSet->SelectionSetNode.selections, hasFieldSelection)
     // Can skip checking this;
     // in practice, we pass all relevant fragments in the definition
     | FragmentSpread(f) => false
@@ -286,7 +287,7 @@ let needsScalarImport = (definitions: array<AST.DefinitionNode.t>, schema: Schem
   ->Array.flatMap(d =>
     switch d {
     | OperationDefinition({selectionSet})
-    | FragmentDefinition({selectionSet}) => 
+    | FragmentDefinition({selectionSet}) =>
       SelectionSetNode.selections(selectionSet)
     | _ => []
     }
@@ -322,7 +323,7 @@ let resolveDocumentImports = (
       // TODO?: auto-open?
       //let definitions =
       //  Array.concat(
-      //    documentFile.document.definitions, 
+      //    documentFile.document.definitions,
       //    Array.map(externalFragments, ({node: f}) => {
       //      AST.ExecutableDefinitionNode.fromFragmentDefinition(f)
       //      -> AST.DefinitionNode.fromExecutableDefinition
@@ -351,7 +352,7 @@ let default: Preset.outputPreset<config, _, _, _, _> = {
       },
     )
     let extension = Option.getOr(options.presetConfig.extension, ".generated.res")
-    let folder = None//options.presetConfig.folder
+    let folder = None //options.presetConfig.folder
     let importAllFragmentsFrom = None
     let baseTypesPath = None
     let isAbsolute = false // baseTypesPath.startsWith("~")
@@ -359,21 +360,26 @@ let default: Preset.outputPreset<config, _, _, _, _> = {
 
     let generateFilePath = location => {
       let parsedLocation = NodeJs.Path.parse(location)
-      [[parsedLocation.dir], Option.toArray(folder), [String.concat(parsedLocation.name, extension)]]
-      -> Array.flat
-      -> NodeJs.Path.join
+      [
+        [parsedLocation.dir],
+        Option.toArray(folder),
+        [String.concat(parsedLocation.name, extension)],
+      ]
+      ->Array.flat
+      ->NodeJs.Path.join
     }
 
-    options.documents
-    ->Array.map(document => {
-      {Preset.filename: generateFilePath(document.location),
-       plugins: options.plugins,
-       pluginMap: options.pluginMap,
-       pluginContext: options.pluginContext,
-       schema: options.schema,
-       schemaAst: schema,
-       documents: [document],
-       config: options.config}
+    options.documents->Array.map(document => {
+      {
+        Preset.filename: generateFilePath(document.location),
+        plugins: options.plugins,
+        pluginMap: options.pluginMap,
+        pluginContext: options.pluginContext,
+        schema: options.schema,
+        schemaAst: schema,
+        documents: [document],
+        config: options.config,
+      }
     })
   },
 }

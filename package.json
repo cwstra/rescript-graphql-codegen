@@ -18,12 +18,10 @@
   "packageManager": "yarn@4.0.2",
   "scripts": {
     "project:build": "yarn workspaces foreach -At run build",
-    "project:clean": "yarn workspaces foreach -At run fmt"
+    "project:clean": "yarn workspaces foreach -At run clean"
   },
   "resolutions": {
-    "@rescript-graphql-codegen/core-plus": "workspace:*",
-    "@rescript-graphql-codegen/graphql": "workspace:*",
-    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
+    "@rescript-graphql-codegen/lib": "workspace:*",
     "@rescript-graphql-codegen/graphql-codegen-embed-lang": "workspace:*",
     "@rescript-graphql-codegen/near-re-operation-file": "workspace:*",
     "@rescript-graphql-codegen/base-types": "workspace:*",

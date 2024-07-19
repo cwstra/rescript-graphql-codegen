@@ -14,12 +14,10 @@
     "fmt": "rescript format",
     "near-re-operation-file:fmt": "yarn fmt",
     "dev": "rescript build -w",
-    "near-re-operation-file:dev": "yarn workspaces foreach -R --from @rescript-graphql-codegen/graphql-codegen run build; yarn dev"
+    "near-re-operation-file:dev": "yarn lib:build; yarn dev"
   },
   "dependencies": {
-    "@rescript-graphql-codegen/core-plus": "workspace:*",
-    "@rescript-graphql-codegen/graphql": "workspace:*",
-    "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
+    "@rescript-graphql-codegen/lib": "workspace:*",
     "rescript": "^11.1.0"
   },
   "peerDependencies": {

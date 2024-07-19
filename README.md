@@ -4,9 +4,10 @@ This monorepo contains packages for a few purposes, in varying states of complet
 [See the (very rough) documentation.](https://github.com/cwstra/rescript-graphql-codegen/wiki)
 ## Status
 ### Mostly done
-- `core-plus`: Extensions around [rescript-core](https://github.com/rescript-association/rescript-core).
-- `graphql`: Rescript bindings (and light wrappers) around the [graphql javascript library](https://github.com/graphql/graphql-js).
-- `graphql-codegen`: Rescript bindings for writing [graphql-codegen](https://github.com/dotansimha/graphql-code-generator) plugins in rescript
+- `lib`: contains
+    - `core-plus`: Extensions around [rescript-core](https://github.com/rescript-association/rescript-core).
+    - `graphql`: Rescript bindings (and light wrappers) around the [graphql javascript library](https://github.com/graphql/graphql-js).
+    - `graphql-codegen`: Rescript bindings for writing [graphql-codegen](https://github.com/dotansimha/graphql-code-generator) plugins in rescript
 - `base-types`: Baseline Rescript codegen plugin. Generates enum and input types.
 - `operations`: Baseline Rescript codegen plugin. Generates variable and output types.
 - `test`: Runs generated codegen plugins
