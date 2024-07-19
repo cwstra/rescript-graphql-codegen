@@ -17,6 +17,7 @@
     "@rescript/core",
     "@rescript-graphql-codegen/core-plus",
     "@rescript-graphql-codegen/graphql",
-    "@rescript-graphql-codegen/graphql-codegen"
+    "@rescript-graphql-codegen/graphql-codegen",
+    "rescript-nodejs"
   ]
 }

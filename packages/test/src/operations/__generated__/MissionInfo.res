@@ -1,8 +1,10 @@
+let gql = GraphqlTag.gql
 module MissionInfo = {
-  let document = `
+  let document = gql`
     fragment MissionInfo on CapsuleMission {
       flight
       name
+      __typename
       __typename
     }
   `
@@ -11,3 +13,4 @@ module MissionInfo = {
     name: null<GraphqlBase.Scalars.String.t>,
   }
 }
+include MissionInfo

@@ -14,7 +14,7 @@
     "-open CorePlus"
   ],
   "bs-dependencies": [
-    "@rescript/core", "@rescript-graphql-codegen/core-plus"
+    "@rescript/core", "@rescript-graphql-codegen/core-plus", "@rescript-graphql-codegen/graphql-tag"
   ],
   "ppx-flags": [["rescript-embed-lang/ppx", "-enable-generic-transform"]]
 }

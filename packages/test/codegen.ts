@@ -25,8 +25,9 @@ const config: CodegenConfig = {
     "src/operations": {
       preset: "near-operation-file",
       presetConfig: {
-        extension: ".gen.res",
+        extension: ".res",
         baseTypesPath: ".",
+        folder: "__generated__"
       },
       config: {
         baseTypesModule: "GraphqlBase.Types",

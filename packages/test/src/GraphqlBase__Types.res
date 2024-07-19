@@ -1,4 +1,5 @@
 module DirectiveLocation = {
+  @unboxed
   type t = 
     | @as("QUERY")
     Query
@@ -41,6 +42,7 @@ module DirectiveLocation = {
 }
 
 module TypeKind = {
+  @unboxed
   type t = 
     | @as("SCALAR")
     Scalar
@@ -61,6 +63,7 @@ module TypeKind = {
 }
 
 module ConflictAction = {
+  @unboxed
   type t = 
     | @as("ignore")
     Ignore
@@ -69,6 +72,7 @@ module ConflictAction = {
 }
 
 module OrderBy = {
+  @unboxed
   type t = 
     | @as("asc")
     Asc
@@ -85,6 +89,7 @@ module OrderBy = {
 }
 
 module UsersConstraint = {
+  @unboxed
   type t = 
     | @as("constraint")
     Constraint
@@ -101,6 +106,7 @@ module UsersConstraint = {
 }
 
 module UsersSelectColumn = {
+  @unboxed
   type t = 
     | @as("column")
     Column
@@ -117,6 +123,7 @@ module UsersSelectColumn = {
 }
 
 module UsersUpdateColumn = {
+  @unboxed
   type t = 
     | @as("column")
     Column

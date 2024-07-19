@@ -17,6 +17,7 @@
     "@graphql-codegen/near-operation-file-preset": "^3.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
     "@rescript-graphql-codegen/core-plus": "workspace:*",
+    "@rescript-graphql-codegen/graphql-tag": "workspace:*",
     "graphql": "^16.8.1",
     "rescript-embed-lang": "^0.4.0"
   },

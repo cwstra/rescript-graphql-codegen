@@ -18,3 +18,14 @@ type resolvedFragment = {
   importFrom?: string,
   level: int,
 }
+module FragmentImport = {
+  @tag("kind")
+  type identifier =
+    | @as("type") Type({name: string})
+    | @as("document") Document({name: string})
+  type importSource = {
+    path: string,
+    identifiers: array<identifier>,
+  }
+  type t = {importSource: importSource}
+}

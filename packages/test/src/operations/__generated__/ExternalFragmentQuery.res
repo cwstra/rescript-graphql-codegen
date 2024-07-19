@@ -1,45 +1,30 @@
-module MissionInfo = {
-  let document = `
-    fragment MissionInfo on CapsuleMission {
-      flight
-      name
-      __typename
-    }
-  `
-  type t = {
-    flight: null<GraphqlBase.Scalars.Int.t>,
-    name: null<GraphqlBase.Scalars.String.t>,
-  }
-}
-module Capsule = {
-  let document = `
-    query Capsule($id: ID!) {
-      capsule(id: $id) {
-        id
-        landings
-        missions {
-          ...MissionInfo
-          __typename
-        }
-        original_launch
-        reuse_count
-        status
-        type
-        __typename
-      }
-    }
-  `
+let gql = GraphqlTag.gql
+module ExternalFragmentQuery = {
   type variables = {
     id: GraphqlBase.Scalars.Id.t
   }
+  let document = gql`
+    query ExternalFragmentQuery($id: ID!) {
+      capsule(id: $id) {
+        missions {
+          flight
+          name
+          __typename
+        }
+        ...External
+        __typename
+      }
+    }
+    ${GraphqlTag.Document(ExternalFragment.External.document)}
+  `
   type t_capsule_missions = {
     flight: null<GraphqlBase.Scalars.Int.t>,
     name: null<GraphqlBase.Scalars.String.t>,
   }
   type t_capsule = {
+    missions: null<array<null<t_capsule_missions>>>,
     id: null<GraphqlBase.Scalars.Id.t>,
     landings: null<GraphqlBase.Scalars.Int.t>,
-    missions: null<array<null<t_capsule_missions>>>,
     original_launch: null<GraphqlBase.Scalars.Date.t>,
     reuse_count: null<GraphqlBase.Scalars.Int.t>,
     status: null<GraphqlBase.Scalars.String.t>,
@@ -50,3 +35,4 @@ module Capsule = {
     capsule: null<t_capsule>,
   }
 }
+include ExternalFragmentQuery

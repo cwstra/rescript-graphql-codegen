@@ -27,6 +27,7 @@
     "@rescript-graphql-codegen/core-plus": "workspace:*",
     "@rescript-graphql-codegen/graphql": "workspace:*",
     "@rescript-graphql-codegen/graphql-codegen": "workspace:*",
-    "rescript": "^11.1.0"
+    "rescript": "^11.1.0",
+    "rescript-nodejs": "^16.1.0"
   }
 }

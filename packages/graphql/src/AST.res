@@ -314,6 +314,11 @@ module ExecutableDefinitionNode = {
   external print: t => string = "print"
   external fromFragmentDefinition: (FragmentDefinitionNode.t) => t = "%identity"
   external fromOperationDefinition: (OperationDefinitionNode.t) => t = "%identity"
+  let name = def =>
+      switch def {
+        | OperationDefinition({?name}) => name
+        | FragmentDefinition({name}) => Some(name)
+      }
 }
 module SchemaDefinitionNode = {
   @tag("kind")

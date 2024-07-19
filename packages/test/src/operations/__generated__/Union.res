@@ -1,5 +1,9 @@
+let gql = GraphqlTag.gql
 module Union = {
-  let document = `
+  type variables = {
+  
+  }
+  let document = gql`
     query Union {
       get_union {
         ... on MemberA {
@@ -11,15 +15,12 @@ module Union = {
       }
     }
   `
-  type variables = {
-
-  }
   module Get_union = {
     @tag("__typename")
     type t =
       | MemberA({
-        id: null<GraphqlBase.Scalars.Id.t>,
-        a: null<GraphqlBase.Scalars.String.t>,
+      id: null<GraphqlBase.Scalars.Id.t>,
+      a: null<GraphqlBase.Scalars.String.t>,
       })
       | MemberB
       | MemberC
@@ -29,3 +30,4 @@ module Union = {
     get_union: null<t_get_union>,
   }
 }
+include Union

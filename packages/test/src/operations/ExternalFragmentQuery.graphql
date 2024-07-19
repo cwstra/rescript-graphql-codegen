@@ -1,0 +1,11 @@
+query ExternalFragmentQuery(
+  $id: ID!
+){
+  capsule(id: $id) {
+    missions {
+      flight
+      name
+    }
+    ...External
+  }
+}

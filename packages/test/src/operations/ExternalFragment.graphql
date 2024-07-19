@@ -1,0 +1,8 @@
+fragment External on Capsule {
+    id
+    landings
+    original_launch
+    reuse_count
+    status
+    type
+}

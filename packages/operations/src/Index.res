@@ -1,13 +1,17 @@
 open Graphql
 open GraphqlCodegen
 
+exception Fragment_name_not_ending_in_fragment(string)
+
 type config = {
   scalarModule: string,
   baseTypesModule: string,
   gqlTagModule?: string,
   externalFragments?: array<Base.resolvedFragment>,
+  fragmentImports?: array<Base.FragmentImport.t>,
   nullType?: string,
   listType?: string,
+  fragmentWrapper?: string,
   appendToFragments?: string,
   appendToQueries?: string,
   appendToMutations?: string,
@@ -20,9 +24,11 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
     // at least for now, just going to shove
     // that onto selection sets at the start.
     let (internalFragments, operations) =
-      Array.flatMap(documents, d => switch AST.addTypenameToDocument(d.document) {
-          | Document({definitions}) => definitions
-      })
+      Array.flatMap(documents, d =>
+        switch AST.addTypenameToDocument(d.document) {
+        | Document({definitions}) => definitions
+        }
+      )
       ->Array.filterMap(d =>
         switch d {
         | OperationDefinition(o) =>
@@ -56,24 +62,65 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       )
       ->Either.partition
 
+    let withoutFragmentSuffix = str => {
+      let suffix = "Fragment"
+      if String.endsWith(str, suffix) {
+        String.slice(str, ~start=0, ~end=String.length(str)-String.length(suffix))
+      } else {
+        raise(Fragment_name_not_ending_in_fragment(str))
+      }
+    }
+    let externalFragmentImportLookup =
+      Option.getOr(config.fragmentImports, [])
+      ->Array.filterMap(fi => {
+        let moduleName = NodeJs.Path.basenameExt(fi.importSource.path, ".res")
+        Array.findMap(fi.importSource.identifiers, i =>
+          switch i {
+          | Type({name})  => Some(name)
+          | _ => None
+          }
+        )->Option.map(withoutFragmentSuffix)->Option.map(fragmentName => (fragmentName, `${moduleName}.${fragmentName}`))
+      })
+      ->Dict.fromArray
+
     let allFragments = [
-      ...config.externalFragments->Option.getOr([])->Array.map(e => AST.addTypenameToFragment(e.node)),
-      ...internalFragments
+      ...config.externalFragments
+      ->Option.getOr([])
+      ->Array.map(e => {
+        WorkItem.definition: e.node,
+        externalName: Dict.get(
+          externalFragmentImportLookup,
+          AST.FragmentDefinitionNode.name(e.node)->AST.NameNode.value,
+        ),
+      }),
+      ...Array.map(internalFragments, e => {
+        WorkItem.definition: AST.addTypenameToFragment(e),
+        externalName: None,
+      }),
     ]
 
     let fragmentLookup =
       Array.map(allFragments, f => (
-        AST.FragmentDefinitionNode.name(f)->AST.NameNode.value,
+        AST.FragmentDefinitionNode.name(f.definition)->AST.NameNode.value,
         f,
       ))->Dict.fromArray
 
     let sorted = [
-      ...Helpers.sortFragmentsTopologically(allFragments)->Array.map(
-        AST.ExecutableDefinitionNode.fromFragmentDefinition,
+      ...Array.map(allFragments, f => f.definition)
+      ->Helpers.sortFragmentsTopologically
+      ->Array.filterMap(f =>
+        switch Dict.get(
+          externalFragmentImportLookup,
+          AST.FragmentDefinitionNode.name(f)->AST.NameNode.value,
+        ) {
+        | Some(_) => None
+        | None => AST.ExecutableDefinitionNode.fromFragmentDefinition(f)->Some
+        }
       ),
       ...operations->Array.map(AST.ExecutableDefinitionNode.fromOperationDefinition),
     ]
-    let init = WorkItem.fromDefinitions(sorted, Option.getOr(config.gqlTagModule, "GraphqlTag"))
+    let gqlTagModule = Option.getOr(config.gqlTagModule, "GraphqlTag")
+    let init = WorkItem.fromDefinitions(sorted, gqlTagModule)
 
     let res = WorkItem.process(
       ~steps=init,
@@ -81,6 +128,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
       ~schema,
       ~baseTypesModule=config.baseTypesModule,
       ~scalarModule=config.scalarModule,
+      ~fragmentWrapper=Option.getOr(config.fragmentWrapper, `${gqlTagModule}.Document`),
       ~listType=Option.getOr(config.listType, "array"),
       ~nullType=Option.getOr(config.nullType, "null"),
       ~appendToFragments=config.appendToFragments,

@@ -1,0 +1,16 @@
+query InternalFragmentQuery(
+  $id: ID!
+){
+  capsule(id: $id) {
+    ...Internal
+  }
+}
+
+fragment Internal on Capsule {
+    id
+    landings
+    original_launch
+    reuse_count
+    status
+    type
+}

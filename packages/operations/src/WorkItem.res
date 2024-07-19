@@ -90,6 +90,9 @@ module BaseUnresolvedOutput = {
 module UnresolvedOutputType = {
   include WithGqlWrappers(BaseUnresolvedOutput)
 
+  type result =
+    | SingleFragment(string)
+    | Combined(base)
   let combineSelectionSets = (
     {type_, fields: f1}: BaseUnresolvedOutput.selectionSet,
     {fields: f2}: BaseUnresolvedOutput.selectionSet,
@@ -134,38 +137,39 @@ module UnresolvedOutputType = {
 
 type t =
   | PrintString(string)
-  | PrintType({namePath: array<string>, type_: BaseUnresolvedOutput.t, indent: int})
+  | PrintType({
+      namePath: array<string>,
+      type_: BaseUnresolvedOutput.t,
+      indent: int,
+      seenFragments: Set.t<string>,
+    })
   | PrintVariables({fields: Dict.t<InputType.t>, indent: int})
-  | PrintDocument({document: ExecutableDefinitionNode.t, indent: int})
-  | PrintDefinition({definition: ExecutableDefinitionNode.t, encloseInModule: bool})
+  | PrintDocument({document: ExecutableDefinitionNode.t, indent: int, seenFragments: Set.t<string>})
+  | PrintDefinition({definition: ExecutableDefinitionNode.t})
 
 let fromDefinitions = (definitions: array<AST.ExecutableDefinitionNode.t>, gqlTagModule) => {
   let res = Array.copy(definitions)
   Array.reverse(res)
 
-  let operations =
-    Array.filter(definitions, e => switch e {
-      | OperationDefinition(_) => true
-      | _ => false
-    })
-  let (encloseFragmentInModule, encloseOperationInModule) =
-    switch (Array.length(definitions) == 1, Array.length(operations) == 1) {
-      | (true, _) => (false, false)
-      | (_, true) => (true, false)
-      | _ => (true, true)
+  let operations = Array.filter(definitions, e =>
+    switch e {
+    | OperationDefinition(_) => true
+    | _ => false
     }
+  )
 
   [
-    ...Array.map(res, d =>
-      PrintDefinition({
-        definition: d,
-        encloseInModule:
-          switch d {
-            | OperationDefinition(_) => encloseOperationInModule
-            | FragmentDefinition(_) => encloseFragmentInModule
-          }
-      })
-    ),
+    ...switch (definitions, operations) {
+    | ([d], _) => Some(d)
+    | (_, [o]) => Some(o)
+    | (_, _) => None
+    }
+    ->Option.flatMap(ExecutableDefinitionNode.name)
+    ->Option.map(s => PrintString(`include ${NameNode.value(s)}`))
+    ->Option.toArray,
+    ...Array.map(res, d => PrintDefinition({
+      definition: d,
+    })),
     PrintString(`let gql = ${gqlTagModule}.gql`),
   ]->List.fromArray
 }
@@ -185,14 +189,20 @@ let nonTypenameSelections = selections =>
     }
   )
 
+type providedFragment = {
+  definition: FragmentDefinitionNode.t,
+  externalName: option<string>,
+}
+
 let process = (
   ~steps,
-  ~fragments: Dict.t<FragmentDefinitionNode.t>,
+  ~fragments: Dict.t<providedFragment>,
   ~schema,
   ~baseTypesModule,
   ~scalarModule,
   ~nullType,
   ~listType,
+  ~fragmentWrapper,
   ~appendToFragments,
   ~appendToQueries,
   ~appendToMutations,
@@ -238,8 +248,9 @@ let process = (
 
   let extractSelectionType = (
     baseType: Schema.ValidForTypeCondition.t,
-    (fstSelection, rstSelections): Array.nonEmpty<SelectionSetNode.selectionNode>,
-  ): UnresolvedOutputType.base => {
+    selections: Array.nonEmpty<SelectionSetNode.selectionNode>,
+    seenFragments: Set.t<string>,
+  ): UnresolvedOutputType.result => {
     let rec extractFields = (
       node: SelectionSetNode.selectionNode,
       type_: Schema.ValidForTypeCondition.t,
@@ -254,10 +265,11 @@ let process = (
         })
       | FragmentSpread(f) => {
           let fragmentName = NameNode.value(f.name)
+          let fragmentEntry =
+            Dict.get(fragments, fragmentName)->Option.getOrExn(Missing_fragment(fragmentName))
+          Set.add(seenFragments, fragmentEntry.externalName->Option.getOr(fragmentName))
           let (fstSelection, rstSelections) =
-            Dict.get(fragments, fragmentName)
-            ->Option.getOrExn(Missing_fragment(fragmentName))
-            ->FragmentDefinitionNode.selectionSet
+            FragmentDefinitionNode.selectionSet(fragmentEntry.definition)
             ->nonTypenameSelections
             ->Array.headTail
             ->Option.getOrExn(Empty_fragment(fragmentName))
@@ -316,16 +328,27 @@ let process = (
           Array.map(rstSelections, extractFields(_, type_)),
         ))
       }
-    UnresolvedOutputType.combineLike((
-      extractFields(fstSelection, baseType),
-      Array.map(rstSelections, extractFields(_, baseType)),
-    ))
+    switch selections {
+    | (FragmentSpread(f), []) => {
+        let fragmentName = NameNode.value(f.name)
+        let fragmentEntry =
+          Dict.get(fragments, fragmentName)->Option.getOrExn(Missing_fragment(fragmentName))
+        let fragmentModuleName = fragmentEntry.externalName->Option.getOr(fragmentName)
+        Set.add(seenFragments, fragmentModuleName)
+        SingleFragment(fragmentModuleName)
+      }
+    | (fst, rst) =>
+      UnresolvedOutputType.combineLike((
+        extractFields(fst, baseType),
+        Array.map(rst, extractFields(_, baseType)),
+      ))->Combined
+    }
   }
 
   let processStep = (t): (list<t>, array<string>) =>
     switch t {
     | PrintString(str) => (list{}, [str])
-    | PrintType({namePath, type_, indent}) => {
+    | PrintType({namePath, type_, indent, seenFragments}) => {
         let extractNamed = type_ =>
           Schema.Output.traverse(
             type_,
@@ -363,7 +386,11 @@ let process = (
               | Right(n, t, w) => Right(n, t, s => `${nullType}<${w(s)}>`)
               },
           )
-        let parseSelectionSet = ({type_, fields}: BaseUnresolvedOutput.selectionSet, ~midfix=?) => {
+        let parseSelectionSet = (
+          {type_, fields}: BaseUnresolvedOutput.selectionSet,
+          seenFragments,
+          ~midfix=?,
+        ) => {
           let lookup = switch type_ {
           | Object(o) => Schema.Object.getFields(o)
           | Interface(i) => Schema.Interface.getFields(i)
@@ -377,12 +404,18 @@ let process = (
             let selections = Array.flatMap(v, nonTypenameSelections)
             let (value, neededType) = switch (Array.headTail(selections), extractNamed(fieldType)) {
             | (None, Left(_, str)) => (str, None)
-            | (Some(fst, rst), Right(_, selections, wrapper)) => {
-                let res = extractSelectionType(selections, (fst, rst))
-                let fieldPath = Option.mapOr(midfix, [...namePath, rawKey], m =>
-                  [...namePath, m, rawKey]
-                )
-                (wrapper(joinPath(fieldPath)), Some(PrintType({namePath: fieldPath, type_: res, indent})))
+            | (Some(fst, rst), Right(_, selections, wrapper)) =>
+              switch extractSelectionType(selections, (fst, rst), seenFragments) {
+              | SingleFragment(moduleName) => (wrapper(`${moduleName}.t`), None)
+              | Combined(res) => {
+                  let fieldPath = Option.mapOr(midfix, [...namePath, rawKey], m =>
+                    [...namePath, m, rawKey]
+                  )
+                  (
+                    wrapper(joinPath(fieldPath)),
+                    Some(PrintType({namePath: fieldPath, type_: res, indent, seenFragments})),
+                  )
+                }
               }
             | (Some(_), Left(n, _)) => raise(Composite_type_without_fields(n))
             | (None, Right(n, _, _)) => raise(Simple_type_with_fields(n))
@@ -390,8 +423,8 @@ let process = (
             let mainLine = `  ${key}: ${value},`
             (
               switch alias {
-              | None => mainLine
-              | Some(a) => Array.join([`  @as("${a}")`, mainLine], "\n")
+              | None => [mainLine]
+              | Some(a) => [`  @as("${a}")`, mainLine]
               },
               neededType,
             )
@@ -399,8 +432,8 @@ let process = (
         }
         let (lines, bases) = switch type_ {
         | SelectionSet(ss) => {
-            let results = parseSelectionSet(ss)
-            let lines = Array.map(results, ((s, _)) => s)
+            let results = parseSelectionSet(ss, seenFragments)
+            let lines = Array.flatMap(results, ((s, _)) => s)
             let bases = Array.filterMap(results, ((_, o)) => o)
             let name = joinPath(namePath)
             ([`type ${name} = {`, ...lines, `}`], bases)
@@ -419,8 +452,8 @@ let process = (
                 selectionSet,
                 ([`    | ${String.capitalize(typeConditionName)}`], []),
                 ss => {
-                  let fields = parseSelectionSet(ss, ~midfix=typeConditionName)
-                  let lines = Array.map(fields, ((s, _)) => s)
+                  let fields = parseSelectionSet(ss, seenFragments, ~midfix=typeConditionName)
+                  let lines = Array.flatMap(fields, ((s, _)) => s)
                   let bases = Array.filterMap(fields, ((_, o)) => o)
                   (
                     [
@@ -454,7 +487,7 @@ let process = (
         [
           "type variables = {",
           Dict.toArray(fields)
-          ->Array.map(((rawKey, inputType)) => {
+          ->Array.flatMap(((rawKey, inputType)) => {
             let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
             let value = InputType.traverse(
               inputType,
@@ -466,25 +499,30 @@ let process = (
             )
             let mainLine = `  ${key}: ${value}`
             switch alias {
-            | None => mainLine
-            | Some(a) => Array.join([`  @as("${a}")`, mainLine], "\n")
+            | None => [mainLine]
+            | Some(a) => [`  @as("${a}")`, mainLine]
             }
           })
           ->Array.join(",\n"),
           "}",
         ]->Array.map(l => `${String.repeat(" ", indent)}${l}`),
       )
-    | PrintDocument({document, indent}) => (
+    | PrintDocument({document, indent, seenFragments}) => (
         list{},
         [
           "let document = gql`",
           ...AST.ExecutableDefinitionNode.print(document)
           ->String.split("\n")
           ->Array.map(l => `  ${l}`),
+          ...seenFragments
+          ->Set.values
+          ->Core__Iterator.toArrayWithMapper(moduleName =>
+            `  \${${fragmentWrapper}(${moduleName}.document)}`
+          ),
           "`",
         ]->Array.map(l => `${String.repeat(" ", indent)}${l}`),
       )
-    | PrintDefinition({definition, encloseInModule}) => {
+    | PrintDefinition({definition}) => {
         let definitionName = switch definition {
         | OperationDefinition(o) => Option.map(o.name, NameNode.value)
         | FragmentDefinition(f) => Some(NameNode.value(f.name))
@@ -522,25 +560,31 @@ let process = (
             )
           })->Dict.fromArray
         )
+        let seenFragments = Set.make()
         let selectionSteps =
           selectionSet
           ->nonTypenameSelections
           ->Array.headTail
           ->Option.getOrExn(Empty_definition(Option.getOr(definitionName, "<unnamed operation>")))
-          ->extractSelectionType(baseType, _)
+          ->extractSelectionType(baseType, _, seenFragments)
 
-        let indent = encloseInModule ? 2 : 0
+        let indent = 2
 
         (
           list{
-            PrintType({
-              namePath: ["t"],
-              type_: selectionSteps,
-              indent
-            })->Some,
+            switch selectionSteps {
+            | SingleFragment(moduleName) => PrintString(`${moduleName}.t`)->Some
+            | Combined(type_) =>
+              PrintType({
+                namePath: ["t"],
+                type_,
+                indent,
+                seenFragments,
+              })->Some
+            },
+            PrintDocument({document: definition, indent, seenFragments})->Some,
             Option.map(variables, v => PrintVariables({fields: v, indent})),
-            PrintDocument({document: definition, indent})->Some,
-            encloseInModule ? PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some : None,
+            PrintString(`module ${Option.getOr(definitionName, "Operation")} = {`)->Some,
           }->List.filterMap(e => e),
           Array.keepSome([
             switch definition {
@@ -554,7 +598,7 @@ let process = (
               ->Array.map(l => `${String.repeat(" ", indent)}${l}`)
               ->Array.join("\n")
             ),
-            encloseInModule ? Some("}") : None,
+            Some("}"),
           ]),
         )
       }
