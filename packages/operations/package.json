@@ -1,7 +1,7 @@
 {
   "main": "./dist/Index.js",
   "name": "@rescript-graphql-codegen/operations",
-  "version": "0.0.12",
+  "version": "0.0.15",
   "keywords": [
     "rescript"
   ],
@@ -25,7 +25,7 @@
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^16.0.0"
   },
   "devDependencies": {
-    "@rescript-graphql-codegen/lib": "workspace:*",
+    "@rescript-graphql-codegen/lib": "workspace:^",
     "rescript": "^11.1.0",
     "rescript-nodejs": "^16.1.0"
   }

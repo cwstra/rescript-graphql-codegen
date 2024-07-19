@@ -9,7 +9,6 @@ module External = {
       status
       type
       __typename
-      __typename
     }
   `
   type t = {

@@ -94,7 +94,7 @@ let plugin: Plugin.pluginFunction<config> = async (schema, documents, config) =>
         ),
       }),
       ...Array.map(internalFragments, e => {
-        WorkItem.definition: AST.addTypenameToFragment(e),
+        WorkItem.definition: e,
         externalName: None,
       }),
     ]

@@ -1792,7 +1792,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rescript-graphql-codegen/graphql-tag@workspace:packages/graphql-tag"
   dependencies:
-    "@rescript-graphql-codegen/lib": "npm:0.0.1"
+    "@rescript-graphql-codegen/lib": "workspace:^"
     graphql-tag: "npm:^2.12.6"
     rescript: "npm:^11.1.0"
   peerDependencies:
@@ -1800,7 +1800,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rescript-graphql-codegen/lib@workspace:*, @rescript-graphql-codegen/lib@workspace:packages/lib":
+"@rescript-graphql-codegen/lib@workspace:*, @rescript-graphql-codegen/lib@workspace:^, @rescript-graphql-codegen/lib@workspace:packages/lib":
   version: 0.0.0-use.local
   resolution: "@rescript-graphql-codegen/lib@workspace:packages/lib"
   dependencies:
@@ -1826,7 +1826,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rescript-graphql-codegen/operations@workspace:packages/operations"
   dependencies:
-    "@rescript-graphql-codegen/lib": "workspace:*"
+    "@rescript-graphql-codegen/lib": "workspace:^"
     rescript: "npm:^11.1.0"
     rescript-nodejs: "npm:^16.1.0"
   peerDependencies:

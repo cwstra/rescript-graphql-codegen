@@ -5,7 +5,6 @@ module MissionInfo = {
       flight
       name
       __typename
-      __typename
     }
   `
   type t = {
