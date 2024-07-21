@@ -194,7 +194,7 @@ module Helpers = {
         }
       )
       switch nestedSelections {
-      | [] => fragmentNames
+      | [] => Array.concat(fragmentNames, newFragmentNames)
       | _ =>
         extractDependsFromSelections(
           nestedSelections,
