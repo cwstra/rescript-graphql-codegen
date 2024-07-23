@@ -20,6 +20,7 @@ const config: CodegenConfig = {
       config: {
         //globalNamespace: true,
         scalarModule: "GraphqlBase__Scalars",
+        //optionalInputTypes: "unwrapped",
       },
     },
     "src/operations": {
@@ -33,6 +34,8 @@ const config: CodegenConfig = {
         baseTypesModule: "GraphqlBase.Types",
         globalNamespace: true,
         scalarModule: "GraphqlBase.Scalars",
+        //optionalVariables: "wrapped",
+        //optionalOutputs: "unwrapped",
       },
       documents: "src/operations/*.graphql",
       plugins: ["../operations/src/Index.gitignored.mjs"],

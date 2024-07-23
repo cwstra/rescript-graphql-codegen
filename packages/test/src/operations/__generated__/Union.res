@@ -1,7 +1,6 @@
 let gql = GraphqlTag.gql
 module Union = {
   type variables = {
-  
   }
   let document = gql`
     query Union {

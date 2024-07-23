@@ -193,6 +193,13 @@ type providedFragment = {
   definition: FragmentDefinitionNode.t,
   externalName: option<string>,
 }
+type wrapperToken =
+  | ListToken
+  | NullToken
+@unboxed
+type optionalPropertyConfig =
+  | @as("wrapped") WithWrapper
+  | @as("unwrapped") WithoutWrapper
 
 let process = (
   ~steps,
@@ -202,6 +209,8 @@ let process = (
   ~scalarModule,
   ~nullType,
   ~listType,
+  ~optionalVariables,
+  ~optionalOutputs,
   ~fragmentWrapper,
   ~appendToFragments,
   ~appendToQueries,
@@ -344,48 +353,55 @@ let process = (
       ))->Combined
     }
   }
+  let extractNamed = type_ =>
+    Schema.Output.traverse(
+      type_,
+      ~onScalar=s => {
+        let name = Schema.Scalar.name(s)
+        (name, `${scalarModule}.${String.pascalCase(name)}.t`->Either.Left, list{})
+      },
+      ~onEnum=e => {
+        let name = Schema.Enum.name(e)
+        (name, `${baseTypesModule}.${String.pascalCase(name)}.t`->Either.Left, list{})
+      },
+      ~onObject=o => (
+        Schema.Object.name(o),
+        Schema.ValidForTypeCondition.Object(o)->Either.Right,
+        list{},
+      ),
+      ~onInterface=i => (
+        Schema.Interface.name(i),
+        Schema.ValidForTypeCondition.Interface(i)->Either.Right,
+        list{},
+      ),
+      ~onUnion=u => (
+        Schema.Union.name(u),
+        Schema.ValidForTypeCondition.Union(u)->Either.Right,
+        list{},
+      ),
+      ~onList=((name, value, wrappers)) => (name, value, list{ListToken, ...wrappers}),
+      ~onNull=((name, value, wrappers)) => (name, value, list{NullToken, ...wrappers}),
+    )
+  let rec printWithTokens = (baseValue, wrappers, ~left="", ~right="") =>
+    switch wrappers {
+    | list{} => left ++ baseValue ++ right
+    | list{ListToken, ...rest} =>
+      printWithTokens(baseValue, rest, ~left=`${left}${listType}<`, ~right=`>${right}`)
+    | list{NullToken, ...rest} =>
+      printWithTokens(baseValue, rest, ~left=`${left}${nullType}<`, ~right=`>${right}`)
+    }
+
+  let printProperty = (~key, ~baseType, ~wrappers, ~optionalConfig) =>
+    switch (optionalConfig, wrappers) {
+    | (Some(WithoutWrapper), list{NullToken, ...wrappers}) => `${key}?: ${printWithTokens(baseType, wrappers)},`
+    | (Some(WithWrapper), list{NullToken, ..._}) => `${key}?: ${printWithTokens(baseType, wrappers)},`
+    | (_, wrappers) => `${key}: ${printWithTokens(baseType, wrappers)},`
+    }
 
   let processStep = (t): (list<t>, array<string>) =>
     switch t {
     | PrintString(str) => (list{}, [str])
     | PrintType({namePath, type_, indent, seenFragments}) => {
-        let extractNamed = type_ =>
-          Schema.Output.traverse(
-            type_,
-            ~onScalar=s => {
-              let name = Schema.Scalar.name(s)
-              Either.Left(name, `${scalarModule}.${String.pascalCase(name)}.t`)
-            },
-            ~onEnum=e => {
-              let name = Schema.Enum.name(e)
-              Either.Left(name, `${baseTypesModule}.${String.pascalCase(name)}.t`)
-            },
-            ~onObject=o => Either.Right(
-              Schema.Object.name(o),
-              Schema.ValidForTypeCondition.Object(o),
-              i => i,
-            ),
-            ~onInterface=i => Either.Right(
-              Schema.Interface.name(i),
-              Schema.ValidForTypeCondition.Interface(i),
-              i => i,
-            ),
-            ~onUnion=u => Either.Right(
-              Schema.Union.name(u),
-              Schema.ValidForTypeCondition.Union(u),
-              i => i,
-            ),
-            ~onList=e =>
-              switch e {
-              | Left(n, a) => Left(n, `${listType}<${a}>`)
-              | Right(n, t, w) => Right(n, t, s => `${listType}<${w(s)}>`)
-              },
-            ~onNull=e =>
-              switch e {
-              | Left(n, a) => Left(n, `${nullType}<${a}>`)
-              | Right(n, t, w) => Right(n, t, s => `${nullType}<${w(s)}>`)
-              },
-          )
         let parseSelectionSet = (
           {type_, fields}: BaseUnresolvedOutput.selectionSet,
           seenFragments,
@@ -402,25 +418,34 @@ let process = (
               ->Option.getOrExn(Unknown_field(rawKey))
               ->Schema.Field.type_
             let selections = Array.flatMap(v, nonTypenameSelections)
-            let (value, neededType) = switch (Array.headTail(selections), extractNamed(fieldType)) {
-            | (None, Left(_, str)) => (str, None)
-            | (Some(fst, rst), Right(_, selections, wrapper)) =>
+            let (baseType, neededType, wrappers) = switch (
+              Array.headTail(selections),
+              extractNamed(fieldType),
+            ) {
+            | (None, (_, Left(str), wrappers)) => (str, None, wrappers)
+            | (Some(fst, rst), (_, Right(selections), wrappers)) =>
               switch extractSelectionType(selections, (fst, rst), seenFragments) {
-              | SingleFragment(moduleName) => (wrapper(`${moduleName}.t`), None)
+              | SingleFragment(moduleName) => (`${moduleName}.t`, None, wrappers)
               | Combined(res) => {
                   let fieldPath = Option.mapOr(midfix, [...namePath, rawKey], m =>
                     [...namePath, m, rawKey]
                   )
                   (
-                    wrapper(joinPath(fieldPath)),
+                    joinPath(fieldPath),
                     Some(PrintType({namePath: fieldPath, type_: res, indent, seenFragments})),
+                    wrappers,
                   )
                 }
               }
-            | (Some(_), Left(n, _)) => raise(Composite_type_without_fields(n))
-            | (None, Right(n, _, _)) => raise(Simple_type_with_fields(n))
+            | (Some(_), (n, Left(_), _)) => raise(Composite_type_without_fields(n))
+            | (None, (n, Right(_), _)) => raise(Simple_type_with_fields(n))
             }
-            let mainLine = `  ${key}: ${value},`
+            let mainLine = `  ${printProperty(
+              ~key,
+              ~baseType,
+              ~wrappers,
+              ~optionalConfig=optionalOutputs,
+            )}`
             (
               switch alias {
               | None => [mainLine]
@@ -486,24 +511,29 @@ let process = (
         list{},
         [
           "type variables = {",
-          Dict.toArray(fields)
+          ...Dict.toArray(fields)
           ->Array.flatMap(((rawKey, inputType)) => {
             let (key, alias) = GraphqlCodegen.Helpers.sanitizeFieldName(rawKey, fields)
-            let value = InputType.traverse(
+            let (baseType, wrappers) = InputType.traverse(
               inputType,
-              ~onScalar=s => `${scalarModule}.${String.pascalCase(s)}.t`,
-              ~onEnum=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
-              ~onObject=s => `${baseTypesModule}.${String.pascalCase(s)}.t`,
-              ~onList=s => `${listType}<${s}>`,
-              ~onNull=s => `${nullType}<${s}>`,
+              ~onScalar=s => (`${scalarModule}.${String.pascalCase(s)}.t`, list{}),
+              ~onEnum=s => (`${baseTypesModule}.${String.pascalCase(s)}.t`, list{}),
+              ~onObject=s => (`${baseTypesModule}.${String.pascalCase(s)}.t`, list{}),
+              ~onList=((s, wrappers)) => (s, list{ListToken, ...wrappers}),
+              ~onNull=((s, wrappers)) => (s, list{NullToken, ...wrappers}),
             )
-            let mainLine = `  ${key}: ${value}`
+            let mainLine = `  ${printProperty(
+              ~key,
+              ~baseType,
+              ~wrappers,
+              ~optionalConfig=optionalVariables,
+            )}`
+            Console.log(mainLine)
             switch alias {
             | None => [mainLine]
             | Some(a) => [`  @as("${a}")`, mainLine]
             }
-          })
-          ->Array.join(",\n"),
+          }),
           "}",
         ]->Array.map(l => `${String.repeat(" ", indent)}${l}`),
       )

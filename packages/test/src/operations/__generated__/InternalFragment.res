@@ -23,7 +23,7 @@ module Internal = {
 }
 module InternalFragmentQuery = {
   type variables = {
-    id: GraphqlBase.Scalars.Id.t
+    id: GraphqlBase.Scalars.Id.t,
   }
   let document = gql`
     query InternalFragmentQuery($id: ID!) {

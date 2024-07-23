@@ -1,52 +1,95 @@
 open Graphql
 open GraphqlCodegen
 
+@unboxed
+type optionalPropertyConfig =
+  | @as("wrapped") WithWrapper
+  | @as("unwrapped") WithoutWrapper
+
 type config = {
   scalarModule: string,
   externalFragments: array<Base.resolvedFragment>,
   nullType?: string,
   listType?: string,
+  optionalInputTypes?: optionalPropertyConfig,
   futureAddedValueName?: string,
   includeEnumAllValuesArray?: bool,
-  appendToEnums?: string
+  appendToEnums?: string,
 }
 
 let makePrintInputObjectType = config => {
   let {scalarModule, listType: ?rawListType, nullType: ?rawNullType} = config
   let listType = Option.getOr(rawListType, "array")
   let nullType = Option.getOr(rawNullType, "null")
+  let printScalar = s => `${scalarModule}.${Schema.Scalar.name(s)->String.pascalCase}.t`
+  let printEnum = e => `${Schema.Enum.name(e)->String.pascalCase}.t`
+  let printInputObject = io => `${Schema.InputObject.name(io)->String.pascalCase}.t`
+  let rec printStep = (i: Schema.Input.parsed, w) =>
+    switch i {
+    | Scalar(s) => w(`${nullType}<${printScalar(s)}>`)
+    | Enum(e) => w(`${nullType}<${printEnum(e)}>`)
+    | InputObject(io) => w(`${nullType}<${printInputObject(io)}>`)
+    | List(l) =>
+      printStep(Schema.Input.parse(Schema.List.ofType(l)), s => w(`${nullType}<${listType}<${s}>>`))
+    | NonNull(nn) =>
+      switch Schema.NonNull.ofType(nn)->Schema.Input.parse_nn {
+      | Scalar(s) => w(printScalar(s))
+      | Enum(e) => w(printEnum(e))
+      | InputObject(io) => w(printInputObject(io))
+      | List(l) => printStep(Schema.Input.parse(Schema.List.ofType(l)), s => w(`${listType}<${s}>`))
+      }
+    }
+  let printInput = switch config.optionalInputTypes {
+  | Some(WithoutWrapper) =>
+    (key, input) => {
+      //`${key}?: printStep(p, s => s)`
+      let value = switch Schema.Input.parse(input) {
+      | Scalar(s) => printScalar(s)->Either.Left
+      | Enum(e) => printEnum(e)->Either.Left
+      | InputObject(io) => printInputObject(io)->Either.Left
+      | List(l) =>
+        printStep(Schema.Input.parse(Schema.List.ofType(l)), s => `${listType}<${s}>`)->Either.Left
+      | NonNull(_) as p => printStep(p, s => s)->Either.Right
+      }
+      switch value {
+      | Left(nullable) => `${key}?: ${nullable},`
+      | Right(nonNullable) => `${key}: ${nonNullable},`
+      }
+    }
+
+  | Some(WithWrapper) =>
+    (key, input) => {
+      let value = switch Schema.Input.parse(input) {
+      | Scalar(_) as p
+      | Enum(_) as p
+      | InputObject(_) as p
+      | List(_) as p =>
+        printStep(p, s => s)->Either.Left
+      | NonNull(_) as p => printStep(p, s => s)->Either.Right
+      }
+      switch value {
+      | Left(nullable) => `${key}?: ${nullable},`
+      | Right(nonNullable) => `${key}: ${nonNullable},`
+      }
+    }
+  | None => (key, input) => `${key}: ${Schema.Input.parse(input)->printStep(s => s)},`
+  }
   inputObject => {
     let fields = Schema.InputObject.getFields(inputObject)
     [
       "  type t = {",
       ...Dict.toArray(fields)->Array.flatMap(((rawKey, t)) => {
-          let (key, alias) = Helpers.sanitizeFieldName(rawKey, fields)
-          let rec printInput = (i, w) =>
-            switch Schema.Input.parse(i) {
-            | Scalar(s) => w(`${nullType}<${scalarModule}.${Schema.Scalar.name(s)->String.pascalCase}.t>`)
-            | Enum(e) => w(`${nullType}<${Schema.Enum.name(e)->String.pascalCase}.t>`)
-            | InputObject(io) =>
-              w(`${nullType}<${Schema.InputObject.name(io)->String.pascalCase}.t>`)
-            | List(l) =>
-              printInput(Schema.List.ofType(l), s => w(`${nullType}<${listType}<${s}>>`))
-            | NonNull(nn) =>
-              switch Schema.NonNull.ofType(nn)->Schema.Input.parse_nn {
-              | Scalar(s) => w(`${scalarModule}.${Schema.Scalar.name(s)->String.pascalCase}.t`)
-              | Enum(e) => w(`${Schema.Enum.name(e)->String.pascalCase}.t`)
-              | InputObject(io) => w(`${Schema.InputObject.name(io)->String.pascalCase}.t`)
-              | List(l) => printInput(Schema.List.ofType(l), s => w(`${listType}<${s}>`))
-              }
-            }
-          let value = printInput(Schema.InputField.type_(t), s => s)
-          let mainLine = `    ${key}: ${value},`
-          switch alias {
-          | None => [mainLine]
-          | Some(a) => [`    @as("${a}")`, mainLine]
-          }
-        }),
-      "  }"
+        let (key, alias) = Helpers.sanitizeFieldName(rawKey, fields)
+        let mainLine = `    ${printInput(key, Schema.InputField.type_(t))}`
+        switch alias {
+        | None => [mainLine]
+        | Some(a) => [`    @as("${a}")`, mainLine]
+        }
+      }),
+      "  }",
     ]
-}}
+  }
+}
 
 let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =>
   try {
@@ -74,19 +117,21 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
         "  @unboxed",
         "  type t = ",
         ...Array.flatMap(values, v => [
-            `    | @as("${Schema.EnumValue.value(v)}")`,
-            `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
+          `    | @as("${Schema.EnumValue.value(v)}")`,
+          `    ${Schema.EnumValue.name(v)->String.pascalCase}`,
         ]),
         ...Option.mapOr(config.futureAddedValueName, [], n => [`    | ${n}(string)`]),
-        ...(if config.includeEnumAllValuesArray == Some(true) {
+        ...if config.includeEnumAllValuesArray == Some(true) {
           [
             "  let allValues = [",
             ...Array.map(values, v => `    ${Schema.EnumValue.name(v)->String.pascalCase},`),
-            "  ]"
+            "  ]",
           ]
-        } else {[]}),
+        } else {
+          []
+        },
         ...Option.mapOr(config.appendToEnums, [], str => [str]),
-        "}"
+        "}",
       ]->Array.join("\n")
     })->Array.join("\n\n")
 
@@ -94,24 +139,21 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
       Helpers.sortInputObjectsTopologically(inputObjects)
       ->Array.map(ior =>
         switch ior {
-        | NonRec(io) => {
+        | NonRec(io) =>
+          [
+            `module ${Schema.InputObject.name(io)->String.pascalCase} = {`,
+            ...printInputObjectType(io),
+            "}",
+          ]->Array.join("\n")
+        | Rec(cycle) =>
+          Array.mapWithIndex(cycle, (io, ind) => {
+            let moduleName = Schema.InputObject.name(io)->String.pascalCase
             [
-              `module ${Schema.InputObject.name(io)->String.pascalCase} = {`,
+              `${ind == 0 ? "module rec" : "and"} ${moduleName}: {`,
               ...printInputObjectType(io),
-              "}"
+              `} = ${moduleName}`,
             ]->Array.join("\n")
-          }
-          | Rec(cycle) => {
-            Array.mapWithIndex(cycle, (io, ind) => {
-              let moduleName = Schema.InputObject.name(io)->String.pascalCase
-              [
-                `${ind == 0 ? "module rec" : "and"} ${moduleName}: {`,
-                ...printInputObjectType(io),
-                `} = ${moduleName}`
-              ]->Array.join("\n")
-            }
-            )->Array.join("\n\n")
-          }
+          })->Array.join("\n\n")
         }
       )
       ->Array.join("\n\n")
@@ -120,7 +162,5 @@ let plugin: Plugin.pluginFunction<config> = async (schema, _documents, config) =
 
     Plugin.PluginOutput.String(res)
   } catch {
-  | e => {
-      raise(e)
-    }
+  | e => raise(e)
   }

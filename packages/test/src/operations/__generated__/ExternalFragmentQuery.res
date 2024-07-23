@@ -1,7 +1,7 @@
 let gql = GraphqlTag.gql
 module ExternalFragmentQuery = {
   type variables = {
-    id: GraphqlBase.Scalars.Id.t
+    id: GraphqlBase.Scalars.Id.t,
   }
   let document = gql`
     query ExternalFragmentQuery($id: ID!) {

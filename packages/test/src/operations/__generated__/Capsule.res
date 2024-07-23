@@ -1,10 +1,11 @@
 let gql = GraphqlTag.gql
 module Capsule = {
   type variables = {
-    id: GraphqlBase.Scalars.Id.t
+    id: GraphqlBase.Scalars.Id.t,
+    dummy: null<GraphqlBase.Scalars.Int.t>,
   }
   let document = gql`
-    query Capsule($id: ID!) {
+    query Capsule($id: ID!, $dummy: Int) {
       capsule(id: $id) {
         id
         landings
